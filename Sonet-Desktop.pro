@@ -1,5 +1,5 @@
 DEFINES += QPM_INIT\\(E\\)=\"E.addImportPath(QStringLiteral(\\\"qrc:/\\\"));\"
-include(../../qml-material/material.pri)
+include(../qml-material/material.pri)
 
 QT += qml quick
 QT += widgets quickwidgets
