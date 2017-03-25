@@ -1,0 +1,5 @@
+.qmake.stash
+*.o
+*.pro.user*
+*.qmlproject.user*
+*~

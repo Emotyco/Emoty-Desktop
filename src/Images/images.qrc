@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>navigation_close.png</file>
+        <file>wallpaper_grey.jpg</file>
+        <file>colorful.jpg</file>
+        <file>avatar.png</file>
+    </qresource>
+</RCC>

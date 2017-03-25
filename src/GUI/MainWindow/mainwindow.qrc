@@ -1,0 +1,30 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Borderless.qml</file>
+        <file>MainGUI.qml</file>
+        <file>CreateIdentity.qml</file>
+        <file>DialogExit.qml</file>
+        <file>FriendListDelegate.qml</file>
+        <file>LeftBar.qml</file>
+        <file>PgpListDelegate.qml</file>
+        <file>RightBar.qml</file>
+        <file>SettingsDialog.qml</file>
+        <file>UserAddDialog.qml</file>
+        <file>SideImg.qml</file>
+        <file>TextArea.qml</file>
+        <file>TextAreaStyle.qml</file>
+        <file>JSONListModel.qml</file>
+        <file>jsonpath.js</file>
+        <file>DragTile.qml</file>
+        <file>DropTile.qml</file>
+        <file>ChatMsgDelegate.qml</file>
+        <file>PeerListDelegate.qml</file>
+        <file>ChatCardPeer.qml</file>
+        <file>Content.qml</file>
+        <file>LeftBar_Identites.qml</file>
+        <file>ListItem_Button.qml</file>
+        <file>RoomPage.qml</file>
+        <file>LeftBar_Rooms.qml</file>
+        <file>RoomFriend.qml</file>
+    </qresource>
+</RCC>

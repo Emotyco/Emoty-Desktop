@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>borderless.qml</file>
+        <file>JSONListModel.qml</file>
+        <file>jsonpath.js</file>
+        <file>Bordered.qml</file>
+    </qresource>
+</RCC>
