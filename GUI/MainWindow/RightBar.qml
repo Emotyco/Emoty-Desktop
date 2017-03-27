@@ -33,6 +33,10 @@ View {
 								state_string === "away"	 ? "#FFEB3B" :   // yellow
 														      "#9E9E9E"	 // grey
 
+	// For handling tokens
+	property int stateToken_gxs: 0
+	property int stateToken_pgp: 0
+
 	anchors {
 		top: parent.top
 		right: parent.right
@@ -48,27 +52,35 @@ View {
 	clipContent: true
 
 	function refreshGxsIdModel() {
-		var jsonData = {
-			callback_name: "rightbar_identity_notown_ids"
-		}
+		if(!isTokenValid(stateToken_gxs)) {
+			var jsonData = {
+				callback_name: "rightbar_identity_notown_ids"
+			}
 
-		function callbackFn(par) {
-			gxsIdModel.json = par.response
-		}
+			function callbackFn(par) {
+				gxsIdModel.json = par.response
+				stateToken_gxs = JSON.parse(par.response).statetoken
+				pushToken(stateToken_gxs)
+			}
 
-		rsApi.request("/identity/notown_ids/", JSON.stringify(jsonData), callbackFn)
+			rsApi.request("/identity/notown_ids/", JSON.stringify(jsonData), callbackFn)
+		}
 	}
 
 	function refreshPgpIdModel() {
-		var jsonData = {
-			callback_name: "rightbar_peers_*"
-		}
+		if(!main.isTokenValid(stateToken_pgp)) {
+			var jsonData = {
+				callback_name: "rightbar_peers_*"
+			}
 
-		function callbackFn(par) {
-			pgpIdModel.json = par.response
-		}
+			function callbackFn(par) {
+				pgpIdModel.json = par.response
+				stateToken_pgp = JSON.parse(par.response).statetoken
+				main.pushToken(stateToken_pgp)
+			}
 
-		rsApi.request("/peers/*", JSON.stringify(jsonData), callbackFn)
+			rsApi.request("/peers/*", JSON.stringify(jsonData), callbackFn)
+		}
 	}
 
 	function getStateString() {
@@ -490,7 +502,7 @@ View {
 	}
 
 	Timer {
-		interval: 2000
+		interval: 1000
 		running: true
 		repeat: true
 

@@ -35,6 +35,9 @@ DragTile {
 	property string name
 	property alias contentm: contentm
 
+	// For handling tokens
+	property int stateToken: 0
+
 	// Just for "restore" option
 	property int tmpCol
 	property int tmpRow
@@ -85,16 +88,23 @@ DragTile {
 	}
 
 	function getChatMessages() {
-		var jsonData = {
-			callback_name: "chatcardpeer_chat_messages"+drag.chatId,
-		}
+		if(drag.chatId == "")
+			return
 
-		function callbackFn(par) {
-			msgModel.json = par.response
-			contentm.positionViewAtEnd()
-		}
+		if(!main.isTokenValid(stateToken)) {
+			var jsonData = {
+				callback_name: "chatcardpeer_chat_messages"+drag.chatId
+			}
 
-		rsApi.request("/chat/messages/"+drag.chatId, JSON.stringify(jsonData), callbackFn)
+			function callbackFn(par) {
+				msgModel.json = par.response
+				contentm.positionViewAtEnd()
+				stateToken = JSON.parse(par.response).statetoken
+				main.pushToken(stateToken)
+			}
+
+			rsApi.request("/chat/messages/"+drag.chatId, JSON.stringify(jsonData), callbackFn)
+		}
 	}
 
 	Component.onCompleted: drag.getChatMessages()
@@ -407,7 +417,7 @@ DragTile {
 
 					onActiveFocusChanged: {
 						if(activeFocus) {
-							rsApi.request("/chat/mark_chat_as_read/"+drag.chat_id, JSON.stringify(jsonData))
+							rsApi.request("/chat/mark_chat_as_read/"+drag.chat_id)
 							footerView.elevation = 2
 						}
 						else
@@ -422,7 +432,6 @@ DragTile {
 							}
 							rsApi.request("chat/send_message/", JSON.stringify(jsonData))
 							drag.getChatMessages()
-							contentm.positionViewAtEnd()
 							msgBox.text = ""
 							event.accepted = true
 						}

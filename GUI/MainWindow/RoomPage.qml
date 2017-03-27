@@ -33,6 +33,11 @@ Item{
 	property string roomName
 	property string chatId
 
+	// For handling tokens
+	property int stateToken_p: 0
+	property int stateToken_msg: 0
+	property int stateToken_gxs: 0
+
 	// Just for "restore" option
 	property int tmpCol: 0
 	property int tmpRow: 0
@@ -42,41 +47,52 @@ Item{
 	//
 
 	function getLobbyParticipants() {
-		var jsonData = {
-			callback_name: "roompage_chat_lobby_participants"+chatId
-		}
+		if(!main.isTokenValid(stateToken_p)) {
+			var jsonData = {
+				callback_name: "roompage_chat_lobby_participants"+chatId
+			}
 
-		function callbackFn(par) {
-			lobbyParticipantsModel.json = par.response
-		}
+			function callbackFn(par) {
+				lobbyParticipantsModel.json = par.response
+				stateToken_p = JSON.parse(par.response).statetoken
+				main.pushToken(stateToken_p)
+			}
 
-		rsApi.request("/chat/lobby_participants/"+chatId, JSON.stringify(jsonData), callbackFn)
+			rsApi.request("/chat/lobby_participants/"+chatId, JSON.stringify(jsonData), callbackFn)
+		}
 	}
 
 	function getLobbyMessages() {
-		var jsonData = {
-			callback_name: "roompage_chat_messages"+chatId
-		}
+		if(!main.isTokenValid(stateToken_msg)) {
+			var jsonData = {
+				callback_name: "roompage_chat_messages"+chatId
+			}
 
-		function callbackFn(par) {
-			console.log(par.response)
-			messagesModel.json = par.response
-			contentm.positionViewAtEnd()
-		}
+			function callbackFn(par) {
+				messagesModel.json = par.response
+				contentm.positionViewAtEnd()
+				stateToken_msg = JSON.parse(par.response).statetoken
+				main.pushToken(stateToken_msg)
+			}
 
-		rsApi.request("/chat/messages/"+chatId, JSON.stringify(jsonData), callbackFn)
+			rsApi.request("/chat/messages/"+chatId, JSON.stringify(jsonData), callbackFn)
+		}
 	}
 
 	function getGxsId() {
-		var jsonData = {
-			callback_name: "roompage_identity_notown_ids"
-		}
+		if(!main.isTokenValid(stateToken_gxs)) {
+			var jsonData = {
+				callback_name: "roompage_identity_notown_ids"
+			}
 
-		function callbackFn(par) {
-			gxsIdModel.json = par.response
-		}
+			function callbackFn(par) {
+				gxsIdModel.json = par.response
+				stateToken_gxs = JSON.parse(par.response).statetoken
+				main.pushToken(stateToken_gxs)
+			}
 
-		rsApi.request("/identity/notown_ids/", JSON.stringify(jsonData), callbackFn)
+			rsApi.request("/identity/notown_ids/", JSON.stringify(jsonData), callbackFn)
+		}
 	}
 
 	Component.onCompleted: {

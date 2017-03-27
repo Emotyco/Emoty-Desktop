@@ -6,40 +6,57 @@ import Material.ListItems 0.1 as ListItem
 Rectangle {
 	color: "#f2f2f2"
 
+	// For handling tokens
+	property int stateToken_P:	0
+	property int stateToken_SP:	0
+	property int stateToken_UP:	0
+
 	function getPrivateLobbies() {
-		var jsonData = {
-			callback_name: "leftbar_rooms_chat_private_lobbies"
-		}
+		if(!main.isTokenValid(stateToken_P)) {
+			var jsonData = {
+				callback_name: "leftbar_rooms_chat_private_lobbies"
+			}
 
-		function callbackFn(par) {
-			privateLobbiesModel.json = par.response
-		}
+			function callbackFn(par) {
+				privateLobbiesModel.json = par.response
+				stateToken_P = JSON.parse(par.response).statetoken
+				main.pushToken(stateToken_P)
+			}
 
-		rsApi.request("/chat/private_lobbies/", JSON.stringify(jsonData), callbackFn)
+			rsApi.request("/chat/private_lobbies/", JSON.stringify(jsonData), callbackFn)
+		}
 	}
 
 	function getSubscribedPublicLobbies() {
-		var jsonData = {
-			callback_name: "leftbar_rooms_chat_subscribed_public_lobbies"
-		}
+		if(!main.isTokenValid(stateToken_SP)) {
+			var jsonData = {
+				callback_name: "leftbar_rooms_chat_subscribed_public_lobbies"
+			}
 
-		function callbackFn(par) {
-			subscribedPublicLobbiesModel.json = par.response
-		}
+			function callbackFn(par) {
+				subscribedPublicLobbiesModel.json = par.response
+				stateToken_SP = JSON.parse(par.response).statetoken
+				main.pushToken(stateToken_SP)
+			}
 
-		rsApi.request("/chat/subscribed_public_lobbies/", JSON.stringify(jsonData), callbackFn)
+			rsApi.request("/chat/subscribed_public_lobbies/", JSON.stringify(jsonData), callbackFn)
+		}
 	}
 
 	function getUnsubscribedPublicLobbies() {
-		var jsonData = {
-			callback_name: "leftbar_rooms_chat_unsubscribed_public_lobbies"
-		}
+		if(!main.isTokenValid(stateToken_UP)) {
+			var jsonData = {
+				callback_name: "leftbar_rooms_chat_unsubscribed_public_lobbies"
+			}
 
-		function callbackFn(par) {
-			unsubscribedPublicLobbiesModel.json = par.response
-		}
+			function callbackFn(par) {
+				unsubscribedPublicLobbiesModel.json = par.response
+				stateToken_UP = JSON.parse(par.response).statetoken
+				main.pushToken(stateToken_UP)
+			}
 
-		rsApi.request("/chat/unsubscribed_public_lobbies/", JSON.stringify(jsonData), callbackFn)
+			rsApi.request("/chat/unsubscribed_public_lobbies/", JSON.stringify(jsonData), callbackFn)
+		}
 	}
 
 	Component.onCompleted: {

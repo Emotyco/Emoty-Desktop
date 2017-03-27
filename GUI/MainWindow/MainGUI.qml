@@ -616,6 +616,42 @@ Rectangle {
 		});
 	}
 
+	property var tokens: []
+
+	function checkTokens() {
+		function callbackFn(par) {
+			var invalidTokens = []
+			invalidTokens = JSON.parse(par.response).data
+
+			for(var i=0; i < invalidTokens.length; i++) {
+				for(var ii=0; ii < tokens.length; ii++)
+					if(invalidTokens[i] == tokens[ii])
+						delete tokens[ii]
+			}
+		}
+
+		rsApi.request("/statetokenservice/*/", '['+tokens+']', callbackFn)
+	}
+
+	function isTokenValid(token) {
+		for(var i=0; i<tokens.length; i++) {
+			if(tokens[i] === token)
+				return true
+		}
+		return false
+	}
+
+	function pushToken(token) {
+		for(var i=0; i<tokens.length; i++) {
+			if(tokens[i] === undefined)
+			{
+				tokens[i] = token
+				return
+			}
+		}
+		tokens.push(token)
+	}
+
 	/*
 	  All new cards (panels) are instatiated in these fucntions,
 	  becouse creation context is the QQmlContext in which Qt.createComponent method is called.
@@ -644,6 +680,15 @@ Rectangle {
 		repeat: true
 		onTriggered: {
 			getRunState()
+		}
+	}
+
+	Timer {
+		interval: 500
+		running: true
+		repeat: true
+		onTriggered: {
+			checkTokens()
 		}
 	}
 
