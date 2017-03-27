@@ -55,8 +55,7 @@ Item{
 
 	function getLobbyMessages() {
 		var jsonData = {
-			callback_name: "roompage_chat_messages"+chatId,
-			chat_id: chatId
+			callback_name: "roompage_chat_messages"+chatId
 		}
 
 		function callbackFn(par) {
@@ -65,19 +64,19 @@ Item{
 			contentm.positionViewAtEnd()
 		}
 
-		rsApi.request("/chat/messages/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/chat/messages/"+chatId, JSON.stringify(jsonData), callbackFn)
 	}
 
 	function getGxsId() {
 		var jsonData = {
-			callback_name: "roompage_identity_notown"
+			callback_name: "roompage_identity_notown_ids"
 		}
 
 		function callbackFn(par) {
 			gxsIdModel.json = par.response
 		}
 
-		rsApi.request("/identity/notown/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/identity/notown_ids/", JSON.stringify(jsonData), callbackFn)
 	}
 
 	Component.onCompleted: {
@@ -317,7 +316,7 @@ Item{
 						flickableDirection: Flickable.AutoFlickDirection
 
 						model: messagesModel.model
-						delegate: ChatMsgDelegate{}
+						delegate: RoomMsgDelegate{}
 					}
 
 					Scrollbar {
@@ -387,11 +386,7 @@ Item{
 
 						onActiveFocusChanged: {
 							if(activeFocus) {
-								var jsonData = {
-									chat_id: chatId
-								}
-
-								rsApi.request("/chat/mark_chat_as_read/", JSON.stringify(jsonData))
+								rsApi.request("/chat/mark_chat_as_read/"+chatId)
 
 								footerView.elevation = 2
 							}

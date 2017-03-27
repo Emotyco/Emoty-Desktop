@@ -87,7 +87,6 @@ DragTile {
 	function getChatMessages() {
 		var jsonData = {
 			callback_name: "chatcardpeer_chat_messages"+drag.chatId,
-			chat_id: drag.chatId
 		}
 
 		function callbackFn(par) {
@@ -95,7 +94,7 @@ DragTile {
 			contentm.positionViewAtEnd()
 		}
 
-		rsApi.request("/chat/messages/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/chat/messages/"+drag.chatId, JSON.stringify(jsonData), callbackFn)
 	}
 
 	Component.onCompleted: drag.getChatMessages()
@@ -408,10 +407,7 @@ DragTile {
 
 					onActiveFocusChanged: {
 						if(activeFocus) {
-							var jsonData = {
-								chat_id: drag.chat_id
-							}
-							rsApi.request("/chat/mark_chat_as_read/", JSON.stringify(jsonData))
+							rsApi.request("/chat/mark_chat_as_read/"+drag.chat_id, JSON.stringify(jsonData))
 							footerView.elevation = 2
 						}
 						else

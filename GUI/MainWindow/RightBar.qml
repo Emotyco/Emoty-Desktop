@@ -49,14 +49,14 @@ View {
 
 	function refreshGxsIdModel() {
 		var jsonData = {
-			callback_name: "rightbar_identity_notown"
+			callback_name: "rightbar_identity_notown_ids"
 		}
 
 		function callbackFn(par) {
 			gxsIdModel.json = par.response
 		}
 
-		rsApi.request("/identity/notown/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/identity/notown_ids/", JSON.stringify(jsonData), callbackFn)
 	}
 
 	function refreshPgpIdModel() {

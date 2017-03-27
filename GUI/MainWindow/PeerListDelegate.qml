@@ -178,10 +178,7 @@ Component {
 							overflowMenu.close()
 
 							main.createChatCardPeer(model.name, model.peer_id, model.chat_id, "ChatCardPeer.qml")
-							var jsonData = {
-								chat_id: model.chat_id
-							}
-							rsApi.request("/chat/mark_chat_as_read/", JSON.stringify(jsonData))
+							rsApi.request("/chat/mark_chat_as_read/"+model.chat_id)
 						}
 					}
 				}
@@ -313,10 +310,7 @@ Component {
 
 						onClicked: {
 							main.createChatCardPeer(model.name, model.peer_id, model.chat_id, "ChatCardPeer.qml")
-							var jsonData = {
-								chat_id: model.chat_id
-							}
-							rsApi.request("/chat/mark_chat_as_read/", JSON.stringify(jsonData))
+							rsApi.request("/chat/mark_chat_as_read/"+model.chat_id)
 						}
 					}
 				}

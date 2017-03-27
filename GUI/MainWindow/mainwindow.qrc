@@ -26,5 +26,6 @@
         <file>RoomPage.qml</file>
         <file>LeftBar_Rooms.qml</file>
         <file>RoomFriend.qml</file>
+        <file>RoomMsgDelegate.qml</file>
     </qresource>
 </RCC>

@@ -116,14 +116,14 @@ Rectangle {
 
 	function getOwnIdentities() {
 		var jsonData = {
-			callback_name: "maingui_identity_own"
+			callback_name: "maingui_identity_own_ids"
 		};
 
 		function callbackFn(par) {
 			ownGxsIdModel.json = par.response; haveOwnId()
 		}
 
-		rsApi.request("/identity/own/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/identity/own_ids/", JSON.stringify(jsonData), callbackFn)
 	}
 
 	function getRunState() {
