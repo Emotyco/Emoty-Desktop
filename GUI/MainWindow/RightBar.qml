@@ -155,7 +155,6 @@ View {
 
 		anchors {
 			top: parent.top
-			bottom: parent.bottom
 			left: parent.left
 			right: parent.right
 			rightMargin: dp(3)
@@ -164,34 +163,17 @@ View {
 		state: "bigGxsBox"
 		states: [
 			State {
-				name: "smallGxsBox"; when: main.advmode && pgpBox.state === "bigPgpBox"
-				PropertyChanges {
+				name: "smallGxsBox"; when: main.advmode
+				AnchorChanges {
 					target: gxsBox
-					anchors.bottomMargin: (parent.height/2)-dp(25)
-				}
-			},
-			State {
-				name: "bigGxsBox"; when: main.advmode && pgpBox.state === "smallPgpBox"
-				PropertyChanges {
-					target: gxsBox
-					anchors.bottomMargin: dp(50)
+					anchors.bottom: pgpBox.top
 				}
 			},
 			State{
 				name: "normalMode"; when: !main.advmode
-				PropertyChanges {
+				AnchorChanges {
 					target: gxsBox
-					anchors.bottomMargin: 0
-				}
-			}
-		]
-
-		transitions: [
-			Transition {
-				NumberAnimation {
-					target: gxsBox
-					property: "anchors.bottomMargin"
-					duration: MaterialAnimation.pageTransitionDuration/2
+					anchors.bottom: parent.bottom
 				}
 			}
 		]
@@ -370,6 +352,7 @@ View {
 	Item {
 		id: pgpBox
 
+		property int previousHeight: parent.height/2
 		anchors {
 			left:parent.left
 			right: parent.right
@@ -377,6 +360,10 @@ View {
 		}
 
 		height: dp(50)
+
+		Drag.active: button.drag.active
+		Drag.hotSpot.x: 0
+		Drag.hotSpot.y: 0
 
 		states: [
 			State {
@@ -404,7 +391,7 @@ View {
 				name: "bigPgpBox"
 				PropertyChanges {
 					target: pgpBox
-					height: parent.height/2
+					height: previousHeight
 				}
 			}
 		]
@@ -419,7 +406,8 @@ View {
 			}
 		]
 
-		Button {
+		View {
+			id: button
 			anchors {
 				left:parent.left
 				right: parent.right
@@ -428,16 +416,45 @@ View {
 
 			height: dp(50)
 
-			size: 13
-			text: "PgpBox"
-			textColor: "white"
-
 			backgroundColor: Palette.colors["deepOrange"]["500"]
 			elevation: 1
 
-			onClicked: {
-				pgpBox.state === "bigPgpBox" ? pgpBox.state = "smallPgpBox"
-											 : pgpBox.state = "bigPgpBox"
+			Label {
+				anchors {
+					horizontalCenter: parent.horizontalCenter
+					verticalCenter: parent.verticalCenter
+				}
+
+				text: "PgpBox"
+				color: "white"
+				style: "button"
+			}
+
+			MouseArea {
+				anchors.fill: parent
+
+				drag {
+					target: pgpBox
+					axis: Drag.YAxis
+				}
+
+				onClicked: {
+					pgpBox.state === "bigPgpBox" ? pgpBox.state = "smallPgpBox"
+												 : pgpBox.state = "bigPgpBox"
+				}
+
+				onMouseXChanged: {
+					if(drag.active) {
+						pgpBox.height = pgpBox.height - mouseY
+
+						if(pgpBox.height < 50)
+							pgpBox.height = 50
+						else if(pgpBox.height > rightBar.height-dp(50))
+							pgpBox.height = rightBar.height-dp(50)
+
+						pgpBox.previousHeight = pgpBox.height
+					}
+				}
 			}
 
 			Icon {
