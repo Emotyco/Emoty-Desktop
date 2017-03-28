@@ -7,77 +7,44 @@ Rectangle {
 	color: "#f2f2f2"
 
 	// For handling tokens
-	property int stateToken_P:	0
-	property int stateToken_SP:	0
-	property int stateToken_UP:	0
+	property int stateToken: 0
 
-	function getPrivateLobbies() {
-		if(!main.isTokenValid(stateToken_P)) {
-			var jsonData = {
-				callback_name: "leftbar_rooms_chat_private_lobbies"
-			}
-
-			function callbackFn(par) {
-				privateLobbiesModel.json = par.response
-				stateToken_P = JSON.parse(par.response).statetoken
-				main.pushToken(stateToken_P)
-			}
-
-			rsApi.request("/chat/private_lobbies/", JSON.stringify(jsonData), callbackFn)
-		}
-	}
-
-	function getSubscribedPublicLobbies() {
-		if(!main.isTokenValid(stateToken_SP)) {
-			var jsonData = {
-				callback_name: "leftbar_rooms_chat_subscribed_public_lobbies"
-			}
-
-			function callbackFn(par) {
-				subscribedPublicLobbiesModel.json = par.response
-				stateToken_SP = JSON.parse(par.response).statetoken
-				main.pushToken(stateToken_SP)
-			}
-
-			rsApi.request("/chat/subscribed_public_lobbies/", JSON.stringify(jsonData), callbackFn)
-		}
-	}
-
-	function getUnsubscribedPublicLobbies() {
-		if(!main.isTokenValid(stateToken_UP)) {
+	function getLobbies() {
+		if(!main.isTokenValid(stateToken)) {
 			var jsonData = {
 				callback_name: "leftbar_rooms_chat_unsubscribed_public_lobbies"
 			}
 
 			function callbackFn(par) {
+				privateLobbiesModel.json = par.response
+				subscribedPublicLobbiesModel.json = par.response
 				unsubscribedPublicLobbiesModel.json = par.response
-				stateToken_UP = JSON.parse(par.response).statetoken
-				main.pushToken(stateToken_UP)
+
+				stateToken = JSON.parse(par.response).statetoken
+				main.pushToken(stateToken)
 			}
 
-			rsApi.request("/chat/unsubscribed_public_lobbies/", JSON.stringify(jsonData), callbackFn)
+			rsApi.request("/chat/lobbies/", JSON.stringify(jsonData), callbackFn)
 		}
 	}
 
 	Component.onCompleted: {
-		getPrivateLobbies()
-		getSubscribedPublicLobbies()
-		getUnsubscribedPublicLobbies()
+		getLobbies()
 	}
 
 	JSONListModel {
 		id: privateLobbiesModel
-		query: "$.data[*]"
+		query: "$.data[?(@.is_private==true)]"
 	}
 
 	JSONListModel {
 		id: subscribedPublicLobbiesModel
-		query: "$.data[*]"
+		query: "$.data[?((@.is_private==false)&&(@.subscribed==true)&&(@.is_broadcast==false))]"
 	}
 
 	JSONListModel {
 		id: unsubscribedPublicLobbiesModel
-		query: "$.data[*]"
+		query: "$.data[?((@.is_private==false)&&(@.subscribed==false)&&(@.is_broadcast==false))]"
 	}
 
 	Flickable {
@@ -210,9 +177,7 @@ Rectangle {
 		repeat: true
 
 		onTriggered: {
-			getPrivateLobbies()
-			getSubscribedPublicLobbies()
-			getUnsubscribedPublicLobbies()
+			getLobbies()
 		}
 	}
 }
