@@ -37,6 +37,9 @@ View {
 	property int stateToken_gxs: 0
 	property int stateToken_pgp: 0
 
+	property bool firstTime_gxs: true
+	property bool firstTime_pgp: true
+
 	anchors {
 		top: parent.top
 		right: parent.right
@@ -52,6 +55,10 @@ View {
 	clipContent: true
 
 	function refreshGxsIdModel() {
+		if(firstTime_gxs)
+			loadingMask.show()
+
+		firstTime_gxs = false
 		if(!isTokenValid(stateToken_gxs)) {
 			var jsonData = {
 				callback_name: "rightbar_identity_notown_ids"
@@ -59,8 +66,11 @@ View {
 
 			function callbackFn(par) {
 				gxsIdModel.json = par.response
+
 				stateToken_gxs = JSON.parse(par.response).statetoken
 				pushToken(stateToken_gxs)
+
+				loadingMask.hide()
 			}
 
 			rsApi.request("/identity/notown_ids/", JSON.stringify(jsonData), callbackFn)
@@ -68,6 +78,10 @@ View {
 	}
 
 	function refreshPgpIdModel() {
+		if(firstTime_pgp)
+			loadingMask2.show()
+
+		firstTime_pgp = false
 		if(!main.isTokenValid(stateToken_pgp)) {
 			var jsonData = {
 				callback_name: "rightbar_peers_*"
@@ -75,8 +89,11 @@ View {
 
 			function callbackFn(par) {
 				pgpIdModel.json = par.response
+
 				stateToken_pgp = JSON.parse(par.response).statetoken
 				main.pushToken(stateToken_pgp)
+
+				loadingMask2.hide()
 			}
 
 			rsApi.request("/peers/*", JSON.stringify(jsonData), callbackFn)
@@ -157,7 +174,7 @@ View {
 			top: parent.top
 			left: parent.left
 			right: parent.right
-			rightMargin: dp(3)
+			//rightMargin: dp(3)
 		}
 
 		state: "bigGxsBox"
@@ -179,6 +196,7 @@ View {
 		]
 
 		Item {
+			id: header
 			anchors {
 				top: parent.top
 				left: parent.left
@@ -333,6 +351,11 @@ View {
 		ListView {
 			id: listView
 
+			LoadingMask {
+				id: loadingMask
+				anchors.fill: parent
+			}
+
 			anchors {
 				fill: parent
 				topMargin: dp(50)
@@ -361,7 +384,6 @@ View {
 
 		height: dp(50)
 
-		Drag.active: button.drag.active
 		Drag.hotSpot.x: 0
 		Drag.hotSpot.y: 0
 
@@ -501,10 +523,14 @@ View {
 		ListView {
 			id: listView2
 
+			LoadingMask {
+				id: loadingMask2
+				anchors.fill: parent
+			}
+
 			anchors {
 				fill: parent
 				topMargin: dp(50)
-				rightMargin: dp(3)
 			}
 
 			clip: true

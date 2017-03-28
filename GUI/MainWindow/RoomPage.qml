@@ -38,6 +38,8 @@ Item{
 	property int stateToken_msg: 0
 	property int stateToken_gxs: 0
 
+	property bool firstTime_msg: true
+
 	// Just for "restore" option
 	property int tmpCol: 0
 	property int tmpRow: 0
@@ -54,6 +56,7 @@ Item{
 
 			function callbackFn(par) {
 				lobbyParticipantsModel.json = par.response
+
 				stateToken_p = JSON.parse(par.response).statetoken
 				main.pushToken(stateToken_p)
 			}
@@ -63,6 +66,10 @@ Item{
 	}
 
 	function getLobbyMessages() {
+		if(firstTime_msg)
+			loadingMask.show()
+
+		firstTime_msg = false
 		if(!main.isTokenValid(stateToken_msg)) {
 			var jsonData = {
 				callback_name: "roompage_chat_messages"+chatId
@@ -71,8 +78,11 @@ Item{
 			function callbackFn(par) {
 				messagesModel.json = par.response
 				contentm.positionViewAtEnd()
+
 				stateToken_msg = JSON.parse(par.response).statetoken
 				main.pushToken(stateToken_msg)
+
+				loadingMask.hide()
 			}
 
 			rsApi.request("/chat/messages/"+chatId, JSON.stringify(jsonData), callbackFn)
@@ -141,6 +151,11 @@ Item{
 
 		elevation: 2
 		backgroundColor: Palette.colors["grey"]["50"]
+
+		LoadingMask {
+			id: loadingMask
+			anchors.fill: parent
+		}
 
 		Rectangle {
 			id: chatHeader

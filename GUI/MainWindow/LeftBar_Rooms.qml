@@ -9,7 +9,13 @@ Rectangle {
 	// For handling tokens
 	property int stateToken: 0
 
+	property bool firstTime: true
+
 	function getLobbies() {
+		if(firstTime)
+			loadingMask.show()
+
+		firstTime = false
 		if(!main.isTokenValid(stateToken)) {
 			var jsonData = {
 				callback_name: "leftbar_rooms_chat_unsubscribed_public_lobbies"
@@ -22,6 +28,8 @@ Rectangle {
 
 				stateToken = JSON.parse(par.response).statetoken
 				main.pushToken(stateToken)
+
+				loadingMask.hide()
 			}
 
 			rsApi.request("/chat/lobbies/", JSON.stringify(jsonData), callbackFn)
@@ -30,6 +38,11 @@ Rectangle {
 
 	Component.onCompleted: {
 		getLobbies()
+	}
+
+	LoadingMask {
+		id: loadingMask
+		anchors.fill: parent
 	}
 
 	JSONListModel {

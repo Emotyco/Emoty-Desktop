@@ -27,5 +27,6 @@
         <file>LeftBar_Rooms.qml</file>
         <file>RoomFriend.qml</file>
         <file>RoomMsgDelegate.qml</file>
+        <file>LoadingMask.qml</file>
     </qresource>
 </RCC>
