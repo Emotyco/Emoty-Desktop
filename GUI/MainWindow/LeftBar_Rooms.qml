@@ -166,6 +166,7 @@ Rectangle {
 			Repeater {
 				model: subscribedPublicLobbiesModel.model
 				delegate: ListItem.Standard {
+					id: subscribedPublicDelegate
 					width: parent.width
 
 					text: model.name
@@ -179,6 +180,46 @@ Rectangle {
 										   properties: {roomName: model.name, chatId: model.chat_id}})
 
 						leftBar.state = "narrow"
+					}
+
+					MouseArea {
+						anchors.fill: parent
+
+						acceptedButtons: Qt.RightButton
+						onClicked: overflowMenu.open(subscribedPublicDelegate, mouse.x, mouse.y);
+					}
+
+					Dropdown {
+						id: overflowMenu
+						objectName: "overflowMenu"
+						overlayLayer: "dialogOverlayLayer"
+
+						anchor: Item.TopLeft
+
+						width: 200 * Units.dp
+						height: dp(1*30)
+
+						enabled: true
+
+						durationSlow: 200
+						durationFast: 100
+
+						Column {
+							anchors.fill: parent
+
+							ListItem.Standard {
+								height: dp(30)
+
+								text: "Leave"
+								itemLabel.style: "menu"
+
+								onClicked: {
+									overflowMenu.close()
+									unsubsribeLobby(model.id)
+									setAutosubsribeLobby(model.id, false)
+								}
+							}
+						}
 					}
 				}
 			}
@@ -206,6 +247,7 @@ Rectangle {
 			Repeater {
 				model: unsubscribedPublicLobbiesModel.model
 				delegate: ListItem.Standard {
+					id: unsubscribedDelegate
 					width: parent.width
 
 					text: model.name
@@ -213,7 +255,7 @@ Rectangle {
 
 					itemLabel.style: "body1"
 
-					onClicked: {
+					function openUnsubscribedPublicLobby() {
 						subscribeLobby(model.id)
 						setAutosubsribeLobby(model.id, true)
 						main.content.activated = true;
@@ -221,6 +263,47 @@ Rectangle {
 										   properties: {roomName: model.name, chatId: model.chat_id}})
 
 						leftBar.state = "narrow"
+					}
+
+					onClicked: openUnsubscribedPublicLobby()
+
+					MouseArea {
+						anchors.fill: parent
+
+						acceptedButtons: Qt.RightButton
+						onClicked: overflowMenu2.open(unsubscribedDelegate, mouse.x, mouse.y);
+					}
+
+					Dropdown {
+						id: overflowMenu2
+						objectName: "overflowMenu2"
+						overlayLayer: "dialogOverlayLayer"
+
+						anchor: Item.TopLeft
+
+						width: 200 * Units.dp
+						height: dp(1*30)
+
+						enabled: true
+
+						durationSlow: 200
+						durationFast: 100
+
+						Column {
+							anchors.fill: parent
+
+							ListItem.Standard {
+								height: dp(30)
+
+								text: "Join"
+								itemLabel.style: "menu"
+
+								onClicked: {
+									overflowMenu2.close()
+									openUnsubscribedPublicLobby()
+								}
+							}
+						}
 					}
 				}
 			}
