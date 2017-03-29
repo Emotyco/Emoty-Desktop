@@ -36,6 +36,47 @@ Rectangle {
 		}
 	}
 
+	function subscribeLobby(chatId) {
+		var jsonData = {
+			callback_name: "leftbar_rooms_chat_subscribe_lobby",
+			id: chatId,
+			gxs_id: main.defaultGxsId
+		}
+
+		function callbackFn(par) {
+			getLobbies()
+		}
+
+		rsApi.request("/chat/subscribe_lobby/", JSON.stringify(jsonData), callbackFn)
+	}
+
+	function unsubsribeLobby(chatId) {
+		var jsonData = {
+			callback_name: "leftbar_rooms_chat_unsubscribed_public_lobbies",
+			id: chatId
+		}
+
+		function callbackFn(par) {
+			getLobbies()
+		}
+
+		rsApi.request("/chat/unsubscribe_lobby/", JSON.stringify(jsonData), callbackFn)
+	}
+
+	function setAutosubsribeLobby(chatId, autosubsribe) {
+		var jsonData = {
+			callback_name: "leftbar_rooms_chat_unsubscribed_public_lobbies",
+			chatid: chatId,
+			autosubsribe: autosubsribe
+		}
+
+		function callbackFn(par) {
+			getLobbies()
+		}
+
+		rsApi.request("/chat/autosubscribe_lobby/", JSON.stringify(jsonData), callbackFn)
+	}
+
 	Component.onCompleted: {
 		getLobbies()
 	}
@@ -173,6 +214,8 @@ Rectangle {
 					itemLabel.style: "body1"
 
 					onClicked: {
+						subscribeLobby(model.id)
+						setAutosubsribeLobby(model.id, true)
 						main.content.activated = true;
 						pageStack.push({item: Qt.resolvedUrl("RoomPage.qml"), immediate: true, replace: true,
 										   properties: {roomName: model.name, chatId: model.chat_id}})
