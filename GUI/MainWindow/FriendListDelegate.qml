@@ -301,6 +301,14 @@ Component {
 
 					size: 31 * Units.dp
 
+					MouseArea {
+						anchors.fill: parent
+
+						onClicked: {
+							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+						}
+					}
+
 					View {
 						anchors {
 							top: circle1.top
@@ -336,7 +344,7 @@ Component {
 
 					name: "awesome/phone"
 					visible: true
-					color: Theme.light.iconColor
+					color: Theme.light.hintColor
 
 					size: 31 * Units.dp
 				}

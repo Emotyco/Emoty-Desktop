@@ -659,13 +659,27 @@ Rectangle {
 	  (We couldn't e.g. click on mousearea in new created objects)
 	  */
 
+	function createChatGxsCard(friendname, gxsid, objectName) {
+		var component = Qt.createComponent(objectName, gridLayout);
+		if (component.status === Component.Ready) {
+			var chat = component.createObject(gridLayout,
+											  {"name": friendname,
+												"gxsId": gxsid});
+			chat.col = 5;
+			updateVisibleRows()
+			chat.row = main.visibleRows;
+			chat.gridY = 0;
+			gridLayout.reorder()
+		}
+	}
+
 	function createChatCardPeer(friendname, rspeerid, chat_id, objectName) {
 		var component = Qt.createComponent(objectName, gridLayout);
 		if (component.status === Component.Ready) {
-			var chat = component.createObject(gridLayout);
-			chat.name = friendname
-			chat.rsPeerId = rspeerid
-			chat.chatId = chat_id
+			var chat = component.createObject(gridLayout,
+											  {"name": friendname,
+											   "chatId": chat_id,
+											   "rsPeerId": rspeerid});
 			chat.col = 5;
 			updateVisibleRows()
 			chat.row = main.visibleRows;

@@ -28,5 +28,6 @@
         <file>RoomFriend.qml</file>
         <file>RoomMsgDelegate.qml</file>
         <file>LoadingMask.qml</file>
+        <file>ChatGxsCard.qml</file>
     </qresource>
 </RCC>
