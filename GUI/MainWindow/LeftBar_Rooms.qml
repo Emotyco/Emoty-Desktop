@@ -153,7 +153,14 @@ Rectangle {
 				itemLabel.style: "body1"
 				iconName: "awesome/plus"
 
-				onClicked: leftBar.state = "narrow"
+				onClicked: {
+					leftBar.state = "narrow"
+					var component = Qt.createComponent("CreateLobby.qml");
+					if (component.status === Component.Ready) {
+						var createId = component.createObject(main, {"isPrivate": true});
+						createId.show();
+					}
+				}
 			}
 
 			ListItem.Subheader {
@@ -234,7 +241,14 @@ Rectangle {
 				itemLabel.style: "body1"
 				iconName: "awesome/plus"
 
-				onClicked: leftBar.state = "narrow"
+				onClicked: {
+					leftBar.state = "narrow"
+					var component = Qt.createComponent("CreateLobby.qml");
+					if (component.status === Component.Ready) {
+						var createId = component.createObject(main, {"isPrivate": false});
+						createId.show();
+					}
+				}
 			}
 
 			ListItem.Subheader {

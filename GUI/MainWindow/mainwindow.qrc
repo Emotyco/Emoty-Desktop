@@ -29,5 +29,6 @@
         <file>RoomMsgDelegate.qml</file>
         <file>LoadingMask.qml</file>
         <file>ChatGxsCard.qml</file>
+        <file>CreateLobby.qml</file>
     </qresource>
 </RCC>
