@@ -21,6 +21,7 @@
  ****************************************************************/
 
 import QtQuick 2.5
+import QtQuick.Layouts 1.1
 //import QtQuick.Dialogs 1.0
 
 import Material 0.3
@@ -69,10 +70,11 @@ PopupBase {
 	}
 
 	function createIdentity(name) {
+		var anonymous = main.advmode ? !checkBox.enabled : true
 		var jsonData = {
 			callback_name: "createidentity_get_flickable_grid_mode",
 			name: name,
-			pgp_linked: true
+			pgp_linked: anonymous
 		}
 
 		function callbackFn(par) {
@@ -100,12 +102,17 @@ PopupBase {
 		}
 
 		width: dp(350)
-		height: dp(400)
+		height: main.advmode ? dp(430) : dp(400)
 
 		elevation: 5
 		radius: 2 * Units.dp
 		backgroundColor: "white"
 		clip: true
+
+		MouseArea {
+			anchors.fill: parent
+			onClicked: {}
+		}
 
 		Rectangle {
 			id: mask
@@ -253,6 +260,50 @@ PopupBase {
 				mask.enabled = true
 				mask.visible = true
 				createIdentity(name.text)
+			}
+		}
+
+		Item {
+			anchors {
+				top: name.bottom
+				horizontalCenter: parent.horizontalCenter
+			}
+
+			height: dp(50)
+			width: parent.width*0.63
+
+			visible: main.advmode
+			enabled: main.advmode
+			clip: true
+
+			CheckBox {
+				id: checkBox
+				anchors {
+					left: parent.left
+					verticalCenter: parent.verticalCenter
+					leftMargin: -dp(15)
+				}
+
+				darkBackground: false
+			}
+
+			Label {
+				anchors {
+					left: checkBox.right
+					verticalCenter: parent.verticalCenter
+				}
+
+				text: "Anonymous"
+				color: Theme.light.textColor
+
+				MouseArea{
+					anchors.fill: parent
+
+					onClicked: {
+					  checkBox.checked = !checkBox.checked
+					  checkBox.clicked()
+					}
+				}
 			}
 		}
 
