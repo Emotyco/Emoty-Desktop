@@ -71,7 +71,6 @@ PopupBase {
 		elevation: 5
 		radius: 2 * Units.dp
 		backgroundColor: "white"
-		clip: true
 
 		MouseArea {
 			anchors.fill: parent
