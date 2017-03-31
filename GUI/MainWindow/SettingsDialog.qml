@@ -63,6 +63,10 @@ Dialog {
 		scrollingDialog.flickablemode = main.flickablemode
 	}
 
+	Behavior on opacity {
+		NumberAnimation { duration: 200 }
+	}
+
 	Component.onCompleted: {
 		getAdvancedMode()
 		getFlickableGridMode()

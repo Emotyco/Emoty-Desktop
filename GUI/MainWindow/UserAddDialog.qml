@@ -46,6 +46,10 @@ Dialog {
 		rsApi.request("PUT /peers", JSON.stringify(jsonData))
 	}
 
+	Behavior on opacity {
+		NumberAnimation { duration: 200 }
+	}
+
 	Component.onCompleted: getSelfCert()
 
 	function getSelfCert() {
