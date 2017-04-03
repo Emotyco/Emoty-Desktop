@@ -140,6 +140,14 @@ Rectangle {
 
 						leftBar.state = "narrow"
 					}
+
+					Tooltip {
+						text: "Topic: " + model.topic
+							  + (main.advmode
+								   ? "\n" + "Chat Id: " + model.chat_id
+								   : "")
+						mouseArea: ink
+					}
 				}
 			}
 
@@ -187,6 +195,14 @@ Rectangle {
 										   properties: {roomName: model.name, chatId: model.chat_id}})
 
 						leftBar.state = "narrow"
+					}
+
+					Tooltip {
+						text: "Topic: " + model.topic
+							  + (main.advmode
+								   ? "\n" + "Chat Id: " + model.chat_id
+								   : "")
+						mouseArea: ink
 					}
 
 					MouseArea {
@@ -280,6 +296,14 @@ Rectangle {
 					}
 
 					onClicked: openUnsubscribedPublicLobby()
+
+					Tooltip {
+						text: "Topic: " + model.topic
+							  + (main.advmode
+								   ? "\n" + "Chat Id: " + model.chat_id
+								   : "")
+						mouseArea: ink
+					}
 
 					MouseArea {
 						anchors.fill: parent
