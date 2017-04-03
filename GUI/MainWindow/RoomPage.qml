@@ -116,11 +116,11 @@ Item{
 		onRefresh: {
 			updateVisibleRows()
 			if(
-					main.content.col === (parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))>= 14
+					main.content.col === (parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
 										  ? 14
-										  : parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))) &&
+										  : parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))) &&
 					main.content.row === main.visibleRows &&
-					main.content.gridX === Math.floor(((parseInt(gridLayout.width / (50 + gridLayout.columnSpacing)))-main.content.col)/2) &&
+					main.content.gridX === Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-main.content.col)/2) &&
 					main.content.gridY === 0
 					)
 				maximized = true
@@ -166,7 +166,7 @@ Item{
 				right: parent.right
 			}
 
-			height: 35
+			height: dp(35)
 			color: Palette.colors["grey"]["50"]
 			z: 2
 
@@ -222,7 +222,7 @@ Item{
 
 					anchor: Item.TopLeft
 
-					width: 200 * Units.dp
+					width: dp(200)
 					height: dp(2*30)
 
 					enabled: true
@@ -250,9 +250,9 @@ Item{
 									page.tmpRow = main.content.row
 
 									main.content.col = Qt.binding(function() {
-										return parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))>= 14
+										return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
 												? 14
-												: parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))
+												: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))
 									});
 
 									main.content.row = Qt.binding(function() {
@@ -261,7 +261,7 @@ Item{
 									});
 
 									main.content.gridX = Qt.binding(function() {
-										return Math.floor(((parseInt(gridLayout.width / (50 + gridLayout.columnSpacing)))-main.content.col)/2)
+										return Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-main.content.col)/2)
 									});
 
 									main.content.gridY = 0
@@ -299,7 +299,7 @@ Item{
 		DropShadow {
 			anchors.fill: chatHeader
 
-			verticalOffset: 5
+			verticalOffset: dp(5)
 			radius: 30
 			samples: 61
 
@@ -330,7 +330,7 @@ Item{
 				Item {
 					anchors {
 						fill: parent
-						margins: 2
+						margins: dp(2)
 					}
 
 					ListView {
@@ -338,8 +338,8 @@ Item{
 
 						anchors {
 							fill: parent
-							leftMargin: 5
-							rightMargin: 5
+							leftMargin: dp(5)
+							rightMargin: dp(5)
 						}
 
 						clip: true
@@ -366,8 +366,8 @@ Item{
 					right: parent.right
 				}
 
-				height: (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+30)
-													   : (msgBox.contentHeight+22)) < dp(200) ? (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+30) : (msgBox.contentHeight+22)) : dp(200)
+				height: (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(30))
+													   : (msgBox.contentHeight+dp(22))) < dp(200) ? (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(30)) : (msgBox.contentHeight+dp(22))) : dp(200)
 				z: 1
 
 				Behavior on height {
@@ -406,7 +406,7 @@ Item{
 						placeholderText: footerView.width > dp(195) ? "Say hello to your friend"
 																	: "Say hello"
 
-						font.pixelSize: 15 * Units.dp
+						font.pixelSize: dp(15)
 						wrapMode: Text.WordWrap
 
 						horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
@@ -451,7 +451,7 @@ Item{
 				bottom: parent.bottom
 				left: parent.left
 				right: parent.right
-				leftMargin: chat.width < 6*60 ? chat.width - dp(15+32+16) : chat.width*0.7
+				leftMargin: chat.width < 6*dp(60) ? chat.width - dp(15+32+16) : chat.width*0.7
 				rightMargin: dp(15)
 			}
 
@@ -462,10 +462,10 @@ Item{
 
 				anchors.top: parent.top
 
-				visible: chat.width > 6*60
-				enabled: chat.width > 6*60
+				visible: chat.width > 6*dp(60)
+				enabled: chat.width > 6*dp(60)
 
-				height: 45
+				height: dp(45)
 				width: parent.width
 				z: 1
 
@@ -499,7 +499,7 @@ Item{
 
 						font {
 							weight: Font.Light
-							pixelSize: 15 * Units.dp
+							pixelSize: dp(15)
 						}
 
 						focus: true
@@ -519,7 +519,7 @@ Item{
 				id: roomFriendsList
 
 				anchors {
-					top: chat.width < 6*60 ? parent.top : filterItem.bottom
+					top: chat.width < 6*dp(60) ? parent.top : filterItem.bottom
 					bottom: parent.bottom
 					left: parent.left
 					right: parent.right
@@ -572,8 +572,8 @@ Item{
 			contentMargins: dp(8)
 			width: dp(250)
 
-			positiveButtonSize: 13
-			negativeButtonSize: 13
+			positiveButtonSize: dp(13)
+			negativeButtonSize: dp(13)
 
 			Item {
 				anchors {
@@ -592,7 +592,7 @@ Item{
 						rightMargin: dp(8)
 					}
 
-					height: 45
+					height: dp(45)
 					width: parent.width
 					z: 1
 
@@ -624,7 +624,7 @@ Item{
 
 							font {
 								weight: Font.Light
-								pixelSize: 15 * Units.dp
+								pixelSize: dp(15)
 							}
 
 							focus: true

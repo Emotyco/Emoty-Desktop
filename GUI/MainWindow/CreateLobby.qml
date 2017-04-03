@@ -69,7 +69,7 @@ PopupBase {
 		height: main.advmode ? dp(165) : dp(130)
 
 		elevation: 5
-		radius: 2 * Units.dp
+		radius: dp(2)
 		backgroundColor: "white"
 
 		MouseArea {
@@ -98,7 +98,7 @@ PopupBase {
 
 			font {
 				family: "Roboto"
-				pixelSize: 18 * Units.dp
+				pixelSize: dp(18)
 				capitalization: Font.MixedCase
 			}
 
@@ -160,7 +160,7 @@ PopupBase {
 
 			anchors {
 				horizontalCenter: parent.horizontalCenter
-				bottomMargin: 25 * Units.dp
+				bottomMargin: dp(25)
 				bottom: parent.bottom
 			}
 

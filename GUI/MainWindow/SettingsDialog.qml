@@ -38,8 +38,8 @@ Dialog {
 
 	contentMargins: dp(8)
 
-	positiveButtonSize: 13
-	negativeButtonSize: 13
+	positiveButtonSize: dp(13)
+	negativeButtonSize: dp(13)
 
 	onRejected: {
 		var jsonData = {

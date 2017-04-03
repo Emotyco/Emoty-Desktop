@@ -203,7 +203,7 @@ Rectangle {
 
 						anchor: Item.TopLeft
 
-						width: 200 * Units.dp
+						width: dp(200)
 						height: dp(1*30)
 
 						enabled: true
@@ -295,7 +295,7 @@ Rectangle {
 
 						anchor: Item.TopLeft
 
-						width: 200 * Units.dp
+						width: dp(200)
 						height: dp(1*30)
 
 						enabled: true

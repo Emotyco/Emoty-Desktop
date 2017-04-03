@@ -170,7 +170,7 @@ Component {
 					id: overflowMenu
 					objectName: "overflowMenu"
 					overlayLayer: "dialogOverlayLayer"
-					width: 200 * Units.dp
+					width: dp(200)
 					height: dp(1*30)
 					enabled: true
 					anchor: Item.TopLeft
@@ -196,14 +196,14 @@ Component {
 
 					anchors.verticalCenter: parent.verticalCenter
 
-					x: 10
-					width: 40
-					height: 40
+					x: dp(10)
+					width: dp(40)
+					height: dp(40)
 
 					name: "awesome/chevron_down"
 					color: "#9E9E9E"
 
-					size: 15 * Units.dp
+					size: dp(15)
 
 					state: "rotated"
 					states: [
@@ -232,8 +232,8 @@ Component {
 				Item{
 					id: text
 
-					x: 60
-					width: 151
+					x: dp(60)
+					width: dp(151)
 					height: parent.height
 
 					Text {
@@ -246,7 +246,7 @@ Component {
 
 						font {
 							family: "Roboto"
-							pixelSize: 14
+							pixelSize: dp(14)
 						}
 
 						verticalAlignment: Text.AlignVCenter
@@ -264,7 +264,7 @@ Component {
 
 						font {
 							family: "Roboto"
-							pixelSize: 12
+							pixelSize: dp(12)
 						}
 
 						verticalAlignment: Text.AlignTop
@@ -276,11 +276,11 @@ Component {
 					anchors {
 						verticalCenter: parent.verticalCenter
 						right: parent.right
-						rightMargin: friendroot.unread_msgs > 0 ? 10 : 15
+						rightMargin: friendroot.unread_msgs > 0 ? dp(10) : dp(15)
 					}
 
-					width: friendroot.unread_msgs > 0 ? 20 : 10
-					height: friendroot.unread_msgs > 0 ? 20 : 10
+					width: friendroot.unread_msgs > 0 ? dp(20) : dp(10)
+					height: friendroot.unread_msgs > 0 ? dp(20) : dp(10)
 
 					radius: width/2
 					color: statuscolor

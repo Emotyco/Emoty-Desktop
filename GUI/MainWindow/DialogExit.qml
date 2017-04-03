@@ -128,7 +128,7 @@ PopupBase {
 
 		z: 2
 		elevation: 5
-		radius: 2 * Units.dp
+		radius: dp(2)
 		backgroundColor: "white"
 
 		MouseArea {
@@ -245,7 +245,7 @@ PopupBase {
 
 			Item {
 				width: parent.width
-				height: 20 * Units.dp
+				height: dp(20)
 
 				visible: titleLabel.visible
 			}
@@ -274,8 +274,8 @@ PopupBase {
 						leftMargin: dp(9)
 					}
 
-					y: -7
-					spacing: -10
+					y: -dp(7)
+					spacing: -dp(10)
 
 					CheckBox {
 						id: checkBox

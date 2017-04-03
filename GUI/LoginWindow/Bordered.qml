@@ -386,7 +386,7 @@ Rectangle
 
 								model: locationsModel.model
 								delegate: ListItem.Standard {
-									height: 40
+									height: dp(40)
 									text: model.name
 									onClicked: {
 										listView.currentIndex = index
@@ -438,8 +438,8 @@ Rectangle
 							leftMargin: dp(29)
 						}
 
-						y: -20
-						spacing: -10
+						y: -dp(20)
+						spacing: -dp(10)
 
 						CheckBox {
 							id: checkBox
@@ -665,7 +665,7 @@ Rectangle
 
 
 					Item {
-						width: 1
+						width: dp(1)
 						height: parent.height*0.15
 					}
 

@@ -297,7 +297,7 @@ View {
 			NumberAnimation {
 				target: leftBar
 				property: "anchors.leftMargin"
-				from: -50
+				from: -dp(50)
 				to: 0
 				duration: MaterialAnimation.pageTransitionDuration
 			}

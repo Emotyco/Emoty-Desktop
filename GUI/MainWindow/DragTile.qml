@@ -166,7 +166,7 @@ Item {
 			verticalCenter: parent.verticalCenter
 		}
 
-		width: 5
+		width: dp(5)
 		height: parent.height
 
 		MouseArea {
@@ -196,8 +196,8 @@ Item {
 				if(drag.active) {
 					root.width = root.width - mouseX
 					root.x = root.x + mouseX
-					if(root.width < 30)
-						root.width = 30
+					if(root.width < dp(30))
+						root.width = dp(30)
 				}
 			}
 			onReleased: {
@@ -224,7 +224,7 @@ Item {
 			verticalCenter: parent.verticalCenter
 		}
 
-		width: 5
+		width: dp(5)
 		height: parent.height
 
 		MouseArea {
@@ -253,8 +253,8 @@ Item {
 			onMouseXChanged: {
 				if(drag.active) {
 					root.width = root.width + mouseX
-					if(root.width < 30)
-						root.width = 30
+					if(root.width < dp(30))
+						root.width = dp(30)
 				}
 			}
 
@@ -280,7 +280,7 @@ Item {
 		}
 
 		width: parent.width
-		height: 5
+		height: dp(5)
 
 		MouseArea {
 			id: topMA
@@ -309,8 +309,8 @@ Item {
 				if(drag.active) {
 					root.height = root.height - mouseY
 					root.y = root.y + mouseY
-					if(root.height < 30)
-						root.height = 30
+					if(root.height < dp(30))
+						root.height = dp(30)
 				}
 			}
 			onReleased: {
@@ -336,7 +336,7 @@ Item {
 		}
 
 		width: parent.width
-		height: 5
+		height: dp(5)
 
 		MouseArea {
 			id: botMA
@@ -364,14 +364,14 @@ Item {
 			onMouseXChanged: {
 				if(drag.active) {
 					root.height = root.height + mouseY
-					if(root.height < 30)
-						root.height = 30
+					if(root.height < dp(30))
+						root.height = dp(30)
 				}
 			}
 
 			onReleased: {
 				if(root.Drag.target !== null) {
-					var rows = Math.round(root.height/(50 + gridLayout.rowSpacing))
+					var rows = Math.round(root.height/(dp(50) + gridLayout.rowSpacing))
 					root.row = rows
 					root.refresh()
 				}
@@ -389,7 +389,8 @@ Item {
 
 		anchors.centerIn: parent
 
-		width: parent.width - 10; height: parent.height - 10
+		width: parent.width - dp(10)
+		height: parent.height - dp(10)
 
 		drag.target: root
 

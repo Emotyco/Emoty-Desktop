@@ -30,8 +30,8 @@ Dialog {
 	positiveButtonText: "Cancel"
 	negativeButtonText: "Add"
 
-	positiveButtonSize: 13
-	negativeButtonSize: 13
+	positiveButtonSize: dp(13)
+	negativeButtonSize: dp(13)
 
 	onRejected: {
 		var jsonData = {
@@ -91,7 +91,7 @@ Dialog {
 					right: parent.right
 				}
 
-				height: 35
+				height: dp(35)
 
 				text: "It's your certificate. Share it with friends."
 				textFormat: Text.PlainText
@@ -100,20 +100,20 @@ Dialog {
 
 				font {
 					family: "Roboto"
-					pixelSize: 16 * Units.dp
+					pixelSize: dp(16)
 				}
 			}
 
 			TextArea {
 				anchors {
 					fill: parent
-					topMargin: 35
+					topMargin: dp(35)
 				}
 
 				text: myKey.replace(/(\r\n|\n|\r)/gm,"")
 				textFormat: Text.PlainText
 				wrapMode: Text.WrapAnywhere
-				font.pixelSize: 12 * Units.dp
+				font.pixelSize: dp(12)
 			}
 		}
 
@@ -127,7 +127,7 @@ Dialog {
 					right: parent.right
 				}
 
-				height: 35
+				height: dp(35)
 
 				text: "Paste your friend's certificate here"
 				textFormat: Text.PlainText
@@ -135,7 +135,7 @@ Dialog {
 
 				font {
 					family: "Roboto"
-					pixelSize: 16 * Units.dp
+					pixelSize: dp(16)
 				}
 			}
 
@@ -144,13 +144,13 @@ Dialog {
 
 				anchors {
 					fill: parent
-					topMargin: 35
+					topMargin: dp(35)
 				}
 
 				placeholderText: myKey.replace(/(\r\n|\n|\r)/gm,"")
 				textFormat: Text.PlainText
 				wrapMode: Text.WrapAnywhere
-				font.pixelSize: 12 * Units.dp
+				font.pixelSize: dp(12)
 			}
 		}
 	}

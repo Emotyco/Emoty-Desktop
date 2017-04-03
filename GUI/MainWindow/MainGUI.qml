@@ -42,7 +42,7 @@ Rectangle {
 
 	property Item controls: controlView
 
-	property int visibleRows: Math.round((main.height-dp(30))/(50 + gridLayout.rowSpacing))
+	property int visibleRows: Math.round((main.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
 
 	property alias pageStack: __pageStack
 	property alias gridLayout: gridLayout
@@ -328,7 +328,7 @@ Rectangle {
 			NumberAnimation {
 				target: controlView;
 				property: "anchors.rightMargin";
-				from: -50;
+				from: -dp(50);
 				to: 0;
 				duration: MaterialAnimation.pageTransitionDuration
 			}
@@ -356,7 +356,7 @@ Rectangle {
                         topMargin: dp(12)
                     }
 
-                    spacing: 5 * Units.dp
+                    spacing: dp(5)
 
                     Item {
                         width: dp(26)
@@ -370,7 +370,7 @@ Rectangle {
                                 margins: dp(4)
                             }
 
-                            width: parent.width-8
+                            width: parent.width-dp(8)
                             height: dp(2)
 
                             color: Palette.colors["grey"]["500"]
@@ -488,7 +488,7 @@ Rectangle {
 
 		clip: true
 		interactive: flickablemode
-		contentHeight: Math.max(gridLayout.implicitHeight + 40, height)
+		contentHeight: Math.max(gridLayout.implicitHeight + dp(40), height)
 
 		GridLayout {
 			id: gridLayout
@@ -511,8 +511,8 @@ Rectangle {
 
 			columns: parseInt(gridLayout.width / dp(60))
 			columnSpacing: dp(10)
-			rowSpacing: h<650 ? (h-((rowspace-1)*50))/(rowspace-2)
-							  : (h-((rowspace-2)*50))/(rowspace-3)
+			rowSpacing: h<dp(650) ? (h-((rowspace-1)*dp(50)))/(rowspace-2)
+							  : (h-((rowspace-2)*dp(50)))/(rowspace-3)
 
 			onColumnsChanged: main.gridChanged()
 
@@ -538,13 +538,13 @@ Rectangle {
 				width: 0
 				height: 0
 
-				col: parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))>= 14
+				col: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
 					    ? 14
-						: parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))
+						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))
 
 				row: main.visibleRows
 
-				gridX: Math.floor(((parseInt(gridLayout.width / (50 + gridLayout.columnSpacing)))-content.col)/2)
+				gridX: Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-content.col)/2)
 
 				Behavior on col {
 					ScriptAction {
@@ -612,7 +612,7 @@ Rectangle {
 
 	function updateVisibleRows() {
 		main.visibleRows = Qt.binding(function() {
-			return Math.round((main.height-dp(30))/(50 + gridLayout.rowSpacing))
+			return Math.round((main.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
 		});
 	}
 
@@ -665,10 +665,23 @@ Rectangle {
 			var chat = component.createObject(gridLayout,
 											  {"name": friendname,
 												"gxsId": gxsid});
-			chat.col = 5;
 			updateVisibleRows()
-			chat.row = main.visibleRows;
-			chat.gridY = 0;
+
+			chat.col = Qt.binding(function() {
+				return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 11
+						? 11
+						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)) || 1
+			})
+			chat.row = Qt.binding(function() {
+				return main.visibleRows
+			})
+			chat.gridY = 0
+			chat.gridX = Qt.binding(function() {
+				return Math.floor(
+							((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-chat.col)/2
+						)
+			})
+
 			gridLayout.reorder()
 		}
 	}
@@ -680,10 +693,23 @@ Rectangle {
 											  {"name": friendname,
 											   "chatId": chat_id,
 											   "rsPeerId": rspeerid});
-			chat.col = 5;
 			updateVisibleRows()
-			chat.row = main.visibleRows;
-			chat.gridY = 0;
+
+			chat.col = Qt.binding(function() {
+				return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 11
+						? 11
+						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)) || 1
+			})
+			chat.row = Qt.binding(function() {
+				return main.visibleRows
+			})
+			chat.gridY = 0
+			chat.gridX = Qt.binding(function() {
+				return Math.floor(
+							((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-chat.col)/2
+						)
+			})
+
 			gridLayout.reorder()
 		}
 	}

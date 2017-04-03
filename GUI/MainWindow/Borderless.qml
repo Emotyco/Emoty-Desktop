@@ -34,11 +34,11 @@ Rectangle {
 				left: parent.left
 				top: parent.top
 				bottom: parent.bottom
-				bottomMargin: 5
-				topMargin: 5
+				bottomMargin: 5 * Units.dp
+				topMargin: 5 * Units.dp
 			}
 
-			width: 5
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 			onEntered: cursor.changeCursor(Qt.SizeHorCursor)
@@ -55,11 +55,11 @@ Rectangle {
 				right: parent.right
 				top: parent.top
 				bottom: parent.bottom
-				bottomMargin: 5
-				topMargin: 5
+				bottomMargin: 5 * Units.dp
+				topMargin: 5 * Units.dp
 			}
 
-			width: 5
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 			preventStealing: true
@@ -78,11 +78,11 @@ Rectangle {
 				top: parent.top
 				right: parent.right
 				left: parent.left
-				leftMargin: 5
-				rightMargin: 5
+				leftMargin: 5 * Units.dp
+				rightMargin: 5 * Units.dp
 			}
 
-			height: 5
+			height: 5 * Units.dp
 
 			hoverEnabled: enabled
 
@@ -100,11 +100,11 @@ Rectangle {
 				bottom: parent.bottom
 				right: parent.right
 				left: parent.left
-				leftMargin: 5
-				rightMargin: 5
+				leftMargin: 5 * Units.dp
+				rightMargin: 5 * Units.dp
 			}
 
-			height: 5
+			height: 5 * Units.dp
 
 			hoverEnabled: enabled
 
@@ -123,8 +123,8 @@ Rectangle {
 				left: parent.left
 			}
 
-			height: 5
-			width: 5
+			height: 5 * Units.dp
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 
@@ -143,8 +143,8 @@ Rectangle {
 				right: parent.right
 			}
 
-			height: 5
-			width: 5
+			height: 5 * Units.dp
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 
@@ -163,8 +163,8 @@ Rectangle {
 				left: parent.left
 			}
 
-			height: 5
-			width: 5
+			height: 5 * Units.dp
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 
@@ -183,8 +183,8 @@ Rectangle {
 				right: parent.right
 			}
 
-			height: 5
-			width: 5
+			height: 5 * Units.dp
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 			preventStealing: true
@@ -201,7 +201,7 @@ Rectangle {
 		MouseArea {
 			anchors {
 				fill: parent
-				margins: 5
+				margins: 5 * Units.dp
 			}
 
 			acceptedButtons: Qt.LeftButton

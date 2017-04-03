@@ -62,7 +62,7 @@ Component {
 					NumberAnimation {
 						target: icons
 						property: "y"
-						from: 40
+						from: dp(40)
 						to: 0
 						duration: MaterialAnimation.pageTransitionDuration
 					}
@@ -78,7 +78,7 @@ Component {
 						target: text
 						property: "y"
 						from: 0
-						to: -40
+						to: -dp(40)
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 					NumberAnimation {
@@ -97,7 +97,7 @@ Component {
 					NumberAnimation {
 						target: text
 						property: "y"
-						from: -40
+						from: -dp(40)
 						to: 0
 						duration: MaterialAnimation.pageTransitionDuration
 					}
@@ -113,7 +113,7 @@ Component {
 						target: icons
 						property: "y"
 						from: 0
-						to: 40
+						to: dp(40)
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 					NumberAnimation {
@@ -160,7 +160,7 @@ Component {
 				id: overflowMenu
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
-				width: 200 * Units.dp
+				width: dp(200)
 				height: dp(1*30)
 				enabled: true
 				anchor: Item.TopLeft
@@ -189,9 +189,9 @@ Component {
 
 				anchors.verticalCenter: parent.verticalCenter
 
-				x: 14
-				width: 32
-				height: 32
+				x: dp(14)
+				width: dp(32)
+				height: dp(32)
 
 				Component.onCompleted:loadImage("avatar.png")
 				onPaint: {
@@ -220,8 +220,8 @@ Component {
 			Item {
 				id: text
 
-				x: 60
-				width: 151
+				x: dp(60)
+				width: dp(151)
 				height: parent.height
 
 				Text {
@@ -233,7 +233,7 @@ Component {
 
 					font {
 						family: "Roboto"
-						pixelSize: 14
+						pixelSize: dp(14)
 					}
 
 					verticalAlignment: Text.AlignVCenter
@@ -250,7 +250,7 @@ Component {
 
 					font {
 						family: "Roboto"
-						pixelSize: 12
+						pixelSize: dp(12)
 					}
 
 					verticalAlignment: Text.AlignTop
@@ -262,8 +262,8 @@ Component {
 				id: icons
 
 				height: parent.height
-				x: 60
-				y: 50
+				x: dp(60)
+				y: dp(50)
 
 				Icon {
 					id: circle1
@@ -276,7 +276,7 @@ Component {
 					visible: true
 					color: Theme.light.iconColor
 
-					size: 31 * Units.dp
+					size: dp(31)
 
 					Rectangle {
 						anchors {
@@ -320,14 +320,14 @@ Component {
 
 					anchors.verticalCenter: parent.verticalCenter
 
-					x: 40
+					x: dp(40)
 					height: parent.height
 
 					name: "awesome/phone"
 					visible: true
 					color: Theme.light.iconColor
 
-					size: 31 * Units.dp
+					size: dp(31)
 
 					MouseArea {
 						anchors.fill: parent
@@ -339,14 +339,14 @@ Component {
 
 					anchors.verticalCenter: parent.verticalCenter
 
-					x: 80
+					x: dp(80)
 					height: parent.height
 
 					name: "awesome/video_camera"
 					visible: true
 					color: Theme.light.hintColor
 
-					size: 31 * Units.dp
+					size: dp(31)
 
 					MouseArea {
 						anchors.fill: parent
@@ -359,11 +359,11 @@ Component {
 				anchors {
 					verticalCenter: parent.verticalCenter
 					right: parent.right
-					rightMargin: model.unread_msgs > 0 ? 10 : 15
+					rightMargin: model.unread_msgs > 0 ? dp(10) : dp(15)
 				}
 
-				width: model.unread_msgs > 0 ? 20 : 10
-				height: model.unread_msgs > 0 ? 20 : 10
+				width: model.unread_msgs > 0 ? dp(20) : dp(10)
+				height: model.unread_msgs > 0 ? dp(20) : dp(10)
 
 				radius: width/2
 				color: statuscolor

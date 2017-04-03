@@ -105,7 +105,7 @@ PopupBase {
 		height: main.advmode ? dp(430) : dp(400)
 
 		elevation: 5
-		radius: 2 * Units.dp
+		radius: dp(2)
 		backgroundColor: "white"
 		clip: true
 
@@ -252,7 +252,7 @@ PopupBase {
 
 			font {
 				family: "Roboto"
-				pixelSize: 18 * Units.dp
+				pixelSize: dp(18)
 				capitalization: Font.MixedCase
 			}
 
@@ -318,7 +318,7 @@ PopupBase {
 
 			anchors {
 				horizontalCenter: parent.horizontalCenter
-				bottomMargin: 25 * Units.dp
+				bottomMargin: dp(25)
 				bottom: parent.bottom
 			}
 

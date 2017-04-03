@@ -91,7 +91,7 @@ Rectangle {
 			DropShadow {
 				anchors.fill: avatarRect
 
-				verticalOffset: 2
+				verticalOffset: dp(2)
 				radius: 6
 				samples: 8
 
@@ -113,7 +113,7 @@ Rectangle {
 
 				font {
 					family: "Roboto"
-					pixelSize: 17
+					pixelSize: dp(17)
 				}
 
 				verticalAlignment: Text.AlignVCenter

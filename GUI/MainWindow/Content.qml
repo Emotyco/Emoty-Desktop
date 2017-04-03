@@ -46,11 +46,11 @@ Item {
 		onRefresh: {
 			updateVisibleRows()
 			if(
-					main.content.col === (parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))>= 14
+					main.content.col === (parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
 									  ? 14
-									  : parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))) &&
+									  : parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))) &&
 				main.content.row === main.visibleRows &&
-				main.content.gridX === Math.floor(((parseInt(gridLayout.width / (50 + gridLayout.columnSpacing)))-main.content.col)/2) &&
+				main.content.gridX === Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-main.content.col)/2) &&
 				main.content.gridY === 0
 				)
 				maximized = true
@@ -80,7 +80,7 @@ Item {
 
 				anchor: Item.TopLeft
 
-				width: 200 * Units.dp
+				width: dp(200)
 				height: dp(2*30)
 
 				enabled: true
@@ -106,15 +106,15 @@ Item {
 								page.tmpRow = main.content.row
 
 								main.content.col = Qt.binding(function() {
-									return parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))>= 14
+									return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
 											    ? 14
-												: parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))
+												: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))
 								});
 								main.content.row = Qt.binding(function() {
 									updateVisibleRows(); return main.visibleRows
 								});
 								main.content.gridX = Qt.binding(function() {
-									return Math.floor(((parseInt(gridLayout.width / (50 + gridLayout.columnSpacing)))-main.content.col)/2)
+									return Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-main.content.col)/2)
 								});
 								main.content.gridY = 0
 
@@ -152,7 +152,7 @@ Item {
 			NumberAnimation {
 				target: content
 				property: "anchors.bottomMargin"
-				from: -50
+				from: -dp(50)
 				to: 0
 				duration: MaterialAnimation.pageTransitionDuration
 			}

@@ -174,7 +174,6 @@ View {
 			top: parent.top
 			left: parent.left
 			right: parent.right
-			//rightMargin: dp(3)
 		}
 
 		state: "bigGxsBox"
@@ -222,7 +221,7 @@ View {
 
 				font {
 					family: "Roboto"
-					pixelSize: 16 * Units.dp
+					pixelSize: dp(16)
 					capitalization: Font.MixedCase
 				}
 
@@ -469,8 +468,8 @@ View {
 					if(drag.active) {
 						pgpBox.height = pgpBox.height - mouseY
 
-						if(pgpBox.height < 50)
-							pgpBox.height = 50
+						if(pgpBox.height < dp(50))
+							pgpBox.height = dp(50)
 						else if(pgpBox.height > rightBar.height-dp(50))
 							pgpBox.height = rightBar.height-dp(50)
 
@@ -510,7 +509,7 @@ View {
 				name: "awesome/chevron_down"
 				color: "white"
 
-				size: 20 * Units.dp
+				size: dp(20)
 
 				Behavior on rotation {
 					NumberAnimation {
@@ -560,7 +559,7 @@ View {
 		NumberAnimation {
 			target: rightBar
 			property: "anchors.rightMargin"
-			from: -50
+			from: -dp(50)
 			to: 0
 			duration: MaterialAnimation.pageTransitionDuration
 		}

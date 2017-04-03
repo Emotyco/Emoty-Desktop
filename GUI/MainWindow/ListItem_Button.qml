@@ -19,8 +19,8 @@ ListItem.BaseListItem {
 	property alias iconColor: icon.color
 	property alias spacing: row.spacing
 
-	implicitHeight: 48 * Units.dp
-	height: 48 * Units.dp
+	implicitHeight: dp(48)
+	height: dp(48)
 
 	dividerInset: actionItem.visible ? listItem.height : 0
 
@@ -43,7 +43,7 @@ ListItem.BaseListItem {
 			rightMargin: listItem.margins
 		}
 
-		spacing: 16 * Units.dp
+		spacing: dp(16)
 
 		ColumnLayout {
 			Layout.alignment: Qt.AlignVCenter
@@ -66,7 +66,7 @@ ListItem.BaseListItem {
 		Item {
 			id: actionItem
 
-			Layout.preferredWidth: 40 * Units.dp
+			Layout.preferredWidth: dp(40)
 			Layout.preferredHeight: width
 			Layout.alignment: Qt.AlignCenter
 
@@ -84,7 +84,7 @@ ListItem.BaseListItem {
 				color: listItem.selected ? Theme.primaryColor
 										: darkBackground ? Theme.dark.iconColor : Theme.light.iconColor
 
-				size: 20 * Units.dp
+				size: dp(20)
 			}
 		}
 	}

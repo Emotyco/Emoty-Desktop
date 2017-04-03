@@ -130,7 +130,7 @@ DragTile {
 				right: parent.right
 			}
 
-			height: 35
+			height: dp(35)
 
 			color: Palette.colors["grey"]["50"]
 			z: 2
@@ -148,7 +148,7 @@ DragTile {
 						horizontalCenter: parent.horizontalCenter
 					}
 
-					width: parent.width > (9*60+dp(30)) ? 9*60 : (parent.width-dp(30))
+					width: parent.width > dp(9*60+(30)) ? dp(9*60) : (parent.width-dp(30))
 
 					Rectangle {
 						anchors {
@@ -240,7 +240,7 @@ DragTile {
 
 					anchor: Item.TopLeft
 
-					width: 200 * Units.dp
+					width: dp(200)
 					height: dp(2*30)
 
 					enabled: true
@@ -309,7 +309,7 @@ DragTile {
 		DropShadow {
 			anchors.fill: chatHeader
 
-			verticalOffset: 5
+			verticalOffset: dp(5)
 			radius: 30
 			samples: 61
 
@@ -325,12 +325,12 @@ DragTile {
 				horizontalCenter: parent.horizontalCenter
 			}
 
-			width: parent.width > (9*60+dp(30)) ? 9*60 : (parent.width-dp(30))
+			width: parent.width > dp(9*60+(30)) ? dp(9*60) : (parent.width-dp(30))
 
 			Item {
 				anchors {
 					fill: parent
-					margins: 2
+					margins: dp(2)
 				}
 
 				ListView {
@@ -338,8 +338,8 @@ DragTile {
 
 					anchors {
 						fill: parent
-						leftMargin: 5
-						rightMargin: 5
+						leftMargin: dp(5)
+						rightMargin: dp(5)
 					}
 
 					clip: true
@@ -366,8 +366,8 @@ DragTile {
 				right: parent.right
 			}
 
-			height: (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+30) : (msgBox.contentHeight+22)) < dp(200)
-					    ? (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+30) : (msgBox.contentHeight+22))
+			height: (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(30)) : (msgBox.contentHeight+dp(22))) < dp(200)
+					    ? (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(30)) : (msgBox.contentHeight+dp(22)))
 						: dp(200)
 
 			z: 1
@@ -386,7 +386,7 @@ DragTile {
 					bottomMargin: dp(10)
 				}
 
-				width: parent.width > (9*60+dp(30)) ? 9*60 : (parent.width-dp(30))
+				width: parent.width > dp(9*60+(30)) ? dp(9*60) : (parent.width-dp(30))
 
 				radius: 10
 				elevation: 1
@@ -406,7 +406,7 @@ DragTile {
 
 					placeholderText: footerView.width > dp(195) ? "Say hello to your friend" : "Say hello"
 
-					font.pixelSize: 15 * Units.dp
+					font.pixelSize: dp(15)
 
 					wrapMode: Text.WordWrap
 					frameVisible: false
