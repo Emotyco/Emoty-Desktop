@@ -196,6 +196,48 @@ Rectangle {
 		tabHighlightColor: "white"
 	}
 
+	MouseArea {
+		property bool controlPressed
+
+		anchors.fill: parent
+
+		z: -1
+		focus: true
+		acceptedButtons: Qt.MidButton | Qt.LeftButton
+
+		Keys.onPressed: {
+			if(event.key == Qt.Key_Control)
+				controlPressed = true
+		}
+
+		Keys.onReleased: {
+			if(event.key == Qt.Key_Control)
+				controlPressed = false
+		}
+
+		onClicked: {
+			mouse.accepted = false
+			focus = true
+		}
+
+		onPressed: {
+			mouse.accepted = false
+		}
+
+		onWheel: {
+			wheel.accepted = false
+			if(controlPressed)
+				if(wheel.angleDelta.y > 0 && Units.multiplier < 2) {
+					Units.setMultiplier(Units.multiplier+0.1)
+					wheel.accepted = true
+				}
+				else if(wheel.angleDelta.y < 0 && Units.multiplier > 0.2) {
+					Units.setMultiplier(Units.multiplier-0.1)
+					wheel.accepted = true
+				}
+		}
+	}
+
 	Image {
 		anchors {
 			left: leftBar.right

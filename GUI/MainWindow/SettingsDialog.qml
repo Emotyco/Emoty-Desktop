@@ -33,6 +33,8 @@ Dialog {
 	property bool advmode: main.advmode
 	property bool flickablemode: main.flickablemode
 
+	property real approximationSize: Units.multiplier
+
 	positiveButtonText: "Cancel"
 	negativeButtonText: "Apply"
 
@@ -56,11 +58,14 @@ Dialog {
 
 		main.advmode = scrollingDialog.advmode
 		main.flickablemode = scrollingDialog.flickablemode
+
+		Units.setMultiplier(approximationSize)
 	}
 
 	onOpened: {
 		scrollingDialog.advmode = main.advmode
 		scrollingDialog.flickablemode = main.flickablemode
+		scrollingDialog.approximationSize = Units.multiplier
 	}
 
 	Behavior on opacity {
@@ -213,6 +218,65 @@ Dialog {
 							switch3.checked = Qt.binding(function() {
 								return scrollingDialog.advmode
 							})
+						}
+					}
+
+					Rectangle {
+						height: dp(55)
+						width: parent.width
+						clip: false
+
+						color: mA.containsMouse ? Qt.rgba(0,0,0,0.03) : Qt.rgba(0,0,0,0)
+
+						MouseArea {
+							id: mA
+							anchors.fill: parent
+
+							hoverEnabled: Device.hoverEnabled
+						}
+
+						Label {
+							anchors {
+								left: parent.left
+								top: parent.top
+								bottom: parent.bottom
+								margins: dp(16)
+							}
+
+							text: "Approximation size"
+							elide: Text.ElideRight
+							style: "subheading"
+							color: Theme.light.textColor
+						}
+
+						Slider {
+							id: slider
+
+							anchors {
+								right: parent.right
+								bottom: parent.bottom
+								rightMargin: dp(16)
+								bottomMargin: parent.height/2-dp(8)
+							}
+
+							height: parent.height
+
+							value: approximationSize*100
+
+							numericValueLabel: true
+							stepSize: 10
+							minimumValue: 10
+							maximumValue: 200
+							knobLabel: value + "%"
+							knobDiameter: dp(35)
+
+							Behavior on knobLabel{
+								ScriptAction {
+									script: {
+										approximationSize = slider.value/100
+									}
+								}
+							}
 						}
 					}
 				}
