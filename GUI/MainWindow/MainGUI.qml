@@ -644,7 +644,13 @@ Rectangle {
 		positiveButtonText: "Yes"
 		negativeButtonText: "No"
 
-		onAccepted: Qt.quit()
+		onAccepted: {
+			function callbackFn(par) {
+				Qt.quit()
+			}
+
+			rsApi.request("/control/shutdown/", "", callbackFn)
+		}
 	}
 
 	SettingsDialog {
