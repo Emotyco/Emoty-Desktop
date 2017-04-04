@@ -3,6 +3,7 @@
  *  Sonet is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
+ *  Copyright (C) 2017, Gioacchino Mazzurco <gio@eigenlab.org>
  *
  *  Sonet is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -663,7 +664,7 @@ Rectangle {
 	///////
 	// Code made by Gioacchino Mazzurco
 	// Github: https://github.com/G10h4ck
-	//////
+
 	property var tokens: ({})
 
 	function registerToken(token, callback)
