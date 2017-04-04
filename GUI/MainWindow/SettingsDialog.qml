@@ -78,27 +78,19 @@ Dialog {
 	}
 
 	function getAdvancedMode() {
-		var jsonData = {
-			callback_name: "settingsdialog_get_advanced_mode"
-		}
-
 		function callbackFn(par) {
 			scrollingDialog.advmode = Boolean(JSON.parse(par.response).data.advanced_mode)
 		}
 
-		rsApi.request("/settings/get_advanced_mode/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/settings/get_advanced_mode/", "", callbackFn)
 	}
 
 	function getFlickableGridMode() {
-		var jsonData = {
-			callback_name: "settingsdialog_get_flickable_grid_mode"
-		}
-
 		function callbackFn(par) {
 			scrollingDialog.flickablemode = Boolean(JSON.parse(par.response).data.flickable_grid_mode)
 		}
 
-		rsApi.request("/settings/get_flickable_grid_mode/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/settings/get_flickable_grid_mode/", "", callbackFn)
 	}
 
 	Label {

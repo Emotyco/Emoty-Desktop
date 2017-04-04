@@ -88,23 +88,15 @@ DragTile {
 	}
 
 	function getChatMessages() {
-		if(drag.chatId == "")
-			return
+		function callbackFn(par) {
+			msgModel.json = par.response
+			contentm.positionViewAtEnd()
 
-		if(!main.isTokenValid(stateToken)) {
-			var jsonData = {
-				callback_name: "chatcardpeer_chat_messages"+drag.chatId
-			}
-
-			function callbackFn(par) {
-				msgModel.json = par.response
-				contentm.positionViewAtEnd()
-				stateToken = JSON.parse(par.response).statetoken
-				main.pushToken(stateToken)
-			}
-
-			rsApi.request("/chat/messages/"+drag.chatId, JSON.stringify(jsonData), callbackFn)
+			stateToken = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken, getChatMessages)
 		}
+
+		rsApi.request("/chat/messages/"+drag.chatId, "", callbackFn)
 	}
 
 	Component.onCompleted: drag.getChatMessages()
@@ -438,14 +430,6 @@ DragTile {
 					}
 				}
 			}
-		}
-
-		Timer {
-			interval: 1000
-			repeat: true
-			running: true
-
-			onTriggered: drag.getChatMessages()
 		}
 	}
 }

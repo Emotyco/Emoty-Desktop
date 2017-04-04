@@ -93,7 +93,6 @@ DragTile {
 
 	function initiateChat() {
 		var jsonData = {
-			callback_name: "chatgxscard_chat_initiate_distant_chat"+drag.gxsId,
 			own_gxs_hex: main.defaultGxsId,
 			remote_gxs_hex: drag.gxsId
 		}
@@ -108,12 +107,16 @@ DragTile {
 
 	function checkChatStatus() {
 		var jsonData = {
-			callback_name: "chatgxscard_chat_distant_chat_status"+drag.gxsId,
 			chat_id: drag.chatId
 		}
 
 		function callbackFn(par) {
-			status = String(JSON.parse(par.response).data.status)
+			if(status != String(JSON.parse(par.response).data.status)) {
+				status = String(JSON.parse(par.response).data.status)
+				if(status == 2)
+					drag.getChatMessages()
+			}
+
 		}
 
 		rsApi.request("/chat/distant_chat_status/", JSON.stringify(jsonData), callbackFn)
@@ -121,7 +124,6 @@ DragTile {
 
 	function closeChat() {
 		var jsonData = {
-			callback_name: "chatgxscard_chat_close_distant_chat"+drag.gxsId,
 			distant_chat_hex: drag.chatId
 		}
 
@@ -129,23 +131,18 @@ DragTile {
 	}
 
 	function getChatMessages() {
-		if(drag.chatId == "")
+		if (drag.chatId == "")
 			return
 
-		if(!main.isTokenValid(stateToken)) {
-			var jsonData = {
-				callback_name: "chatgxscard_chat_messages"+drag.chatId
-			}
+		function callbackFn(par) {
+			msgModel.json = par.response
+			contentm.positionViewAtEnd()
 
-			function callbackFn(par) {
-				msgModel.json = par.response
-				contentm.positionViewAtEnd()
-				stateToken = JSON.parse(par.response).statetoken
-				main.pushToken(stateToken)
-			}
-
-			rsApi.request("/chat/messages/"+drag.chatId, JSON.stringify(jsonData), callbackFn)
+			stateToken = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken, getChatMessages)
 		}
+
+		rsApi.request("/chat/messages/"+drag.chatId, "", callbackFn)
 	}
 
 	Component.onCompleted: drag.initiateChat()
@@ -630,12 +627,7 @@ DragTile {
 			repeat: true
 			running: false
 
-			onTriggered: {
-				drag.checkChatStatus()
-
-				if(drag.status == 2)
-					drag.getChatMessages()
-			}
+			onTriggered: drag.checkChatStatus()
 		}
 	}
 }

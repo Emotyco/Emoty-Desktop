@@ -49,60 +49,38 @@ Item{
 	//
 
 	function getLobbyParticipants() {
-		if(!main.isTokenValid(stateToken_p)) {
-			var jsonData = {
-				callback_name: "roompage_chat_lobby_participants"+chatId
-			}
-
-			function callbackFn(par) {
-				lobbyParticipantsModel.json = par.response
-
-				stateToken_p = JSON.parse(par.response).statetoken
-				main.pushToken(stateToken_p)
-			}
-
-			rsApi.request("/chat/lobby_participants/"+chatId, JSON.stringify(jsonData), callbackFn)
+		function callbackFn(par) {
+			lobbyParticipantsModel.json = par.response
+			stateToken_p = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_p, getLobbyParticipants)
 		}
+
+		rsApi.request("/chat/lobby_participants/"+chatId, "", callbackFn)
 	}
 
 	function getLobbyMessages() {
 		if(firstTime_msg)
-			loadingMask.show()
+			firstTime_msg = false
 
-		firstTime_msg = false
-		if(!main.isTokenValid(stateToken_msg)) {
-			var jsonData = {
-				callback_name: "roompage_chat_messages"+chatId
-			}
+		function callbackFn(par) {
+			messagesModel.json = par.response
+			contentm.positionViewAtEnd()
 
-			function callbackFn(par) {
-				messagesModel.json = par.response
-				contentm.positionViewAtEnd()
-
-				stateToken_msg = JSON.parse(par.response).statetoken
-				main.pushToken(stateToken_msg)
-
-				loadingMask.hide()
-			}
-
-			rsApi.request("/chat/messages/"+chatId, JSON.stringify(jsonData), callbackFn)
+			stateToken_msg = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_msg, getLobbyMessages)
 		}
+
+		rsApi.request("/chat/messages/"+chatId, "", callbackFn)
 	}
 
 	function getGxsId() {
-		if(!main.isTokenValid(stateToken_gxs)) {
-			var jsonData = {
-				callback_name: "roompage_identity_notown_ids"
-			}
-
-			function callbackFn(par) {
-				gxsIdModel.json = par.response
-				stateToken_gxs = JSON.parse(par.response).statetoken
-				main.pushToken(stateToken_gxs)
-			}
-
-			rsApi.request("/identity/notown_ids/", JSON.stringify(jsonData), callbackFn)
+		function callbackFn(par) {
+			gxsIdModel.json = par.response
+			stateToken_gxs = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_gxs, getGxsId)
 		}
+
+		rsApi.request("/identity/notown_ids/", "", callbackFn)
 	}
 
 	Component.onCompleted: {
@@ -155,6 +133,8 @@ Item{
 		LoadingMask {
 			id: loadingMask
 			anchors.fill: parent
+
+			state: firstTime_msg ? "visible" : "non-visible"
 		}
 
 		Rectangle {
@@ -675,25 +655,6 @@ Item{
 					flickableItem: addRoomFriendsList
 				}
 			}
-		}
-
-		Timer {
-			interval: 10000
-			running: true
-			repeat: true
-
-			onTriggered: {
-				getLobbyParticipants()
-				getGxsId()
-			}
-		}
-
-		Timer {
-			interval: 2000
-			repeat: true
-			running: true
-
-			onTriggered: getLobbyMessages()
 		}
 
 		ParallelAnimation {

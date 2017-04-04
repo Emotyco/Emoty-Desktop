@@ -135,7 +135,9 @@ Rectangle {
 			main.state = String(JSON.parse(par.response).data.runstate)
 		}
 
-		rsApi.request("/control/runstate/", JSON.stringify(jsonData), callbackFn)
+		var ret = rsApi.request("/control/runstate/", JSON.stringify(jsonData), callbackFn)
+		if(ret < 1)
+			main.state = "fatal_error"
 	}
 
 	function getAdvancedMode() {
@@ -658,41 +660,50 @@ Rectangle {
 		});
 	}
 
-	property var tokens: []
+	///////
+	// Code made by Gioacchino Mazzurco
+	// Github: https://github.com/G10h4ck
+	//////
+	property var tokens: ({})
 
-	function checkTokens() {
-		function callbackFn(par) {
-			var invalidTokens = []
-			invalidTokens = JSON.parse(par.response).data
+	function registerToken(token, callback)
+	{
+		if (Array.isArray(tokens[token]))
+			tokens[token].push(callback)
+		else
+			tokens[token] = [callback]
+	}
 
-			for(var i=0; i < invalidTokens.length; i++) {
-				for(var ii=0; ii < tokens.length; ii++)
-					if(invalidTokens[i] == tokens[ii])
-						delete tokens[ii]
+	function tokenExpire(token)
+	{
+		if(Array.isArray(tokens[token]))
+		{
+			var arrLen = tokens[token].length
+			for(var i=0; i<arrLen; ++i)
+			{
+				var tokCallback = tokens[token][i]
+				if (typeof tokCallback == 'function')
+					tokCallback()
 			}
 		}
 
-		rsApi.request("/statetokenservice/*/", '['+tokens+']', callbackFn)
+		delete tokens[token]
 	}
 
 	function isTokenValid(token) {
-		for(var i=0; i<tokens.length; i++) {
-			if(tokens[i] === token)
-				return true
-		}
-		return false
+		return Array.isArray(tokens[token])
 	}
 
-	function pushToken(token) {
-		for(var i=0; i<tokens.length; i++) {
-			if(tokens[i] === undefined)
-			{
-				tokens[i] = token
-				return
-			}
-		}
-		tokens.push(token)
+	function checkTokens(par)
+	{
+		var jsonData = JSON.parse(par.response).data
+		var arrayLength = jsonData.length;
+		for (var i = 0; i < arrayLength; i++)
+			main.tokenExpire(jsonData[i])
 	}
+
+	//
+	//////
 
 	/*
 	  All new cards (panels) are instatiated in these fucntions,
@@ -770,7 +781,7 @@ Rectangle {
 		running: true
 		repeat: true
 		onTriggered: {
-			checkTokens()
+			rsApi.request("/statetokenservice/*", '['+Object.keys(main.tokens)+']', checkTokens)
 		}
 	}
 

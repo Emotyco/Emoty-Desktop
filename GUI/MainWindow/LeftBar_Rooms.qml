@@ -13,32 +13,22 @@ Rectangle {
 
 	function getLobbies() {
 		if(firstTime)
-			loadingMask.show()
+			firstTime = false
 
-		firstTime = false
-		if(!main.isTokenValid(stateToken)) {
-			var jsonData = {
-				callback_name: "leftbar_rooms_chat_unsubscribed_public_lobbies"
-			}
+		function callbackFn(par) {
+			privateLobbiesModel.json = par.response
+			subscribedPublicLobbiesModel.json = par.response
+			unsubscribedPublicLobbiesModel.json = par.response
 
-			function callbackFn(par) {
-				privateLobbiesModel.json = par.response
-				subscribedPublicLobbiesModel.json = par.response
-				unsubscribedPublicLobbiesModel.json = par.response
-
-				stateToken = JSON.parse(par.response).statetoken
-				main.pushToken(stateToken)
-
-				loadingMask.hide()
-			}
-
-			rsApi.request("/chat/lobbies/", JSON.stringify(jsonData), callbackFn)
+			stateToken = JSON.parse(par.response).statetoken
+			main.pushToken(stateToken)
 		}
+
+		rsApi.request("/chat/lobbies/", "", callbackFn)
 	}
 
 	function subscribeLobby(chatId) {
 		var jsonData = {
-			callback_name: "leftbar_rooms_chat_subscribe_lobby",
 			id: chatId,
 			gxs_id: main.defaultGxsId
 		}
@@ -52,7 +42,6 @@ Rectangle {
 
 	function unsubsribeLobby(chatId) {
 		var jsonData = {
-			callback_name: "leftbar_rooms_chat_unsubscribed_public_lobbies",
 			id: chatId
 		}
 
@@ -65,7 +54,6 @@ Rectangle {
 
 	function setAutosubsribeLobby(chatId, autosubsribe) {
 		var jsonData = {
-			callback_name: "leftbar_rooms_chat_unsubscribed_public_lobbies",
 			chatid: chatId,
 			autosubsribe: autosubsribe
 		}
@@ -77,13 +65,13 @@ Rectangle {
 		rsApi.request("/chat/autosubscribe_lobby/", JSON.stringify(jsonData), callbackFn)
 	}
 
-	Component.onCompleted: {
-		getLobbies()
-	}
+	Component.onCompleted: getLobbies()
 
 	LoadingMask {
 		id: loadingMask
 		anchors.fill: parent
+
+		state: firstTime ? "visible" : "non-visible"
 	}
 
 	JSONListModel {
@@ -345,16 +333,6 @@ Rectangle {
 					}
 				}
 			}
-		}
-	}
-
-	Timer {
-		interval: 5000
-		running: true
-		repeat: true
-
-		onTriggered: {
-			getLobbies()
 		}
 	}
 }

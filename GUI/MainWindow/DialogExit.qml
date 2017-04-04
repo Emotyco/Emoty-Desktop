@@ -110,15 +110,11 @@ PopupBase {
 	}
 
 	function getAutoLogin() {
-		var jsonData = {
-			callback_name: "dialogexit_settings_get_auto_login"
-		}
-
 		function callbackFn(par) {
 			dialog.autoLogin = Boolean(JSON.parse(par.response).data.auto_login)
 		}
 
-		rsApi.request("/settings/get_auto_login/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/settings/get_auto_login/", "", JSON.stringify(jsonData), callbackFn)
 	}
 
 	View {

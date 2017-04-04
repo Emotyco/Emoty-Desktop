@@ -53,15 +53,11 @@ Dialog {
 	Component.onCompleted: getSelfCert()
 
 	function getSelfCert() {
-		var jsonData = {
-			callback_name: "useradddialog_peers_self_certificate"
-		}
-
 		function callbackFn(par) {
 			myKey = JSON.parse(par.response).data.cert_string
 		}
 
-		rsApi.request("/peers/self/certificate/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/peers/self/certificate/", "", callbackFn)
 	}
 
 	Label {

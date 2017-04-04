@@ -56,77 +56,50 @@ View {
 
 	function refreshGxsIdModel() {
 		if(firstTime_gxs)
-			loadingMask.show()
+			firstTime_gxs = false
 
-		firstTime_gxs = false
-		if(!isTokenValid(stateToken_gxs)) {
-			var jsonData = {
-				callback_name: "rightbar_identity_notown_ids"
-			}
+		function callbackFn(par) {
+			gxsIdModel.json = par.response
 
-			function callbackFn(par) {
-				gxsIdModel.json = par.response
-
-				stateToken_gxs = JSON.parse(par.response).statetoken
-				pushToken(stateToken_gxs)
-
-				loadingMask.hide()
-			}
-
-			rsApi.request("/identity/notown_ids/", JSON.stringify(jsonData), callbackFn)
+			stateToken_gxs = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_gxs, refreshGxsIdModel)
 		}
+
+		rsApi.request("/identity/notown_ids/", "", callbackFn)
 	}
 
 	function refreshPgpIdModel() {
 		if(firstTime_pgp)
-			loadingMask2.show()
+			firstTime_pgp = false
 
-		firstTime_pgp = false
-		if(!main.isTokenValid(stateToken_pgp)) {
-			var jsonData = {
-				callback_name: "rightbar_peers_*"
-			}
+		function callbackFn(par) {
+			pgpIdModel.json = par.response
 
-			function callbackFn(par) {
-				pgpIdModel.json = par.response
-
-				stateToken_pgp = JSON.parse(par.response).statetoken
-				main.pushToken(stateToken_pgp)
-
-				loadingMask2.hide()
-			}
-
-			rsApi.request("/peers/*", JSON.stringify(jsonData), callbackFn)
+			stateToken_pgp = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_pgp, refreshPgpIdModel)
 		}
+
+		rsApi.request("/peers/*", "", callbackFn)
 	}
 
 	function getStateString() {
-		var jsonData = {
-			callback_name: "rightbar_peers_get_state_string"
-		}
-
 		function callbackFn(par) {
 			rightBar.state_string = String(JSON.parse(par.response).data.state_string)
 		}
 
-		rsApi.request("/peers/get_state_string/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/peers/get_state_string/", "", callbackFn)
 	}
 
 	function getCustomStateString() {
-		var jsonData = {
-			callback_name: "rightbar_peers_get_custom_state_string"
-		}
-
 		function callbackFn(par) {
 			rightBar.custom_state_string = String(JSON.parse(par.response).data.custom_state_string)
 		}
 
-		rsApi.request("/peers/get_custom_state_string/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/peers/get_custom_state_string/", "", callbackFn)
 	}
 
 	function setStateString(state_string) {
 		var jsonData = {
-			callback_name: "rightbar_peers_set_state_string",
 			state_string: state_string
 		}
 
@@ -139,7 +112,6 @@ View {
 
 	function setCustomStateString(custom_state_string) {
 		var jsonData = {
-			callback_name: "rightbar_peers_set_custom_state_string",
 			custom_state_string: custom_state_string
 		}
 
@@ -353,6 +325,8 @@ View {
 			LoadingMask {
 				id: loadingMask
 				anchors.fill: parent
+
+				state: firstTime_gxs ? "visible" : "non-visible"
 			}
 
 			anchors {
@@ -525,6 +499,8 @@ View {
 			LoadingMask {
 				id: loadingMask2
 				anchors.fill: parent
+
+				state: firstTime_pgp ? "visible" : "non-visible"
 			}
 
 			anchors {
@@ -540,17 +516,6 @@ View {
 
 		Scrollbar {
 			flickableItem: listView2
-		}
-	}
-
-	Timer {
-		interval: 1000
-		running: true
-		repeat: true
-
-		onTriggered: {
-			refreshGxsIdModel()
-			refreshPgpIdModel()
 		}
 	}
 

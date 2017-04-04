@@ -72,7 +72,6 @@ PopupBase {
 	function createIdentity(name) {
 		var anonymous = main.advmode ? !checkBox.enabled : true
 		var jsonData = {
-			callback_name: "createidentity_get_flickable_grid_mode",
 			name: name,
 			pgp_linked: anonymous
 		}
