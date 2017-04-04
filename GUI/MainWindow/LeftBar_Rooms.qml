@@ -21,7 +21,7 @@ Rectangle {
 			unsubscribedPublicLobbiesModel.json = par.response
 
 			stateToken = JSON.parse(par.response).statetoken
-			main.pushToken(stateToken)
+			main.registerToken(stateToken, getLobbies)
 		}
 
 		rsApi.request("/chat/lobbies/", "", callbackFn)
