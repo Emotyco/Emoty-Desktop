@@ -27,7 +27,9 @@
 #include <QQmlEngine>
 #include <QQmlContext>
 
-//#include <retroshare/rsinit.h>
+#ifndef QT_DEBUG
+    #include <QProcess>
+#endif
 
 #include "libresapilocalclient.h"
 #include "Bridge/LoginWindow/loginwindow_main.h"
@@ -47,6 +49,13 @@ int main(int argc, char *argv[])
 	QApplication app(argc, argv);
 
 	RunStateHelper::Create();
+
+#ifndef QT_DEBUG
+	QProcess *process = new QProcess();
+	QString file = QCoreApplication::applicationDirPath() + "/RS-Core.exe";
+	process->start(file);
+#endif
+
 
 	loginwindow_main(argc, argv);
 
@@ -124,6 +133,10 @@ int main(int argc, char *argv[])
 	window.setMinimumSize(600, 300);
 
 	QObject::connect(&trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), &window, SLOT(showViaSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
+#endif
+
+#ifndef QT_DEBUG
+	QObject::connect(qApp, SIGNAL(aboutToQuit()), process, SLOT(kill()));
 #endif
 
 	return app.exec();
