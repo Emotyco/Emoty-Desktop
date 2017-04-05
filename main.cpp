@@ -54,13 +54,18 @@ int main(int argc, char *argv[])
 	QProcess *process = new QProcess();
 	QString file = QCoreApplication::applicationDirPath() + "/RS-Core.exe";
 	process->start(file);
+	QObject::connect(qApp, SIGNAL(aboutToQuit()), process, SLOT(kill()));
 #endif
-
 
 	loginwindow_main(argc, argv);
 
 	if(RunStateHelper::getInstance()->getRunState() != "running_ok" && RunStateHelper::getInstance()->getRunState() != "waiting_startup")
+	{
+#ifndef QT_DEBUG
+		process->kill();
+#endif
 		return 0;
+	}
 
 	QApplication::setQuitOnLastWindowClosed(false);
 
@@ -133,10 +138,6 @@ int main(int argc, char *argv[])
 	window.setMinimumSize(600, 300);
 
 	QObject::connect(&trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), &window, SLOT(showViaSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
-#endif
-
-#ifndef QT_DEBUG
-	QObject::connect(qApp, SIGNAL(aboutToQuit()), process, SLOT(kill()));
 #endif
 
 	return app.exec();
