@@ -36,7 +36,7 @@ Component {
 									state_string === "busy"	 ? "#FF5722" :   // red
 									state_string === "away"	 ? "#FFEB3B" :   // yellow
 															      "#9E9E9E"	 // grey
-		property string pgp: model.pgp_id
+		property string pgp
 
 		width: parent.width
 		height: dp(50)
@@ -86,11 +86,13 @@ Component {
 			}
 		]
 
+		Component.onCompleted: pgp = model.pgp_id
+
 		JSONListModel {
 			id: locationsModel
 
 			json: pgpIdModel.json
-			query: "$.data[?(@.pgp_id=='"+pgp_id+"')].locations[*]"
+			query: "$.data[?(@.pgp_id=='"+pgp+"')].locations[*]"
 		}
 
 		MouseArea {
