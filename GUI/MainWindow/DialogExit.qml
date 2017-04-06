@@ -114,7 +114,7 @@ PopupBase {
 			dialog.autoLogin = Boolean(JSON.parse(par.response).data.auto_login)
 		}
 
-		rsApi.request("/settings/get_auto_login/", "", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/settings/get_auto_login/", "", callbackFn)
 	}
 
 	View {
