@@ -187,6 +187,7 @@ Component {
 							text: "Remove"
 							itemLabel.style: "menu"
 							onClicked: {
+								rsApi.request("/peers/"+pgp+"/delete", "")
 								overflowMenu.close()
 							}
 						}
