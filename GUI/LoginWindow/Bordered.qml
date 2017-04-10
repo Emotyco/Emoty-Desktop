@@ -450,7 +450,7 @@ Rectangle
 
 						Label {
 							text: "Remember me"
-							color: Theme.light.textColor
+							color: checkBox.enabled ? Theme.light.textColor : Theme.light.hintColor
 
 							MouseArea{
 								anchors.fill: parent
