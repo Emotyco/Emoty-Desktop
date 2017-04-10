@@ -789,8 +789,10 @@ Rectangle
 
 						content: TextField {
 							id: username
+							property bool emptyName: false
 
 							anchors.centerIn: parent
+							anchors.verticalCenterOffset: emptyName ? -dp(5) : 0
 							width: parent.width
 
 							color: "white"
@@ -801,6 +803,9 @@ Rectangle
 
 							focus: true
 							borderColor: Qt.rgba(255,255,255,0.5)
+
+							helperText: emptyName ?  "Name is too short" : ""
+							hasError: emptyName
 						}
 					}
 
@@ -828,6 +833,8 @@ Rectangle
 							placeholderText: "Password"
 
 							borderColor: Qt.rgba(255,255,255,0.5)
+
+							hasError: password2.different
 						}
 					}
 
@@ -844,7 +851,9 @@ Rectangle
 						content: TextField {
 							id: password2
 
+							property bool different: false
 							anchors.centerIn: parent
+							anchors.verticalCenterOffset: -dp(5)
 							width: parent.width
 
 							color: "white"
@@ -855,6 +864,36 @@ Rectangle
 
 							echoMode: TextInput.Password
 							borderColor: Qt.rgba(255,255,255,0.5)
+
+							helperText: "Password can not be recovered!!!"
+							hasError: different
+
+							onAccepted: {
+								if(username.text.length >= 3 && password.text.length >= 3 && password.text === password2.text) {
+									var jsonData = {
+										pgp_name: username.text,
+										ssl_name: node.text,
+										pgp_password: password.text,
+										hidden_adress: hiddenNode.checked ? hiddenAddress.text : "",
+										hidden_port: hiddenNode.checked ? port.text : ""
+									}
+
+									rsApi.request("/control/create_location/", JSON.stringify(jsonData))
+								}
+								else {
+									if(username.text.length < 3)
+										username.emptyName = true
+
+									if(password.text.length < 3) {
+										password2.different = true
+										password2.helperText = "Password is too short"
+									}
+									else if(password.text !== password2.text) {
+										password2.different = true
+										password2.helperText = "Passwords do not match"
+									}
+								}
+							}
 						}
 					}
 				}
@@ -878,7 +917,7 @@ Rectangle
 					backgroundColor: Theme.primaryColor
 
 					onClicked: {
-						if(password.text === password2.text) {
+						if(username.text.length >= 3 && password.text.length >= 3 && password.text === password2.text) {
 							var jsonData = {
 								pgp_name: username.text,
 								ssl_name: node.text,
@@ -888,6 +927,19 @@ Rectangle
 							}
 
 							rsApi.request("/control/create_location/", JSON.stringify(jsonData))
+						}
+						else {
+							if(username.text.length < 3)
+								username.emptyName = true
+
+							if(password.text.length < 3) {
+								password2.different = true
+								password2.helperText = "Password is too short"
+							}
+							else if(password.text !== password2.text) {
+								password2.different = true
+								password2.helperText = "Passwords do not match"
+							}
 						}
 					}
 				}
