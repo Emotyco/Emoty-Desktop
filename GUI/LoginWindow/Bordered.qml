@@ -625,29 +625,127 @@ Rectangle
 					overlayLayer: "dialogOverlayLayer"
 
 					width: 250 * Units.dp
-					height: columnView.height + 16 * Units.dp
+					height: columnView.height + columnView2.height
 
 					enabled: true
 
-					Column {
-						id: columnView
+					Behavior on height {
+						NumberAnimation { duration: 200 }
+					}
 
-						anchors.centerIn: parent
-						width: parent.width*0.8
+					Rectangle {
+						anchors.top: parent.top
+
+						width: parent.width
+						height: columnView.height
+
+						z: 1
+
+						Column {
+							id: columnView
+
+							anchors.top: parent.top
+							width: parent.width
+
+							spacing: 0
+
+							Item {
+								width: parent.width
+								height: dp(10)
+							}
+
+							Item {
+								width: parent.width
+								height: dp(38)
+
+								TextField {
+									id: node
+
+									anchors.centerIn: parent
+									width: parent.width-dp(32)
+
+									placeholderText: "Node name"
+									floatingLabel: true
+									text: "Desktop"
+								}
+							}
+
+							ListItem.Subtitled {
+								text: "TOR/I2P Hidden node"
+
+								height: dp(48)
+
+								secondaryItem: Switch {
+									id: hiddenNode
+									anchors.verticalCenter: parent.verticalCenter
+									enabled: true
+								}
+
+								onClicked: {
+									hiddenNode.checked = !hiddenNode.checked
+								}
+							}
+						}
+					}
+
+
+
+					Column {
+						id: columnView2
+
+						anchors.bottom: parent.bottom
+						width: parent.width
+
+						spacing: 0
 
 						Item {
 							width: parent.width
-							height: dp(10)
+							height: hiddenNode.checked ? dp(10) : 0
 						}
 
-						TextField {
-							id: node
-
+						Item {
 							width: parent.width
+							height: hiddenNode.checked ? dp(38) : 0
 
-							placeholderText: "Node name"
-							floatingLabel: true
-							text: "Desktop"
+							enabled: hiddenNode.checked
+							visible: hiddenNode.checked
+
+							TextField {
+								id: hiddenAddress
+
+								anchors.centerIn: parent
+								width: parent.width-dp(32)
+
+								placeholderText: "TOR/I2P address"
+								floatingLabel: true
+								text: "xa76giaf6ifda7ri63i263.onion"
+							}
+						}
+
+						Item {
+							width: parent.width
+							height: hiddenNode.checked ? dp(10) : 0
+						}
+
+						Item {
+							width: parent.width
+							height: hiddenNode.checked ? dp(38) : 0
+
+							enabled: hiddenNode.checked
+							visible: hiddenNode.checked
+
+							TextField {
+								id: port
+
+								anchors.centerIn: parent
+								width: parent.width-dp(32)
+
+								placeholderText: "Port"
+								floatingLabel: true
+								text: "7812"
+
+								validator: IntValidator {bottom: 0; top: 65535;}
+							}
 						}
 					}
 				}
@@ -774,7 +872,9 @@ Rectangle
 							var jsonData = {
 								pgp_name: username.text,
 								ssl_name: node.text,
-								pgp_password: password.text
+								pgp_password: password.text,
+								hidden_adress: hiddenNode.checked ? hiddenAddress.text : "",
+								hidden_port: hiddenNode.checked ? port.text : ""
 							}
 
 							rsApi.request("/control/create_location/", JSON.stringify(jsonData))
