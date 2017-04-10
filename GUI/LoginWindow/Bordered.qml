@@ -107,10 +107,10 @@ Rectangle
 			if(jsonData) {
 				if(jsonData.data) {
 					if (jsonData.data.key_name) {
+						passwordLogin.incorrect = jsonData.data.prev_is_bad;
 						if(jsonData.data.want_password) {
 							var jsonPass = { password: passwordLogin.text }
 							rsApi.request("/control/password/", JSON.stringify(jsonPass))
-							main.attemptLogin = false
 						}
 					}
 				}
@@ -309,9 +309,9 @@ Rectangle
 
 			anchors.horizontalCenter: parent.horizontalCenter
 
-			y: parent.height*0.42
+			y: parent.height*0.4
 			width: parent.width*0.88
-			height: parent.height*0.5
+			height: parent.height*0.52
 
 			elevation: 4
 
@@ -340,7 +340,6 @@ Rectangle
 						property alias selectedIndex: listView.currentIndex
 
 						anchors.centerIn: parent
-
 						width: parent.width
 
 						color: Theme.primaryColor
@@ -399,6 +398,7 @@ Rectangle
 				}
 
 				ListItem.Standard {
+					height: dp(58)
 					margins: 0
 					spacing: dp(5)
 					action: Icon {
@@ -408,12 +408,18 @@ Rectangle
 
 					content: TextField {
 						id: passwordLogin
+						property bool incorrect: false
+
 						anchors.centerIn: parent
 						width: parent.width
+
 						color: Theme.primaryColor
 
 						echoMode: TextInput.Password
 						placeholderText: "Password"
+
+						helperText: incorrect ?  "Incorrect password" : ""
+						hasError: incorrect
 
 						onAccepted: {
 							if(passwordLogin.text.length >= 3) {
@@ -424,6 +430,8 @@ Rectangle
 								rsApi.request("/control/login/", JSON.stringify(jsonData))
 								main.attemptLogin = true
 							}
+							else
+								passwordLogin.incorrect = true
 						}
 					}
 				}
@@ -438,7 +446,7 @@ Rectangle
 							leftMargin: dp(29)
 						}
 
-						y: -dp(20)
+						y: passwordLogin.incorrect ? -dp(15) : -dp(25)
 						spacing: -dp(10)
 
 						CheckBox {
@@ -488,6 +496,8 @@ Rectangle
 								rsApi.request("/control/login/", JSON.stringify(jsonData))
 								main.attemptLogin = true
 							}
+							else
+								passwordLogin.incorrect = true
 						}
 					}
 				}
@@ -673,7 +683,7 @@ Rectangle
 							ListItem.Subtitled {
 								text: "TOR/I2P Hidden node"
 
-								height: dp(48)
+								height: dp(43)
 
 								secondaryItem: Switch {
 									id: hiddenNode
