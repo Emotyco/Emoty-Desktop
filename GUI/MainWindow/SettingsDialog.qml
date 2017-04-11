@@ -150,7 +150,7 @@ Dialog {
 					ListItem.Subtitled {
 						text: "Start Sonet on system start"
 
-						height: dp(55)
+						height: dp(48)
 						interactive: false
 
 						secondaryItem: Switch {
@@ -162,7 +162,7 @@ Dialog {
 
 					ListItem.Subtitled {
 						text: "Scrollable desktop"
-						height: dp(55)
+						height: dp(48)
 
 						secondaryItem: Switch {
 							id: switch4
@@ -189,7 +189,7 @@ Dialog {
 
 					ListItem.Subtitled {
 						text: "Advanced mode"
-						height: dp(55)
+						height: dp(48)
 						secondaryItem: Switch {
 							id: switch3
 
@@ -214,7 +214,7 @@ Dialog {
 					}
 
 					Rectangle {
-						height: dp(55)
+						height: dp(48)
 						width: parent.width
 						clip: false
 
