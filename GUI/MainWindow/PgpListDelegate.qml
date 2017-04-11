@@ -176,8 +176,8 @@ Component {
 					height: dp(1*30)
 					enabled: true
 					anchor: Item.TopLeft
-					durationSlow: 200
-					durationFast: 100
+					durationSlow: 300
+					durationFast: 150
 
 					Column{
 						anchors.fill: parent

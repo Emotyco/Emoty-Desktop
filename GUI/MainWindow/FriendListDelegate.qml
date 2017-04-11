@@ -158,22 +158,14 @@ Component {
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
 				width: dp(200)
-				height: dp(4*30)
+				height: dp(1*30)
 				enabled: true
 				anchor: Item.TopLeft
-				durationSlow: 200
-				durationFast: 100
+				durationSlow: 300
+				durationFast: 150
 
 				Column{
 					anchors.fill: parent
-					ListItem.Standard {
-						height: dp(30)
-						text: "Profile"
-						itemLabel.style: "menu"
-						onClicked: {
-							overflowMenu.close()
-						}
-					}
 
 					ListItem.Standard {
 						height: dp(30)
@@ -181,24 +173,7 @@ Component {
 						itemLabel.style: "menu"
 						onClicked: {
 							overflowMenu.close()
-						}
-					}
-
-					ListItem.Standard {
-						height: dp(30)
-						text: "Call"
-						itemLabel.style: "menu"
-						onClicked: {
-							overflowMenu.close()
-						}
-					}
-
-					ListItem.Standard {
-						height: dp(30)
-						text: "Remove"
-						itemLabel.style: "menu"
-						onClicked: {
-							overflowMenu.close()
+							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
 						}
 					}
 				}

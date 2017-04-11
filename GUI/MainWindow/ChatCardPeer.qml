@@ -237,8 +237,8 @@ DragTile {
 
 					enabled: true
 
-					durationSlow: 200
-					durationFast: 100
+					durationSlow: 300
+					durationFast: 150
 
 					Column {
 						anchors.fill: parent
