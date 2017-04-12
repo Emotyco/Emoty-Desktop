@@ -173,7 +173,7 @@ Component {
 					objectName: "overflowMenu"
 					overlayLayer: "dialogOverlayLayer"
 					width: dp(200)
-					height: dp(1*30)
+					height: dp(2*30)
 					enabled: true
 					anchor: Item.TopLeft
 					durationSlow: 300
@@ -181,6 +181,16 @@ Component {
 
 					Column{
 						anchors.fill: parent
+
+						ListItem.Standard {
+							height: dp(30)
+							text: "Details"
+							itemLabel.style: "menu"
+							onClicked: {
+								overflowMenu.close()
+								pgpFriendDetailsDialog.showAccount(model.name, pgp, pgpIdModel.json)
+							}
+						}
 
 						ListItem.Standard {
 							height: dp(30)

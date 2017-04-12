@@ -632,6 +632,7 @@ Rectangle {
 
 	OverlayLayer {
 		id: overlayLayer
+		z: 11
 	}
 
 	// Dialog Pop-ups
@@ -651,6 +652,10 @@ Rectangle {
 
 			rsApi.request("/control/shutdown/", "", callbackFn)
 		}
+	}
+
+	PGPFriendDetailsDialog {
+		id: pgpFriendDetailsDialog
 	}
 
 	SettingsDialog {

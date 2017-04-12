@@ -30,5 +30,6 @@
         <file>LoadingMask.qml</file>
         <file>ChatGxsCard.qml</file>
         <file>CreateLobby.qml</file>
+        <file>PGPFriendDetailsDialog.qml</file>
     </qresource>
 </RCC>
