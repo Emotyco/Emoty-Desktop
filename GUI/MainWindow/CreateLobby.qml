@@ -103,6 +103,15 @@ PopupBase {
 			}
 
 			onAccepted: {
+				var jsonData = {
+					lobby_name: name.text,
+					gxs_id: main.defaultGxsId,
+					lobby_public: !isPrivate,
+					pgp_signed: main.advmode ? checkBox.checked : true
+				}
+
+				rsApi.request("/chat/create_lobby", JSON.stringify(jsonData))
+
 				dialog.close()
 			}
 		}
@@ -165,6 +174,15 @@ PopupBase {
 			}
 
 			onClicked: {
+				var jsonData = {
+					lobby_name: name.text,
+					gxs_id: main.defaultGxsId,
+					lobby_public: !isPrivate,
+					pgp_signed: main.advmode ? checkBox.checked : true
+				}
+
+				rsApi.request("/chat/create_lobby", JSON.stringify(jsonData))
+
 				dialog.close()
 			}
 		}
