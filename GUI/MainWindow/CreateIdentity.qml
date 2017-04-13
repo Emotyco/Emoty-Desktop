@@ -70,10 +70,11 @@ PopupBase {
 	}
 
 	function createIdentity(name) {
-		var anonymous = main.advmode ? !checkBox.enabled : true
+		var isNotAnonymous = main.advmode ? !checkBox.checked : true
+
 		var jsonData = {
 			name: name,
-			pgp_linked: anonymous
+			pgp_linked: isNotAnonymous
 		}
 
 		function callbackFn(par) {
@@ -233,6 +234,8 @@ PopupBase {
 		TextField {
 			id: name
 
+			property bool emptyName: false
+
 			anchors {
 				top: canvas.bottom
 				topMargin: dp(30)
@@ -255,16 +258,24 @@ PopupBase {
 				capitalization: Font.MixedCase
 			}
 
+			helperText: emptyName ?  "Name is too short" : ""
+			hasError: emptyName
+
 			onAccepted: {
-				mask.enabled = true
-				mask.visible = true
-				createIdentity(name.text)
+				if(name.text.length > 3) {
+					mask.enabled = true
+					mask.visible = true
+					createIdentity(name.text)
+				}
+				else if(name.text.length < 3)
+					name.emptyName = true
 			}
 		}
 
 		Item {
 			anchors {
 				top: name.bottom
+				topMargin: name.emptyName ? dp(5) : 0
 				horizontalCenter: parent.horizontalCenter
 			}
 
@@ -322,9 +333,13 @@ PopupBase {
 			}
 
 			onClicked: {
-				mask.enabled = true
-				mask.visible = true
-				createIdentity(name.text)
+				if(name.text.length > 3) {
+					mask.enabled = true
+					mask.visible = true
+					createIdentity(name.text)
+				}
+				else if(name.text.length < 3)
+					name.emptyName = true
 			}
 		}
 	}
