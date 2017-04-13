@@ -115,6 +115,8 @@ Rectangle {
 		getFlickableGridMode()
 	}
 
+	property int stateToken_ownGxs: 0
+
 	function getOwnIdentities() {
 		var jsonData = {
 			callback_name: "maingui_identity_own_ids"
@@ -122,6 +124,9 @@ Rectangle {
 
 		function callbackFn(par) {
 			ownGxsIdModel.json = par.response; haveOwnId()
+
+			stateToken_ownGxs = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_ownGxs, getOwnIdentities)
 		}
 
 		rsApi.request("/identity/own_ids/", JSON.stringify(jsonData), callbackFn)

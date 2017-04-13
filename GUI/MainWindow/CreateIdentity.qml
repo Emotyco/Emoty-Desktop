@@ -79,7 +79,6 @@ PopupBase {
 
 		function callbackFn(par) {
 			if(JSON.parse(par.response).data.name === name) {
-				main.getOwnIdentities()
 				dialog.close()
 			}
 		}
