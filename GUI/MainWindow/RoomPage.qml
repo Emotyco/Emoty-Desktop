@@ -397,7 +397,8 @@ Item{
 
 						onActiveFocusChanged: {
 							if(activeFocus) {
-								rsApi.request("/chat/mark_chat_as_read/"+chatId)
+								if(chatId.length > 0)
+									rsApi.request("/chat/mark_chat_as_read/"+chatId)
 
 								footerView.elevation = 2
 							}
