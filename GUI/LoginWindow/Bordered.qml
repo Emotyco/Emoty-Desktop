@@ -372,16 +372,15 @@ Rectangle
 							objectName: "overflowMenu2"
 							overlayLayer: "dialogOverlayLayer"
 
-							width: 250 * Units.dp
-							height: Math.min(10 * 48 * Units.dp + 16 * Units.dp, locationsModel.count * 40 * Units.dp)
+							width: 200 * Units.dp
+							height: Math.min(8 * 48 * Units.dp + 16 * Units.dp, locationsModel.count * 40 * Units.dp)
 
 							enabled: true
 
 							ListView {
 								id: listView
 
-								height: count > 0 ? contentHeight : 0
-								width: parent.width
+								anchors.fill: parent
 
 								model: locationsModel.model
 								delegate: ListItem.Standard {
@@ -392,6 +391,10 @@ Rectangle
 										overflowMenu2.close()
 									}
 								}
+							}
+
+							Scrollbar {
+								flickableItem: listView
 							}
 						}
 					}
