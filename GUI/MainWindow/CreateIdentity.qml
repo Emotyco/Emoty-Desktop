@@ -247,6 +247,7 @@ PopupBase {
 			color: Theme.primaryColor
 
 			horizontalAlignment: TextInput.AlignHCenter
+			focus: true
 
 			placeholderHorizontalCenter: true
 			placeholderText: "Joe Smith"
