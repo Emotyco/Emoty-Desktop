@@ -220,6 +220,7 @@ View {
 						else {
 							main.content.activated = true;
 							pageStack.push({item: Qt.resolvedUrl(page), immediate: true, replace: true})
+							main.content.refresh()
 						}
 					}
 					onPressAndHold: {

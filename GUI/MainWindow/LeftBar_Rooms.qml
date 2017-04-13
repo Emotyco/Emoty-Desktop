@@ -126,6 +126,7 @@ Rectangle {
 						pageStack.push({item: Qt.resolvedUrl("RoomPage.qml"), immediate: true, replace: true,
 										   properties: {roomName: model.name, chatId: model.chat_id}})
 
+						main.content.refresh()
 						leftBar.state = "narrow"
 					}
 
@@ -182,6 +183,7 @@ Rectangle {
 						pageStack.push({item: Qt.resolvedUrl("RoomPage.qml"), immediate: true, replace: true,
 										   properties: {roomName: model.name, chatId: model.chat_id}})
 
+						main.content.refresh()
 						leftBar.state = "narrow"
 					}
 
@@ -280,6 +282,7 @@ Rectangle {
 						pageStack.push({item: Qt.resolvedUrl("RoomPage.qml"), immediate: true, replace: true,
 										   properties: {roomName: model.name, chatId: model.chat_id}})
 
+						main.content.refresh()
 						leftBar.state = "narrow"
 					}
 
