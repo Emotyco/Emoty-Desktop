@@ -756,11 +756,12 @@ Rectangle {
 		}
 	}
 
-	function createChatCardPeer(friendname, rspeerid, chat_id, objectName) {
+	function createChatCardPeer(friendname, location, rspeerid, chat_id, objectName) {
 		var component = Qt.createComponent(objectName, gridLayout);
 		if (component.status === Component.Ready) {
 			var chat = component.createObject(gridLayout,
 											  {"name": friendname,
+											   "location": location,
 											   "chatId": chat_id,
 											   "rsPeerId": rspeerid});
 			updateVisibleRows()

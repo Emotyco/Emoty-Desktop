@@ -33,6 +33,7 @@ DragTile {
 	property string rsPeerId
 	property string chatId
 	property string name
+	property string location
 	property alias contentm: contentm
 
 	// For handling tokens
@@ -168,7 +169,7 @@ DragTile {
 							pixelSize: dp(17)
 						}
 
-						text: name
+						text: name + "@" + location
 
 						color: Theme.primaryColor
 					}
