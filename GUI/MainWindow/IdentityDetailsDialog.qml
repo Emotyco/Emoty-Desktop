@@ -339,7 +339,6 @@ Dialog {
 								text: "Owner account name"
 
 								height: dp(48)
-								interactive: false
 								enabled: !anonymous
 								visible: !anonymous
 
@@ -347,6 +346,11 @@ Dialog {
 									anchors.verticalCenter: parent.verticalCenter
 
 									text: pgp_name + "@" + pgp_id
+								}
+
+								onClicked: {
+									scrollingDialog.close()
+									pgpFriendDetailsDialog.showAccount(pgp_name, pgp_id)
 								}
 							}
 

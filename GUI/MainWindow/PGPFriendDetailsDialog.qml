@@ -317,6 +317,7 @@ Dialog {
 						model: signersModel.model
 						delegate: ListItem.Standard {
 							height: dp(48)
+							interactive: false
 							text: model.name + "@" + model.pgp_id
 						}
 					}
@@ -713,6 +714,11 @@ Dialog {
 							text: model.name
 							subText: "GxsId: " + model.gxs_id
 
+							onClicked: {
+								scrollingDialog.close()
+								identityDetailsDialog.showIdentity(model.name, model.gxs_id)
+							}
+
 							action: Canvas {
 								id: canvas2
 								anchors.centerIn: parent
@@ -755,7 +761,7 @@ Dialog {
 								id: overflowMenu2
 								objectName: "overflowMenu"
 								width: dp(200)
-								height: dp(2*30)
+								height: model.contact ? dp(2*30) : dp(3*30)
 								enabled: true
 								anchor: Item.TopLeft
 								durationSlow: 300
@@ -763,6 +769,26 @@ Dialog {
 
 								Column{
 									anchors.fill: parent
+
+									ListItem.Standard {
+										height: dp(30)
+										enabled: !model.contact
+										visible: !model.contact
+
+										text: "Add to contacts"
+										itemLabel.style: "menu"
+										onClicked: {
+											overflowMenu2.close()
+
+											var jsonData = {
+												gxs_id: model.gxs_id
+											}
+
+											rsApi.request("/identity/add_contact", JSON.stringify(jsonData))
+
+											scrollingDialog.close()
+										}
+									}
 
 									ListItem.Standard {
 										height: dp(30)
@@ -779,18 +805,13 @@ Dialog {
 
 									ListItem.Standard {
 										height: dp(30)
-										text: "Add to contacts"
+										text: "Details"
 										itemLabel.style: "menu"
 										onClicked: {
 											overflowMenu2.close()
-
-											var jsonData = {
-												gxs_id: model.gxs_id
-											}
-
-											rsApi.request("/identity/add_contact", JSON.stringify(jsonData))
-
 											scrollingDialog.close()
+
+											identityDetailsDialog.showIdentity(model.name, model.gxs_id)
 										}
 									}
 								}
