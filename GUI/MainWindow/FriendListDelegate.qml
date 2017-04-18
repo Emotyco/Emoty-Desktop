@@ -158,7 +158,7 @@ Component {
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
 				width: dp(200)
-				height: dp(1*30)
+				height: dp(2*30)
 				enabled: true
 				anchor: Item.TopLeft
 				durationSlow: 300
@@ -174,6 +174,21 @@ Component {
 						onClicked: {
 							overflowMenu.close()
 							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+						}
+					}
+
+					ListItem.Standard {
+						height: dp(30)
+						text: "Remove"
+						itemLabel.style: "menu"
+						onClicked: {
+							overflowMenu.close()
+
+							var jsonData = {
+								gxs_id: model.gxs_id
+							}
+
+							rsApi.request("/identity/remove_contact", JSON.stringify(jsonData))
 						}
 					}
 				}
