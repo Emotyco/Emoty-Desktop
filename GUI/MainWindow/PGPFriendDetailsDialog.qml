@@ -721,7 +721,7 @@ Dialog {
 								id: overflowMenu2
 								objectName: "overflowMenu"
 								width: dp(200)
-								height: dp(1*30)
+								height: dp(2*30)
 								enabled: true
 								anchor: Item.TopLeft
 								durationSlow: 300
@@ -738,6 +738,23 @@ Dialog {
 											overflowMenu2.close()
 
 											main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+
+											scrollingDialog.close()
+										}
+									}
+
+									ListItem.Standard {
+										height: dp(30)
+										text: "Add to contacts"
+										itemLabel.style: "menu"
+										onClicked: {
+											overflowMenu2.close()
+
+											var jsonData = {
+												gxs_id: model.gxs_id
+											}
+
+											rsApi.request("/identity/add_contact", JSON.stringify(jsonData))
 
 											scrollingDialog.close()
 										}
