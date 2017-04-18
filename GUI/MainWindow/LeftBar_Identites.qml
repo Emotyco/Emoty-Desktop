@@ -154,7 +154,7 @@ Rectangle {
 				id: overflowMenu
 				objectName: "overflowMenu"
 				width: dp(200)
-				height: dp(1*30)
+				height: main.advmode ? dp(2*30) : dp(1*30)
 				enabled: true
 				anchor: Item.TopLeft
 				durationSlow: 300
@@ -165,7 +165,23 @@ Rectangle {
 
 					ListItem.Standard {
 						height: dp(30)
-						text: "delete"
+						enabled: main.advmode
+						visible: main.advmode
+
+						text: "Details"
+						itemLabel.style: "menu"
+						onClicked: {
+							overflowMenu.close()
+
+							identityDetailsDialog.showIdentity(model.name, model.own_gxs_id)
+
+							leftBar.state = "narrow"
+						}
+					}
+
+					ListItem.Standard {
+						height: dp(30)
+						text: "Delete"
 						itemLabel.style: "menu"
 						onClicked: {
 							overflowMenu.close()

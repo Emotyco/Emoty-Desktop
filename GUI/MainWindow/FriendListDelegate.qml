@@ -158,7 +158,7 @@ Component {
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
 				width: dp(200)
-				height: dp(2*30)
+				height: main.advmode ? dp(3*30) : dp(2*30)
 				enabled: true
 				anchor: Item.TopLeft
 				durationSlow: 300
@@ -174,6 +174,19 @@ Component {
 						onClicked: {
 							overflowMenu.close()
 							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+						}
+					}
+
+					ListItem.Standard {
+						height: dp(30)
+						enabled: main.advmode
+						visible: main.advmode
+
+						text: "Details"
+						itemLabel.style: "menu"
+						onClicked: {
+							overflowMenu.close()
+							identityDetailsDialog.showIdentity(model.name, model.gxs_id)
 						}
 					}
 

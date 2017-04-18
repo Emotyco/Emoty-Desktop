@@ -667,6 +667,10 @@ Rectangle {
 		id: nodeDetailsDialog
 	}
 
+	IdentityDetailsDialog {
+		id: identityDetailsDialog
+	}
+
 	SettingsDialog {
 		id: settingsDialog
 	}

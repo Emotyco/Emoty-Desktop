@@ -32,5 +32,6 @@
         <file>CreateLobby.qml</file>
         <file>PGPFriendDetailsDialog.qml</file>
         <file>NodeDetailsDialog.qml</file>
+        <file>IdentityDetailsDialog.qml</file>
     </qresource>
 </RCC>
