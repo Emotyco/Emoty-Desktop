@@ -161,7 +161,7 @@ Component {
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
 				width: dp(200)
-				height: dp(1*30)
+				height: dp(2*30)
 				enabled: true
 				anchor: Item.TopLeft
 				durationSlow: 300
@@ -179,6 +179,17 @@ Component {
 
 							main.createChatCardPeer(model.name, model.location, model.peer_id, model.chat_id, "ChatCardPeer.qml")
 							rsApi.request("/chat/mark_chat_as_read/"+model.chat_id)
+						}
+					}
+
+					ListItem.Standard {
+						height: dp(30)
+						text: "Details"
+						itemLabel.style: "menu"
+						onClicked: {
+							overflowMenu.close()
+
+							nodeDetailsDialog.showAccount(model.name, model.pgp_id, model.location, model.peer_id)
 						}
 					}
 				}

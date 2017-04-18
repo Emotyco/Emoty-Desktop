@@ -663,6 +663,10 @@ Rectangle {
 		id: pgpFriendDetailsDialog
 	}
 
+	NodeDetailsDialog {
+		id: nodeDetailsDialog
+	}
+
 	SettingsDialog {
 		id: settingsDialog
 	}
