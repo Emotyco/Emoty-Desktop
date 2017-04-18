@@ -34,6 +34,7 @@ Dialog {
 	property string pgp: ""
 
 	property int stateToken_gxs: 0
+	property int stateToken_pgp: 0
 
 	property string pgp_key
 	property string pgp_fingerprint
@@ -64,7 +65,12 @@ Dialog {
 	function showAccount(name, pgp, nodesJson) {
 		scrollingDialog.name = name
 		scrollingDialog.pgp = pgp
-		locationsModel.json = nodesJson
+
+		if(nodesJson != undefined)
+			locationsModel.json = nodesJson
+		else
+			refreshPgpIdModel()
+
 		show()
 	}
 
@@ -77,6 +83,17 @@ Dialog {
 		}
 
 		rsApi.request("/identity/*/", "", callbackFn)
+	}
+
+	function refreshPgpIdModel() {
+		function callbackFn(par) {
+			locationsModel.json = par.response
+
+			stateToken_pgp = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_pgp, refreshPgpIdModel)
+		}
+
+		rsApi.request("/peers/*", "", callbackFn)
 	}
 
 	function getPGPOptions() {
@@ -564,6 +581,11 @@ Dialog {
 							text: model.location
 							subText: "PeerId: " + model.peer_id
 
+							onClicked: {
+								scrollingDialog.close()
+								nodeDetailsDialog.showAccount(model.name, model.pgp_id, model.location, model.peer_id)
+							}
+
 							action: Canvas {
 								id: canvas
 								anchors.centerIn: parent
@@ -608,7 +630,7 @@ Dialog {
 								id: overflowMenu
 								objectName: "overflowMenu"
 								width: dp(200)
-								height: dp(1*30)
+								height: dp(2*30)
 								enabled: true
 								anchor: Item.TopLeft
 								durationSlow: 300
@@ -626,10 +648,22 @@ Dialog {
 										onClicked: {
 											overflowMenu.close()
 
-											main.createChatCardPeer(model.name, model.peer_id, model.chat_id, "ChatCardPeer.qml")
+											main.createChatCardPeer(model.name, model.location, model.peer_id, model.chat_id, "ChatCardPeer.qml")
 											rsApi.request("/chat/mark_chat_as_read/"+model.chat_id)
 
 											scrollingDialog.close()
+										}
+									}
+
+									ListItem.Standard {
+										height: dp(30)
+										text: "Details"
+										itemLabel.style: "menu"
+										onClicked: {
+											overflowMenu.close()
+											scrollingDialog.close()
+
+											nodeDetailsDialog.showAccount(model.name, model.pgp_id, model.location, model.peer_id)
 										}
 									}
 								}

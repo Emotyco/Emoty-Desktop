@@ -217,13 +217,15 @@ Dialog {
 								interactive: true
 
 								secondaryItem: Label {
-									id: accountLabel
 									anchors.verticalCenter: parent.verticalCenter
 
 									text: name_pgp + "@" + pgp
 								}
 
-								onClicked: accountLabel.color = Theme.primaryColor
+								onClicked: {
+									scrollingDialog.close()
+									pgpFriendDetailsDialog.showAccount(name_pgp, pgp)
+								}
 							}
 
 							ListItem.Subtitled {
