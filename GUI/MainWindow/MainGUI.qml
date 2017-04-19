@@ -659,6 +659,10 @@ Rectangle {
 		}
 	}
 
+	RemoveDialog {
+		id: removeDialog
+	}
+
 	PGPFriendDetailsDialog {
 		id: pgpFriendDetailsDialog
 	}

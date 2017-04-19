@@ -197,8 +197,11 @@ Component {
 							text: "Remove"
 							itemLabel.style: "menu"
 							onClicked: {
-								rsApi.request("/peers/"+pgp+"/delete", "")
 								overflowMenu.close()
+
+								removeDialog.show("Do you want to remove your friend?", function() {
+									rsApi.request("/peers/"+pgp+"/delete", "")
+								})
 							}
 						}
 					}

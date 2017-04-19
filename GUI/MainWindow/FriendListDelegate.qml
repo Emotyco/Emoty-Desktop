@@ -197,11 +197,13 @@ Component {
 						onClicked: {
 							overflowMenu.close()
 
-							var jsonData = {
-								gxs_id: model.gxs_id
-							}
+							removeDialog.show("Do you want to remove contact?", function() {
+								var jsonData = {
+									gxs_id: model.gxs_id
+								}
 
-							rsApi.request("/identity/remove_contact", JSON.stringify(jsonData))
+								rsApi.request("/identity/remove_contact", JSON.stringify(jsonData))
+							})
 						}
 					}
 				}

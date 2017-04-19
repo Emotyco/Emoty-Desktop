@@ -33,5 +33,6 @@
         <file>PGPFriendDetailsDialog.qml</file>
         <file>NodeDetailsDialog.qml</file>
         <file>IdentityDetailsDialog.qml</file>
+        <file>RemoveDialog.qml</file>
     </qresource>
 </RCC>
