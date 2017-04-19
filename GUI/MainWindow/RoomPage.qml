@@ -59,10 +59,10 @@ Item{
 	}
 
 	function getLobbyMessages() {
-		if(firstTime_msg)
-			firstTime_msg = false
-
 		function callbackFn(par) {
+			if(firstTime_msg)
+				firstTime_msg = false
+
 			messagesModel.json = par.response
 			contentm.positionViewAtEnd()
 

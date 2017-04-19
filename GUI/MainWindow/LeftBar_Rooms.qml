@@ -12,10 +12,10 @@ Rectangle {
 	property bool firstTime: true
 
 	function getLobbies() {
-		if(firstTime)
-			firstTime = false
-
 		function callbackFn(par) {
+			if(firstTime)
+				firstTime = false
+
 			privateLobbiesModel.json = par.response
 			subscribedPublicLobbiesModel.json = par.response
 			unsubscribedPublicLobbiesModel.json = par.response

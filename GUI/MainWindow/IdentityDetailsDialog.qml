@@ -47,6 +47,8 @@ Dialog {
 	property string type
 	property int last_usage
 
+	property bool mask_loading: true
+
 	positiveButtonText: "Cancel"
 	negativeButtonText: "Apply"
 
@@ -71,6 +73,9 @@ Dialog {
 		}
 
 		function callbackFn(par) {
+			if(mask_loading)
+				mask_loading = false
+
 			usagesModel.json = par.response
 
 			var json = JSON.parse(par.response)
@@ -111,6 +116,7 @@ Dialog {
 	}
 
 	onOpened: {
+		mask_loading = true
 		getIdentityOptions()
 	}
 
@@ -182,6 +188,13 @@ Dialog {
 
 			frameVisible: false
 			tabsVisible: false
+
+			LoadingMask {
+				id: loadingMask
+				anchors.fill: parent
+
+				state: mask_loading ? "visible" : "non-visible"
+			}
 
 			QtControls.Tab {
 				title: "General"
@@ -339,6 +352,7 @@ Dialog {
 								text: "Owner account name"
 
 								height: dp(48)
+								interactive: pgp_id_known
 								enabled: !anonymous
 								visible: !anonymous
 
@@ -349,8 +363,10 @@ Dialog {
 								}
 
 								onClicked: {
-									scrollingDialog.close()
-									pgpFriendDetailsDialog.showAccount(pgp_name, pgp_id)
+									if(pgp_id_known) {
+										scrollingDialog.close()
+										pgpFriendDetailsDialog.showAccount(pgp_name, pgp_id)
+									}
 								}
 							}
 

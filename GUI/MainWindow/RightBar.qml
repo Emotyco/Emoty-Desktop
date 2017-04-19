@@ -55,10 +55,10 @@ View {
 	clipContent: true
 
 	function refreshGxsIdModel() {
-		if(firstTime_gxs)
-			firstTime_gxs = false
-
 		function callbackFn(par) {
+			if(firstTime_gxs)
+				firstTime_gxs = false
+
 			gxsIdModel.json = par.response
 
 			stateToken_gxs = JSON.parse(par.response).statetoken
@@ -69,10 +69,10 @@ View {
 	}
 
 	function refreshPgpIdModel() {
-		if(firstTime_pgp)
-			firstTime_pgp = false
-
 		function callbackFn(par) {
+			if(firstTime_pgp)
+				firstTime_pgp = false
+
 			pgpIdModel.json = par.response
 
 			stateToken_pgp = JSON.parse(par.response).statetoken
