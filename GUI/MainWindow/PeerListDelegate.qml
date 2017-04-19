@@ -336,7 +336,7 @@ Component {
 
 					name: "awesome/phone"
 					visible: true
-					color: Theme.light.iconColor
+					color: Theme.light.hintColor
 
 					size: dp(31)
 
