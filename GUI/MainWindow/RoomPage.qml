@@ -475,6 +475,8 @@ Item{
 							rightMargin: dp(18)
 						}
 
+						readOnly: true
+
 						placeholderText: "Search friends"
 						placeholderPixelSize: dp(15)
 
@@ -486,12 +488,12 @@ Item{
 						focus: true
 						showBorder: false
 
-						onActiveFocusChanged: {
+						/*onActiveFocusChanged: {
 							if(activeFocus)
 								friendFilter.elevation = 2
 							else
 								friendFilter.elevation = 1
-						}
+						}*/
 					}
 				}
 			}
@@ -526,11 +528,14 @@ Item{
 				footer: RoomFriend {
 					width: parent.width
 
+					interactive: false
+
 					text: "Add to room"
-					textColor: Theme.light.textColor
+					textColor: Theme.light.hintColor//Theme.light.textColor
 					itemLabel.style: "body1"
 
 					iconName: "awesome/plus"
+					iconColor: Theme.light.hintColor
 
 					onClicked: {
 						addFriendRoom.show()
