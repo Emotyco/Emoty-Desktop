@@ -45,7 +45,7 @@ Dialog {
 	property bool pgp_id_known
 	property string pgp_name
 	property string type
-	property int last_usage
+	property var last_usage
 
 	property bool mask_loading: true
 
@@ -91,7 +91,8 @@ Dialog {
 			pgp_id_known = json.data.pgp_id_known
 			pgp_name = json.data.pgp_name
 			type = json.data.type
-			last_usage = json.data.last_usage
+
+			last_usage = new Date(1000 * json.data.last_usage)
 		}
 
 		rsApi.request("/identity/get_identity_details", JSON.stringify(jsonData), callbackFn)
@@ -331,7 +332,7 @@ Dialog {
 								secondaryItem: Label {
 									anchors.verticalCenter: parent.verticalCenter
 
-									text: last_usage + " seconds ago"
+									text: last_usage.toTimeString() + " " + last_usage.toDateString()
 								}
 							}
 
@@ -461,7 +462,7 @@ Dialog {
 										return "Membership verification in circle"
 								}
 							}
-							valueText: model.usage_time + " seconds ago"
+							valueText: Date(1000 * model.usage_time).toTimeString() + " " + Date(1000 * model.usage_time).toDateString()
 						}
 					}
 

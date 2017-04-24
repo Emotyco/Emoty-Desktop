@@ -36,7 +36,7 @@ Dialog {
 	property string name_peer: ""
 	property string peer_id: ""
 
-	property string last_contact: ""
+	property var last_contact
 	property string status_message: ""
 
 	property string encryption: ""
@@ -82,7 +82,7 @@ Dialog {
 
 			var json = JSON.parse(par.response)
 
-			last_contact = json.data.last_contact
+			last_contact = new Date(1000 * json.data.last_contact)
 			status_message = json.data.status_message
 
 			encryption = json.data.encryption
@@ -263,7 +263,7 @@ Dialog {
 								secondaryItem: Label {
 									anchors.verticalCenter: parent.verticalCenter
 
-									text: last_contact
+									text: last_contact.toTimeString() + " " + last_contact.toDateString()
 								}
 							}
 
