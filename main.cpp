@@ -32,6 +32,7 @@
 #endif
 
 #include "libresapilocalclient.h"
+#include "notifier.h"
 #include "Bridge/LoginWindow/loginwindow_main.h"
 #include "Util/runstatehelper.h"
 #include "Util/screensize.h"
@@ -49,6 +50,7 @@ int main(int argc, char *argv[])
 	QApplication app(argc, argv);
 
 	RunStateHelper::Create();
+	Notifier::Create();
 
 #ifndef QT_DEBUG
 	QProcess *process = new QProcess();
@@ -91,13 +93,15 @@ int main(int argc, char *argv[])
 	view->setResizeMode(QQuickView::SizeRootObjectToView);
 
 	QQmlEngine *engine = view->engine();
-	QObject::connect(engine,SIGNAL(quit()),qApp, SLOT(quit())) ;
+	QObject::connect(engine,SIGNAL(quit()),qApp, SLOT(quit()));
 	QPM_INIT((*engine));
 
 	QQmlContext *ctxt = view->rootContext();
 	ctxt->setContextProperty("view", view);
 
 	QQuickViewHelper helper(view);
+	QObject::connect(Notifier::getInstance(), SIGNAL(chatMessage()), helper, SLOT(alert()));
+
 	CursorShape cursor(view);
 	ctxt->setContextProperty("cursor", &cursor);
 
@@ -114,6 +118,7 @@ int main(int argc, char *argv[])
 	LibresapiLocalClient rsApi;
 	rsApi.openConnection(sockPath);
 
+	ctxt->setContextProperty("notifier", Notifier::getInstance());
 	ctxt->setContextProperty("rsApi", &rsApi);
 	ctxt->setContextProperty("runStateHelper", RunStateHelper::getInstance());
 

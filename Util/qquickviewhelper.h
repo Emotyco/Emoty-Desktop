@@ -40,6 +40,11 @@ public slots:
 			view->show();
 	}
 
+	void alert()
+	{
+		view->alert(0);
+	}
+
 private:
 	QQuickView *view;
 };

@@ -58,6 +58,7 @@ Dialog {
 
 		main.advmode = scrollingDialog.advmode
 		main.flickablemode = scrollingDialog.flickablemode
+		notifier.setAdvMode(scrollingDialog.advmode)
 
 		Units.setMultiplier(approximationSize)
 	}

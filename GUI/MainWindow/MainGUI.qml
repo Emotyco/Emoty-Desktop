@@ -153,6 +153,7 @@ Rectangle {
 
 		function callbackFn(par) {
 			main.advmode = Boolean(JSON.parse(par.response).data.advanced_mode)
+			notifier.setAdvMode(Boolean(JSON.parse(par.response).data.advanced_mode))
 		}
 
 		rsApi.request("/settings/get_advanced_mode/", JSON.stringify(jsonData), callbackFn)

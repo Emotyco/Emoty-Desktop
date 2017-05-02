@@ -32,7 +32,7 @@
 #include <QQmlContext>
 
 //Sonet-GUI
-//#include "retroshare/rsinit.h"
+#include "notifier.h"
 #include "Util/runstatehelper.h"
 
 MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
@@ -41,6 +41,8 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 	setObjectName("mainWindowPanel");
 
 	this->setResizeMode(QQuickView::SizeRootObjectToView);
+
+	QObject::connect(Notifier::getInstance(), SIGNAL(chatMessage()), this, SLOT(windowAlert()));
 
 	QQmlEngine *engine = this->engine();
 	QObject::connect(engine,SIGNAL(quit()),qApp, SLOT(quit()));
@@ -65,6 +67,7 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 	ctxt->setContextProperty("cursor", this);
 	ctxt->setContextProperty("control", this);
 
+	ctxt->setContextProperty("notifier", Notifier::getInstance());
 	ctxt->setContextProperty("rsApi", rsApi);
 	ctxt->setContextProperty("runStateHelper", RunStateHelper::getInstance());
 	this->setSource(QUrl("qrc:/Borderless.qml"));
@@ -133,8 +136,8 @@ void MainWindowPanel::resizeWin(int x, int y, bool changeposx, bool changeposy)
 	}
 }
 
-void MainWindowPanel::windowAlert(bool incoming)
+void MainWindowPanel::windowAlert()
 {
-	if(incoming && (GetActiveWindow() != windowHandle))
+	if((GetActiveWindow() != windowHandle))
 		FlashWindow(windowHandle, true);
 }

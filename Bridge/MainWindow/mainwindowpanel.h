@@ -45,7 +45,7 @@ public slots:
 	void resizeWin(int x, int y, bool changeposx, bool changeposy);
 	void hide();
 
-	void windowAlert(bool incoming);
+	void windowAlert();
 
 private:
 	HWND windowHandle;
