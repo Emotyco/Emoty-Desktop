@@ -420,7 +420,7 @@ View {
 					verticalCenter: parent.verticalCenter
 				}
 
-				text: "PgpBox"
+				text: "direct"
 				color: "white"
 				style: "button"
 			}
