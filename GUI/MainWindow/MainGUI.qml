@@ -616,6 +616,8 @@ Rectangle {
 
 					initialItem:	Content{}
 				}
+
+				Component.onCompleted: {main.content.activated = false}
 			}
 		}
 	}
