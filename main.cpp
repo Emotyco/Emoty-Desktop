@@ -33,6 +33,7 @@
 
 #include "libresapilocalclient.h"
 #include "notifier.h"
+#include "soundnotifier.h"
 #include "Bridge/LoginWindow/loginwindow_main.h"
 #include "Util/runstatehelper.h"
 #include "Util/screensize.h"
@@ -51,6 +52,7 @@ int main(int argc, char *argv[])
 
 	RunStateHelper::Create();
 	Notifier::Create();
+	SoundNotifier::Create();
 
 #ifndef QT_DEBUG
 	QProcess *process = new QProcess();
