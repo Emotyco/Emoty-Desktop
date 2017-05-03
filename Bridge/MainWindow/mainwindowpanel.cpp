@@ -42,7 +42,8 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 
 	this->setResizeMode(QQuickView::SizeRootObjectToView);
 
-	QObject::connect(Notifier::getInstance(), SIGNAL(chatMessage()), this, SLOT(windowAlert()));
+	QObject::connect(Notifier::getInstance(), SIGNAL(chatMessage(QString, QString, bool)),
+	                 this, SLOT(windowFlashMessageReceived(QString, QString, bool)));
 
 	QQmlEngine *engine = this->engine();
 	QObject::connect(engine,SIGNAL(quit()),qApp, SLOT(quit()));
@@ -136,8 +137,28 @@ void MainWindowPanel::resizeWin(int x, int y, bool changeposx, bool changeposy)
 	}
 }
 
-void MainWindowPanel::windowAlert()
+void MainWindowPanel::windowFlash()
 {
 	if((GetActiveWindow() != windowHandle))
 		FlashWindow(windowHandle, true);
+}
+
+void MainWindowPanel::windowFlashMessageReceived(QString chat_id, QString chat_type, bool incoming)
+{
+	if(chat_type == "distant_chat" || chat_type == "lobby")
+	{
+		if(incoming)
+		{
+			if((GetActiveWindow() != windowHandle))
+				FlashWindow(windowHandle, true);
+		}
+	}
+	else if(chat_type == "direct_chat" && Notifier::getInstance()->getAdvMode())
+	{
+		if(incoming)
+		{
+			if((GetActiveWindow() != windowHandle))
+				FlashWindow(windowHandle, true);
+		}
+	}
 }

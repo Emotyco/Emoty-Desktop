@@ -26,6 +26,8 @@
 #include <QQuickView>
 #include <QSystemTrayIcon>
 
+#include "notifier.h"
+
 class QQuickViewHelper : public QObject
 {
 	Q_OBJECT
@@ -40,9 +42,23 @@ public slots:
 			view->show();
 	}
 
-	void alert()
+	void flash()
 	{
 		view->alert(0);
+	}
+
+	void flashMessageReceived(QString chat_id, QString chat_type, bool incoming)
+	{
+		if(chat_type == "distant_chat" || chat_type == "lobby")
+		{
+			if(incoming)
+				view->alert(0);
+		}
+		else if(chat_type == "direct_chat" && Notifier::getInstance()->getAdvMode())
+		{
+			if(incoming)
+				view->alert(0);
+		}
 	}
 
 private:

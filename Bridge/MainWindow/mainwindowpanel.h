@@ -45,7 +45,8 @@ public slots:
 	void resizeWin(int x, int y, bool changeposx, bool changeposy);
 	void hide();
 
-	void windowAlert();
+	void windowFlash();
+	void windowFlashMessageReceived(QString chat_id, QString chat_type, bool incoming);
 
 private:
 	HWND windowHandle;
