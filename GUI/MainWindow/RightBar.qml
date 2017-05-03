@@ -355,8 +355,88 @@ View {
 
 			height: dp(25)
 
-			visible: main.advmode
-			enabled: main.advmode
+			Component.onCompleted: {
+				visible = main.advmode
+			}
+
+			states: [
+				State {
+					name: "show"; when: main.advmode
+					PropertyChanges {
+						target: tabButtons
+						enabled: true
+					}
+				},
+				State{
+					name: "hide"; when: !main.advmode
+					PropertyChanges {
+						target: tabButtons
+						anchors.topMargin: -tabButtons.height
+						enabled: false
+					}
+				}
+			]
+
+			transitions: [
+				Transition {
+					from: "hide"; to: "show"
+
+					SequentialAnimation {
+						PropertyAction {
+							target: tabButtons
+							property: "visible"
+							value: true
+						}
+						ParallelAnimation {
+							NumberAnimation {
+								target: tabButtons
+								property: "opacity"
+								from: 0
+								to: 1
+								easing.type: Easing.InOutQuad;
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+							NumberAnimation {
+								target: tabButtons
+								property: "anchors.topMargin"
+								from: -tabButtons.height
+								to: 0
+								easing.type: Easing.InOutQuad;
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+						}
+					}
+				},
+				Transition {
+					from: "show"; to: "hide"
+
+					SequentialAnimation {
+						ParallelAnimation {
+							NumberAnimation {
+								target: tabButtons
+								property: "opacity"
+								from: 1
+								to: 0
+								easing.type: Easing.InOutQuad
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+							NumberAnimation {
+								target: tabButtons
+								property: "anchors.topMargin"
+								from: 0
+								to: -tabButtons.height
+								easing.type: Easing.InOutQuad
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+						}
+						PropertyAction {
+							target: tabButtons;
+							property: "visible";
+							value: false
+						}
+					}
+				}
+			]
 
 			Row {
 				anchors.fill: parent
@@ -389,8 +469,10 @@ View {
 			id: tabView
 
 			anchors {
-				fill: parent
-				topMargin: main.advmode ? dp(75) : dp(50)
+				top: tabButtons.bottom
+				left: parent.left
+				right: parent.right
+				bottom: parent.bottom
 			}
 
 			frameVisible: false
