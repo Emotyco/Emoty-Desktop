@@ -561,19 +561,23 @@ View {
 		Drag.hotSpot.x: 0
 		Drag.hotSpot.y: 0
 
+		Component.onCompleted: {
+			visible = main.advmode
+		}
+
 		states: [
 			State {
-				name: "notvisible"; when: !main.advmode
+				name: "hide"; when: !main.advmode
 				PropertyChanges {
 					target: pgpBox
-					visible: false
+					enabled: false
 				}
 			},
 			State {
-				name: "visible"; when: !main.advmode
+				name: "show"; when: main.advmode
 				PropertyChanges {
 					target: pgpBox
-					visible: true
+					enabled: true
 				}
 			},
 			State {
@@ -598,6 +602,64 @@ View {
 					target: pgpBox;
 					property: "height";
 					duration: MaterialAnimation.pageTransitionDuration/2
+				}
+			},
+			Transition {
+				from: "hide"; to: "show"
+
+				SequentialAnimation {
+					PropertyAction {
+						target: pgpBox
+						property: "visible"
+						value: true
+					}
+					ParallelAnimation {
+						NumberAnimation {
+							target: pgpBox
+							property: "opacity"
+							from: 0
+							to: 1
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+						NumberAnimation {
+							target: pgpBox
+							property: "anchors.bottomMargin"
+							from: -pgpBox.height
+							to: 0
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+					}
+				}
+			},
+			Transition {
+				to: "hide"
+
+				SequentialAnimation {
+					ParallelAnimation {
+						NumberAnimation {
+							target: pgpBox
+							property: "opacity"
+							from: 1
+							to: 0
+							easing.type: Easing.InOutQuad
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+						NumberAnimation {
+							target: pgpBox
+							property: "anchors.bottomMargin"
+							from: 0
+							to: -pgpBox.height
+							easing.type: Easing.InOutQuad
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+					}
+					PropertyAction {
+						target: pgpBox;
+						property: "visible";
+						value: false
+					}
 				}
 			}
 		]
