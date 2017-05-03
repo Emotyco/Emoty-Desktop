@@ -21,7 +21,10 @@
  ****************************************************************/
 
 import QtQuick 2.5
+import QtQuick.Controls 1.4
+
 import Material 0.3
+import Material.ListItems 0.1 as ListItem
 
 View {
 	id: rightBar
@@ -34,10 +37,12 @@ View {
 														      "#9E9E9E"	 // grey
 
 	// For handling tokens
-	property int stateToken_gxs: 0
+	property int stateToken_gxsContacts: 0
+	property int stateToken_gxsAll: 0
 	property int stateToken_pgp: 0
 
-	property bool firstTime_gxs: true
+	property bool firstTime_gxsContacts: true
+	property bool firstTime_gxsAll: true
 	property bool firstTime_pgp: true
 
 	anchors {
@@ -56,16 +61,30 @@ View {
 
 	function refreshGxsIdModel() {
 		function callbackFn(par) {
-			if(firstTime_gxs)
-				firstTime_gxs = false
+			if(firstTime_gxsContacts)
+				firstTime_gxsContacts = false
 
 			gxsIdModel.json = par.response
 
-			stateToken_gxs = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_gxs, refreshGxsIdModel)
+			stateToken_gxsContacts = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_gxsContacts, refreshGxsIdModel)
 		}
 
 		rsApi.request("/identity/notown_ids/", "", callbackFn)
+	}
+
+	function refreshAllGxsIdModel() {
+		function callbackFn(par) {
+			if(firstTime_gxsAll)
+				firstTime_gxsAll = false
+
+			allGxsIdModel.json = par.response
+
+			stateToken_gxsAll = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_gxsAll, refreshAllGxsIdModel)
+		}
+
+		rsApi.request("/identity/*", "", callbackFn)
 	}
 
 	function refreshPgpIdModel() {
@@ -124,6 +143,7 @@ View {
 
 	Component.onCompleted: {
 		refreshGxsIdModel()
+		refreshAllGxsIdModel()
 		refreshPgpIdModel()
 		getStateString()
 		getCustomStateString()
@@ -131,6 +151,11 @@ View {
 
 	JSONListModel {
 		id: gxsIdModel
+		query: "$.data[*]"
+	}
+
+	JSONListModel {
+		id: allGxsIdModel
 		query: "$.data[*]"
 	}
 
@@ -319,29 +344,123 @@ View {
 			}
 		}
 
-		ListView {
-			id: listView
+		Item {
+			id: tabButtons
 
-			LoadingMask {
-				id: loadingMask
+			anchors {
+				top: header.bottom
+				left: parent.left
+				right: parent.right
+			}
+
+			height: dp(25)
+
+			visible: main.advmode
+			enabled: main.advmode
+
+			Row {
 				anchors.fill: parent
 
-				state: firstTime_gxs ? "visible" : "non-visible"
+				Button {
+					property bool selected: tabView.currentIndex === 0
+					height: parent.height
+					width: parent.width/2
+
+					text: "Contacts"
+					textColor: selected ? Theme.primaryColor : Theme.light.textColor
+
+					onClicked: tabView.currentIndex = 0
+				}
+
+				Button {
+					property bool selected: tabView.currentIndex === 1
+					height: parent.height
+					width: parent.width/2
+
+					text: "All"
+					textColor: selected ? Theme.primaryColor : Theme.light.textColor
+
+					onClicked: tabView.currentIndex = 1
+				}
 			}
+		}
+
+		TabView {
+			id: tabView
 
 			anchors {
 				fill: parent
-				topMargin: dp(50)
+				topMargin: main.advmode ? dp(75) : dp(50)
 			}
 
-			clip: true
+			frameVisible: false
+			tabsVisible: false
 
-			model: gxsIdModel.model
-			delegate: FriendListDelegate{}
-		}
+			states: [
+				State {
+					when: main.advmode
+					PropertyChanges {
+						target: tabView
+						currentIndex: 0
+					}
+				}
+			]
 
-		Scrollbar {
-			flickableItem: listView
+			Tab {
+				title: "Contacts"
+
+				Item{
+					ListView {
+						id: listView
+
+						anchors.fill: parent
+
+						clip: true
+
+						model: gxsIdModel.model
+						delegate: FriendListDelegate{}
+
+						LoadingMask {
+							id: loadingMask
+							anchors.fill: parent
+
+							state: firstTime_gxsContacts ? "visible" : "non-visible"
+						}
+					}
+
+					Scrollbar {
+						flickableItem: listView
+					}
+				}
+			}
+
+			Tab {
+				title: "All"
+
+				Item{
+					ListView {
+						id: listView2
+
+						anchors.fill: parent
+
+						clip: true
+
+						model: allGxsIdModel.model
+						delegate: FriendListDelegate{}
+
+						LoadingMask {
+							id: loadingMask2
+							anchors.fill: parent
+
+							state: firstTime_gxsAll ? "visible" : "non-visible"
+						}
+					}
+
+					Scrollbar {
+						flickableItem: listView2
+					}
+				}
+			}
 		}
 	}
 
@@ -494,10 +613,10 @@ View {
 		}
 
 		ListView {
-			id: listView2
+			id: listView3
 
 			LoadingMask {
-				id: loadingMask2
+				id: loadingMask3
 				anchors.fill: parent
 
 				state: firstTime_pgp ? "visible" : "non-visible"
@@ -515,7 +634,7 @@ View {
 		}
 
 		Scrollbar {
-			flickableItem: listView2
+			flickableItem: listView3
 		}
 	}
 

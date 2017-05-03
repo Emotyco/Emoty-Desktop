@@ -31,6 +31,7 @@ Component {
 	Rectangle {
 		id: friendroot
 
+		property bool contact: model.contact != undefined ? (model.contact || model.own) : true
 		property bool entered: false
 		property string msg: ""
 		property int msgcount: 0
@@ -169,6 +170,25 @@ Component {
 
 					ListItem.Standard {
 						height: dp(30)
+						text: "Add to contacts"
+						itemLabel.style: "menu"
+
+						visible: !contact
+						enabled: !contact
+
+						onClicked: {
+							overflowMenu.close()
+
+							var jsonData = {
+								gxs_id: model.gxs_id
+							}
+
+							rsApi.request("/identity/add_contact", JSON.stringify(jsonData))
+						}
+					}
+
+					ListItem.Standard {
+						height: dp(30)
 						text: "Chat"
 						itemLabel.style: "menu"
 						onClicked: {
@@ -194,6 +214,10 @@ Component {
 						height: dp(30)
 						text: "Remove"
 						itemLabel.style: "menu"
+
+						visible: contact
+						enabled: contact
+
 						onClicked: {
 							overflowMenu.close()
 
