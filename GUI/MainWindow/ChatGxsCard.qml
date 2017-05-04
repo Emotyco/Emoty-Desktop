@@ -617,6 +617,8 @@ DragTile {
 							drag.getChatMessages()
 							msgBox.text = ""
 							event.accepted = true
+
+							soundNotifier.playChatMessageSended()
 						}
 					}
 				}

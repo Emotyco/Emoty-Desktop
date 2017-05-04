@@ -419,6 +419,8 @@ Item{
 								contentm.positionViewAtEnd()
 								msgBox.text = "";
 								event.accepted = true;
+
+								soundNotifier.playChatMessageSended()
 							}
 						}
 					}

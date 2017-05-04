@@ -121,6 +121,7 @@ int main(int argc, char *argv[])
 	rsApi.openConnection(sockPath);
 
 	ctxt->setContextProperty("notifier", Notifier::getInstance());
+	ctxt->setContextProperty("soundNotifier", SoundNotifier::getInstance());
 	ctxt->setContextProperty("rsApi", &rsApi);
 	ctxt->setContextProperty("runStateHelper", RunStateHelper::getInstance());
 

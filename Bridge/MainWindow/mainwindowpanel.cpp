@@ -33,6 +33,7 @@
 
 //Sonet-GUI
 #include "notifier.h"
+#include "soundnotifier.h"
 #include "Util/runstatehelper.h"
 
 MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
@@ -69,6 +70,7 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 	ctxt->setContextProperty("control", this);
 
 	ctxt->setContextProperty("notifier", Notifier::getInstance());
+	ctxt->setContextProperty("soundNotifier", SoundNotifier::getInstance());
 	ctxt->setContextProperty("rsApi", rsApi);
 	ctxt->setContextProperty("runStateHelper", RunStateHelper::getInstance());
 	this->setSource(QUrl("qrc:/Borderless.qml"));
