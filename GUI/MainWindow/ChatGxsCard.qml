@@ -598,8 +598,8 @@ DragTile {
 
 					onActiveFocusChanged: {
 						if(activeFocus) {
-							if(drag.chat_id.length > 0)
-								rsApi.request("/chat/mark_chat_as_read/"+drag.chat_id)
+							if(drag.chatId.length > 0)
+								rsApi.request("/chat/mark_chat_as_read/"+drag.chatId)
 
 							footerView.elevation = 2
 						}
