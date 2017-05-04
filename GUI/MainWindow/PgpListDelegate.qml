@@ -113,7 +113,16 @@ Component {
 		Rectangle {
 			id: friendroot
 
-			property int unread_msgs: 0
+			property int unread_msgs: {
+				var msgs = 0
+
+				for(var i=0; i < locationsModel.model.count; i++)
+				{
+					msgs += locationsModel.model.get(i).unread_msgs
+				}
+
+				return msgs
+			}
 
 			anchors.top: parent.top
 
