@@ -233,6 +233,35 @@ View {
 						else if(leftBar.state !== "narrow" && tabView.currentIndex !== model.index+1)
 							tabView.currentIndex = model.index+1
 					}
+
+					View {
+						anchors {
+							top: parent.top
+							right: parent.right
+							topMargin: dp(7)
+							rightMargin: dp(7)
+						}
+
+						width: dp(14)
+						height: dp(14)
+						radius: width/2
+
+						backgroundColor: Theme.primaryColor
+						elevation: 1
+
+						visible: helperName == "Rooms" ?
+									main.unreadMsgsLobbies > 0 ? true : false
+						          : false
+
+						Text {
+							anchors.fill: parent
+							text: helperName == "Rooms" ? main.unreadMsgsLobbies : ""
+							color: "white"
+							font.family: "Roboto"
+							verticalAlignment: Text.AlignVCenter
+							horizontalAlignment: Text.AlignHCenter
+						}
+					}
 				}
 			}
 		}

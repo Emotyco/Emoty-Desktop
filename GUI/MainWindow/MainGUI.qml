@@ -41,6 +41,7 @@ Rectangle {
 	property string defaultGxsName
 	property string defaultGxsId
 
+	property int unreadMsgsLobbies: 0
 	property Item controls: controlView
 
 	property int visibleRows: Math.round((main.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
@@ -110,6 +111,7 @@ Rectangle {
 	Component.onCompleted: {
 		updateVisibleRows()
 		getOwnIdentities()
+		getUnreadMsgs()
 		getRunState()
 		getAdvancedMode()
 		getFlickableGridMode()
@@ -117,6 +119,7 @@ Rectangle {
 
 	// For handling tokens
 	property int stateToken_ownGxs: 0
+	property int stateToken_unreadMsgs: 0
 
 	function getOwnIdentities() {
 		var jsonData = {
@@ -131,6 +134,24 @@ Rectangle {
 		}
 
 		rsApi.request("/identity/own_ids/", JSON.stringify(jsonData), callbackFn)
+	}
+
+	function getUnreadMsgs() {
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
+
+			var count = 0
+			for (var i = 0; i<jsonResp.data.length; i++) {
+				if(jsonResp.data[i].is_lobby == true)
+					count++
+			}
+			main.unreadMsgsLobbies = count
+
+			stateToken_unreadMsgs = jsonResp.statetoken
+			main.registerToken(stateToken_unreadMsgs, getUnreadMsgs)
+		}
+
+		rsApi.request("/chat/unread_msgs/", "", callbackFn)
 	}
 
 	function getRunState() {
