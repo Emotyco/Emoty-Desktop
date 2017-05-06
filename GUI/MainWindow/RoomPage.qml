@@ -38,6 +38,12 @@ Item{
 	property int stateToken_msg: 0
 	property int stateToken_gxs: 0
 
+	Component.onDestruction: {
+		main.unregisterToken(stateToken_p)
+		main.unregisterToken(stateToken_msg)
+		main.unregisterToken(stateToken_gxs)
+	}
+
 	property bool firstTime_msg: true
 
 	// Just for "restore" option

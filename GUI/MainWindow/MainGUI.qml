@@ -115,6 +115,7 @@ Rectangle {
 		getFlickableGridMode()
 	}
 
+	// For handling tokens
 	property int stateToken_ownGxs: 0
 
 	function getOwnIdentities() {
@@ -736,6 +737,10 @@ Rectangle {
 
 	//
 	//////
+
+	function unregisterToken(token) {
+		delete tokens[token]
+	}
 
 	/*
 	  All new cards (panels) are instatiated in these fucntions,

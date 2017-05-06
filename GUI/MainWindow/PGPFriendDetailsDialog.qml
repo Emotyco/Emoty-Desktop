@@ -36,6 +36,11 @@ Dialog {
 	property int stateToken_gxs: 0
 	property int stateToken_pgp: 0
 
+	Component.onDestruction: {
+		main.unregisterToken(stateToken_gxs)
+		main.unregisterToken(stateToken_pgp)
+	}
+
 	property string pgp_key
 	property string pgp_fingerprint
 

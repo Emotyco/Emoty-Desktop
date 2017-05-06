@@ -9,6 +9,8 @@ Rectangle {
 	// For handling tokens
 	property int stateToken: 0
 
+	Component.onDestruction: main.unregisterToken(stateToken)
+
 	property bool firstTime: true
 
 	function getLobbies() {

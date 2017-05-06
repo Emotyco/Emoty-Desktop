@@ -40,6 +40,8 @@ DragTile {
 	// For handling tokens
 	property int stateToken: 0
 
+	Component.onDestruction: main.unregisterToken(stateToken)
+
 	// Just for "restore" option
 	property int tmpCol
 	property int tmpRow

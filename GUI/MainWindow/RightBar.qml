@@ -41,6 +41,12 @@ View {
 	property int stateToken_gxsAll: 0
 	property int stateToken_pgp: 0
 
+	Component.onDestruction: {
+		main.unregisterToken(stateToken_gxsContacts)
+		main.unregisterToken(stateToken_gxsAll)
+		main.unregisterToken(stateToken_pgp)
+	}
+
 	property bool firstTime_gxsContacts: true
 	property bool firstTime_gxsAll: true
 	property bool firstTime_pgp: true
