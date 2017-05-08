@@ -132,6 +132,32 @@ Rectangle {
 						leftBar.state = "narrow"
 					}
 
+					secondaryItem: View {
+						anchors {
+							verticalCenter: parent.verticalCenter
+							right: parent.right
+							rightMargin: dp(20)
+						}
+
+						width: dp(20)
+						height: dp(20)
+						radius: width/2
+
+						backgroundColor: Theme.primaryColor
+						elevation: 1
+
+						visible: model.unread_msg_count > 0 ? true : false
+
+						Text {
+							anchors.fill: parent
+							text: model.unread_msg_count
+							color: "white"
+							font.family: "Roboto"
+							verticalAlignment: Text.AlignVCenter
+							horizontalAlignment: Text.AlignHCenter
+						}
+					}
+
 					Tooltip {
 						text: "Topic: " + model.topic
 							  + (main.advmode
@@ -187,6 +213,32 @@ Rectangle {
 
 						main.content.refresh()
 						leftBar.state = "narrow"
+					}
+
+					secondaryItem: View {
+						anchors {
+							verticalCenter: parent.verticalCenter
+							right: parent.right
+							rightMargin: dp(20)
+						}
+
+						width: dp(20)
+						height: dp(20)
+						radius: width/2
+
+						backgroundColor: Theme.primaryColor
+						elevation: 1
+
+						visible: model.unread_msg_count > 0 ? true : false
+
+						Text {
+							anchors.fill: parent
+							text: model.unread_msg_count
+							color: "white"
+							font.family: "Roboto"
+							verticalAlignment: Text.AlignVCenter
+							horizontalAlignment: Text.AlignHCenter
+						}
 					}
 
 					Tooltip {
@@ -289,6 +341,32 @@ Rectangle {
 					}
 
 					onClicked: openUnsubscribedPublicLobby()
+
+					secondaryItem: View {
+						anchors {
+							verticalCenter: parent.verticalCenter
+							right: parent.right
+							rightMargin: dp(20)
+						}
+
+						width: dp(20)
+						height: dp(20)
+						radius: width/2
+
+						backgroundColor: Theme.primaryColor
+						elevation: 1
+
+						visible: model.unread_msg_count > 0 ? true : false
+
+						Text {
+							anchors.fill: parent
+							text: model.unread_msg_count
+							color: "white"
+							font.family: "Roboto"
+							verticalAlignment: Text.AlignVCenter
+							horizontalAlignment: Text.AlignHCenter
+						}
+					}
 
 					Tooltip {
 						text: "Topic: " + model.topic
