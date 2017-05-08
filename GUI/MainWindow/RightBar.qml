@@ -36,6 +36,8 @@ View {
 								state_string === "away"	 ? "#FFEB3B" :   // yellow
 														      "#9E9E9E"	 // grey
 
+	property int pgp_unread_msgs: 0
+
 	// For handling tokens
 	property int stateToken_gxsContacts: 0
 	property int stateToken_gxsAll: 0
@@ -100,7 +102,18 @@ View {
 
 			pgpIdModel.json = par.response
 
-			stateToken_pgp = JSON.parse(par.response).statetoken
+			var jsonResp = JSON.parse(par.response)
+
+			var count = 0
+			for (var i = 0; i<jsonResp.data.length; i++) {
+				for (var ii = 0; ii<jsonResp.data[i].locations.length; ii++) {
+					if(jsonResp.data[i].locations[ii].unread_msgs != 0)
+						count++
+				}
+			}
+			pgp_unread_msgs = count
+
+			stateToken_pgp = jsonResp.statetoken
 			main.registerToken(stateToken_pgp, refreshPgpIdModel)
 		}
 
@@ -682,6 +695,29 @@ View {
 
 			backgroundColor: Palette.colors["deepOrange"]["500"]
 			elevation: 1
+
+			View {
+				anchors {
+					verticalCenter: parent.verticalCenter
+					left: parent.left
+					leftMargin: dp(15)
+				}
+
+				width: dp(20)
+				height: dp(20)
+				radius: width/2
+
+				elevation: 1
+				visible: pgp_unread_msgs > 0 ? true : false
+
+				Text {
+					anchors.fill: parent
+					text: pgp_unread_msgs
+					font.family: "Roboto"
+					verticalAlignment: Text.AlignVCenter
+					horizontalAlignment: Text.AlignHCenter
+				}
+			}
 
 			Label {
 				anchors {
