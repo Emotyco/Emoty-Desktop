@@ -47,18 +47,12 @@ public slots:
 		view->alert(0);
 	}
 
-	void flashMessageReceived(QString chat_id, QString chat_type, bool incoming)
+	void flashMessageReceived(QString chat_type)
 	{
 		if(chat_type == "distant_chat" || chat_type == "lobby")
-		{
-			if(incoming)
-				view->alert(0);
-		}
+			view->alert(0);
 		else if(chat_type == "direct_chat" && Notifier::getInstance()->getAdvMode())
-		{
-			if(incoming)
-				view->alert(0);
-		}
+			view->alert(0);
 	}
 
 private:

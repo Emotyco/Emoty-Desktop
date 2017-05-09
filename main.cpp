@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 	ctxt->setContextProperty("view", view);
 
 	QQuickViewHelper helper(view);
-	QObject::connect(Notifier::getInstance(), SIGNAL(chatMessage(QString, QString, bool)), helper, SLOT(flashMessageReceived(QString, QString, bool)));
+	QObject::connect(Notifier::getInstance(), SIGNAL(chatMessage(QString)), helper, SLOT(flashMessageReceived(QString)));
 
 	CursorShape cursor(view);
 	ctxt->setContextProperty("cursor", &cursor);

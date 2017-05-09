@@ -138,6 +138,7 @@ Rectangle {
 
 	function getUnreadMsgs() {
 		function callbackFn(par) {
+			notifier.handleChatMessages(par.response)
 			var jsonResp = JSON.parse(par.response)
 
 			var count = 0

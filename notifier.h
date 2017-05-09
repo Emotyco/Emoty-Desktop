@@ -23,37 +23,17 @@
 #define NOTIFIER_H
 
 #include <QObject>
-#include <QTimer>
-
-#include "libresapilocalclient.h"
 
 class Notifier : public QObject
 {
 	Q_OBJECT
 public:
-	enum NotificationType{
-		LIST_PRE_CHANGE,
-		LIST_CHANGE,
-		ERROR_MSG,
-		CHAT_MESSAGE,
-		CHAT_STATUS,
-		CHAT_CLEARED,
-		CHAT_LOBBY_EVENT,
-		CHAT_LOBBY_TIME_SHIFT,
-		CUSTOM_STATE,
-		HASHING_INFO,
-		TURTLE_SEARCH_RESULT,
-		PEER_HAS_NEW_AVATAR,
-		OWN_AVATAR_CHANGED,
-		OWN_STATUS_MESSAGE_CHANGED,
-		DISK_FULL,
-		PEER_STATUS_CHANGED,
-		GXS_CHANGE,
-		PEER_STATUS_CHANGED_SUMMARY,
-		DISC_INFO_CHANGED,
-		DOWNLOAD_COMPLETE,
-		DOWNLOAD_COMPLETE_COUNT,
-		HISTORY_CHANGED
+	enum ChatType
+	{
+		BROADCAST_CHAT,
+		DISTANT_CHAT,
+		DIRECT_CHAT,
+		LOBBY
 	};
 
 	static Notifier *Create ();
@@ -61,48 +41,23 @@ public:
 	static Notifier *getInstance ();
 
 signals:
-	void listPreChange();
-	void listChange();
-	void errorMsg();
-	void chatMessage();
-	void chatMessage(QString chat_id, QString chat_type, bool incoming);
-	void chatStatus();
-	void chatCleared();
-	void chatLobbyEvent();
-	void chatLobbyTimeShift();
-	void customState();
-	void hashingInfo();
-	void turtleSearchResult();
-	void peerHasNewAvatar();
-	void ownAvatarChanged();
-	void ownStatusMessageChanged();
-	void diskFull();
-	void peerStatusChanged();
-	void gxsChange();
-
-	void peerStatusChangedSummary();
-	void discInfoChanged();
-
-	void downloadComplete();
-	void downloadCompleteCount();
-	void historyChanged();
+	void chatMessage(QString chat_type);
 
 public slots:
-	void requestNotifications();
-	void handleNotifications(QString receivedMsg);
+	void handleChatMessages(QString receivedMsg);
 
 	void setAdvMode(bool advmode);
 	bool getAdvMode();
 
 public:
-	Notifier(QObject *parent = 0);
-	    ~Notifier();
+	Notifier(QObject *parent = 0) :
+	    QObject(parent), advmode(false), msgStateToken(0) {}
+
 	static Notifier *_instance;
 
-	LibresapiLocalClient *rsApi;
-	QTimer *_timer;
-
 	bool advmode;
+	int msgStateToken;
+	std::map<ChatType, int> unreaded_msgs;
 };
 
 #endif // NOTIFIER_H

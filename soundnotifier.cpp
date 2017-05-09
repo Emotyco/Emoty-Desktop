@@ -57,7 +57,7 @@ SoundNotifier::SoundNotifier(QObject *parent) : QObject(parent)
 	soundsMap.emplace(SOUND_MESSAGE_SENDED, new QSound(QFileInfo(baseDir, "Sounds\\msgsended.wav").absoluteFilePath()));
 	soundsMap.emplace(SOUND_MESSAGE_RECEIVED, new QSound(QFileInfo(baseDir, "Sounds\\msgreceived.wav").absoluteFilePath()));
 
-	QObject::connect(Notifier::getInstance(), SIGNAL(chatMessage(QString, QString, bool)), this, SLOT(playChatMessageReceived(QString, QString, bool)));
+	QObject::connect(Notifier::getInstance(), SIGNAL(chatMessage(QString)), this, SLOT(playChatMessageReceived(QString)));
 }
 
 bool SoundNotifier::isMute()
@@ -80,18 +80,12 @@ QSound* SoundNotifier::getSound(const QString &sound)
 	return soundsMap.at(sound.toStdString());
 }
 
-void SoundNotifier::playChatMessageReceived(QString chat_id, QString chat_type, bool incoming)
+void SoundNotifier::playChatMessageReceived(QString chat_type)
 {
-    if(chat_type == "distant_chat" || chat_type == "lobby")
-	{
-		if(incoming)
-			play(SOUND_MESSAGE_RECEIVED);
-	}
+	if(chat_type == "distant_chat" || chat_type == "lobby")
+		play(SOUND_MESSAGE_RECEIVED);
 	else if(chat_type == "direct_chat" && Notifier::getInstance()->getAdvMode())
-	{
-		if(incoming)
-			play(SOUND_MESSAGE_RECEIVED);
-	}
+		play(SOUND_MESSAGE_RECEIVED);
 }
 
 void SoundNotifier::playChatMessageSended()

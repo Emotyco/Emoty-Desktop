@@ -46,7 +46,7 @@ public:
 
 public slots:
 	void setMute(bool mute);
-	void playChatMessageReceived(QString chat_id, QString chat_type, bool incoming);
+	void playChatMessageReceived(QString chat_type);
 	void playChatMessageSended();
 
 private:

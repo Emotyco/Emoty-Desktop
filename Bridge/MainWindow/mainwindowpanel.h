@@ -46,7 +46,7 @@ public slots:
 	void hide();
 
 	void windowFlash();
-	void windowFlashMessageReceived(QString chat_id, QString chat_type, bool incoming);
+	void windowFlashMessageReceived(QString chat_type);
 
 private:
 	HWND windowHandle;
