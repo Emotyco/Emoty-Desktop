@@ -40,8 +40,6 @@ DragTile {
 	// For handling tokens
 	property int stateToken: 0
 
-	Component.onDestruction: main.unregisterToken(stateToken)
-
 	// Just for "restore" option
 	property int tmpCol
 	property int tmpRow
@@ -69,29 +67,6 @@ DragTile {
 	Behavior on row {
 		ScriptAction { script: {contentm.positionViewAtEnd()} }
 	}
-
-	ParallelAnimation {
-		running: true
-		SequentialAnimation {
-			NumberAnimation {
-				duration: 50
-			}
-			NumberAnimation {
-				target: drag
-				property: "opacity"
-				from: 0
-				to: 1
-				duration: MaterialAnimation.pageTransitionDuration/2
-			}
-		}
-	}
-
-	JSONListModel {
-		id: msgModel
-		query: "$.data[*]"
-	}
-
-	Component.onDestruction: closeChat()
 
 	function initiateChat() {
 		var jsonData = {
@@ -148,6 +123,15 @@ DragTile {
 	}
 
 	Component.onCompleted: drag.initiateChat()
+	Component.onDestruction: {
+		main.unregisterToken(stateToken)
+		closeChat()
+	}
+
+	JSONListModel {
+		id: msgModel
+		query: "$.data[*]"
+	}
 
 	View {
 		id: chat
@@ -634,6 +618,22 @@ DragTile {
 			running: false
 
 			onTriggered: drag.checkChatStatus()
+		}
+	}
+
+	ParallelAnimation {
+		running: true
+		SequentialAnimation {
+			NumberAnimation {
+				duration: 50
+			}
+			NumberAnimation {
+				target: drag
+				property: "opacity"
+				from: 0
+				to: 1
+				duration: MaterialAnimation.pageTransitionDuration/2
+			}
 		}
 	}
 }
