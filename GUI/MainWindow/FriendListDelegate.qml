@@ -35,6 +35,12 @@ Component {
 		property bool entered: false
 		property string msg: ""
 
+		property string state_string: model.state_string
+		property color statuscolor: state_string === "online"   ? "#4caf50" :   // green
+									state_string === "busy"		? "#FF5722" :   // red
+									state_string === "away"		? "#FFEB3B" :   // yellow
+																  "#9E9E9E"		// grey
+
 		width: parent.width
 		height: dp(50)
 
@@ -407,9 +413,10 @@ Component {
 				radius: width/2
 
 				elevation: model.unread_count > 0 ? 1 : 0
-				backgroundColor: Theme.primaryColor
+				backgroundColor: statuscolor
 
-				visible: model.unread_count > 0 ? true : false
+				visible: model.unread_count > 0 ? true
+												: (!model.own && model.pgp_linked)
 
 				Text {
 					anchors.fill: parent

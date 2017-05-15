@@ -22,6 +22,7 @@ function strcmp(left, right)
 
 var unreadMessages = {}
 var contactsData = {}
+var statusData = {}
 
 function cntcmp(left, right, searchText)
 {
@@ -86,6 +87,34 @@ function parseContacts(responseStr)
 {
 	contactsData = JSON.parse(responseStr)
 	mergeContactsUnread()
+	mergeContactsStatus()
+}
+
+function mergeContactsStatus()
+{
+	var jsonData = contactsData.data
+	var dataLen = jsonData.length
+	for ( var i=0; i<dataLen; ++i)
+	{
+		var el = jsonData[i]
+
+		if(el.pgp_linked)
+			el['state_string'] = statusData[el.pgp_id]
+	}
+}
+
+function parseStatus(responseStr)
+{
+	var jsonData = JSON.parse(responseStr).data
+	var dataLen = jsonData.length
+	statusData = {}
+	for ( var i=0; i<dataLen; ++i)
+	{
+		var el = jsonData[i]
+		statusData[el.pgp_id] = el.state_string
+	}
+
+	mergeContactsStatus()
 }
 
 WorkerScript.onMessage = function(message)
@@ -95,6 +124,7 @@ WorkerScript.onMessage = function(message)
 
 	if(message.action === "refreshContacts") parseContacts(message.response)
 	else if(message.action === "refreshUnread") parseUnread(message.response)
+	else if(message.action === "refreshStatus") parseStatus(message.response)
 	else if(message.action === "searchContact")
 		sortFn = function cmp(l,r) { return cntcmp(l,r, message.sexp) }
 

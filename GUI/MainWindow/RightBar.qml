@@ -116,6 +116,15 @@ View {
 
 			stateToken_pgp = jsonResp.statetoken
 			main.registerToken(stateToken_pgp, refreshPgpIdModel)
+
+			knownContactsWorker.sendMessage({
+				'action': 'refreshStatus',
+				'response': par.response
+			})
+			allContactsWorker.sendMessage({
+				'action': 'refreshStatus',
+				'response': par.response
+			})
 		}
 
 		rsApi.request("/peers/*", "", callbackFn)
