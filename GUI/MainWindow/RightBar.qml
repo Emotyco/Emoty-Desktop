@@ -42,12 +42,7 @@ View {
 	property int stateToken_gxsContacts: 0
 	property int stateToken_gxsAll: 0
 	property int stateToken_pgp: 0
-
-	Component.onDestruction: {
-		main.unregisterToken(stateToken_gxsContacts)
-		main.unregisterToken(stateToken_gxsAll)
-		main.unregisterToken(stateToken_pgp)
-	}
+	property int stateToken_unreadedMsgs: 0
 
 	property bool firstTime_gxsContacts: true
 	property bool firstTime_gxsAll: true
@@ -72,10 +67,13 @@ View {
 			if(firstTime_gxsContacts)
 				firstTime_gxsContacts = false
 
-			gxsIdModel.json = par.response
-
 			stateToken_gxsContacts = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_gxsContacts, refreshGxsIdModel)
+
+			knownContactsWorker.sendMessage({
+				'action': 'refreshContacts',
+				'response': par.response
+			})
 		}
 
 		rsApi.request("/identity/notown_ids/", "", callbackFn)
@@ -86,10 +84,13 @@ View {
 			if(firstTime_gxsAll)
 				firstTime_gxsAll = false
 
-			allGxsIdModel.json = par.response
-
 			stateToken_gxsAll = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_gxsAll, refreshAllGxsIdModel)
+
+			allContactsWorker.sendMessage({
+				'action': 'refreshContacts',
+				'response': par.response
+			})
 		}
 
 		rsApi.request("/identity/*", "", callbackFn)
@@ -118,6 +119,25 @@ View {
 		}
 
 		rsApi.request("/peers/*", "", callbackFn)
+	}
+
+	function getUnreadedMsgs() {
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
+			stateToken_unreadedMsgs = jsonResp.statetoken
+			main.registerToken(stateToken_unreadedMsgs, getUnreadedMsgs)
+
+			knownContactsWorker.sendMessage({
+				'action': 'refreshUnread',
+				'response': par.response
+			})
+			allContactsWorker.sendMessage({
+				'action': 'refreshUnread',
+				'response': par.response
+			})
+		}
+
+		rsApi.request("/chat/unread_msgs/", "", callbackFn)
 	}
 
 	function getStateString() {
@@ -164,8 +184,27 @@ View {
 		refreshGxsIdModel()
 		refreshAllGxsIdModel()
 		refreshPgpIdModel()
+		getUnreadedMsgs()
 		getStateString()
 		getCustomStateString()
+	}
+
+	Component.onDestruction: {
+		main.unregisterToken(stateToken_gxsContacts)
+		main.unregisterToken(stateToken_gxsAll)
+		main.unregisterToken(stateToken_pgp)
+	}
+
+	WorkerScript {
+		id: knownContactsWorker
+		source: "qrc:/ContactSort.js"
+		onMessage: gxsIdModel.json = JSON.stringify(messageObject)
+	}
+
+	WorkerScript {
+		id: allContactsWorker
+		source: "qrc:/ContactSort.js"
+		onMessage: allGxsIdModel.json = JSON.stringify(messageObject)
 	}
 
 	JSONListModel {

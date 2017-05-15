@@ -34,7 +34,6 @@ Component {
 		property bool contact: model.contact != undefined ? (model.contact || model.own) : true
 		property bool entered: false
 		property string msg: ""
-		property int msgcount: 0
 
 		width: parent.width
 		height: dp(50)
@@ -348,13 +347,15 @@ Component {
 						width: dp(14)
 						height: dp(14)
 						radius: width/2
-						elevation: 1
 
-						visible: msgcount > 0 ? true : false
+						elevation: 1
+						backgroundColor: Theme.primaryColor
+
+						visible: model.unread_count > 0 ? true : false
 
 						Text {
 							anchors.fill: parent
-							text: ""
+							text: model.unread_count
 							color: "white"
 							font.family: "Roboto"
 							verticalAlignment: Text.AlignVCenter
@@ -398,23 +399,26 @@ Component {
 				anchors {
 					verticalCenter: parent.verticalCenter
 					right: parent.right
-					rightMargin: msgcount > 0 ? dp(10) : dp(15)
+					rightMargin: model.unread_count > 0 ? dp(10) : dp(15)
 				}
 
-				width: msgcount > 0 ? dp(20) : dp(10)
-				height: msgcount > 0 ? dp(20) : dp(10)
+				width: model.unread_count > 0 ? dp(20) : dp(10)
+				height: model.unread_count > 0 ? dp(20) : dp(10)
 				radius: width/2
 
-				elevation: msgcount > 0 ? 1 : 0
+				elevation: model.unread_count > 0 ? 1 : 0
+				backgroundColor: Theme.primaryColor
+
+				visible: model.unread_count > 0 ? true : false
 
 				Text {
 					anchors.fill: parent
 
-					text: msgcount
+					text: model.unread_count
 					color: "white"
 
 					font.family: "Roboto"
-					visible: msgcount > 0 ? true : false
+					visible: model.unread_count > 0 ? true : false
 
 					verticalAlignment: Text.AlignVCenter
 					horizontalAlignment: Text.AlignHCenter
