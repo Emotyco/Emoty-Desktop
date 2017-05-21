@@ -1,16 +1,16 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (c) 2015: Deimos
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -60,7 +60,7 @@ BorderlessWindow::BorderlessWindow(HBRUSH windowBackground, const int x, const i
 	if(FAILED(RegisterClassEx(&wcx)))
 		throw std::runtime_error("Couldn't register window class");
 
-	hWnd = CreateWindow(L"WindowClass", L"Sonet", static_cast<DWORD>(Style::windowed), x, y, width, height, 0, 0, hInstance, nullptr);
+	hWnd = CreateWindow(L"WindowClass", L"Emoty", static_cast<DWORD>(Style::windowed), x, y, width, height, 0, 0, hInstance, nullptr);
 
 	if(!hWnd)
 		throw std::runtime_error("Couldn't create window because of reasons");

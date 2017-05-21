@@ -8,10 +8,10 @@ QT += multimedia
 CONFIG += c++11 qrc
 
 TEMPLATE = app
-TARGET = Sonet-Desktop
+TARGET = Emoty-Desktop
 
-DEPENDPATH *= Sonet-Desktop
-INCLUDEPATH *= Sonet-Desktop
+DEPENDPATH *= Emoty-Desktop
+INCLUDEPATH *= Emoty-Desktop
 
 #################################### Windows #####################################
 
