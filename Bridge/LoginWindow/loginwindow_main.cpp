@@ -56,6 +56,8 @@ int loginwindow_main(int argc, char **argv)
 	view.setMaximumSize(QSize(400, 470));
 	view.setMinimumSize(QSize(400, 470));
 
+	QObject::connect(&view, SIGNAL(closing(QQuickCloseEvent*)), &app, SLOT(quit()));
+
 	QQmlEngine *engine = view.engine();
 	QObject::connect(engine,SIGNAL(quit()),&view, SLOT(close()));
 	QObject::connect(engine,SIGNAL(quit()),qApp, SLOT(quit()));
