@@ -98,7 +98,7 @@ function mergeContactsStatus()
 	{
 		var el = jsonData[i]
 
-		if(el.pgp_linked)
+		if(el.pgp_linked && statusData.hasOwnProperty(el.pgp_id))
 			el['state_string'] = statusData[el.pgp_id]
 	}
 }
