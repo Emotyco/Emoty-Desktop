@@ -58,7 +58,12 @@ int main(int argc, char *argv[])
 
 #ifndef QT_DEBUG
 	QProcess *process = new QProcess();
-	QString file = QCoreApplication::applicationDirPath() + "/RS-Core.exe";
+	QString file = QCoreApplication::applicationDirPath() + "/RS-Core";
+
+    #ifdef WINDOWS_SYS
+	    file += ".exe";
+    #endif
+
 	process->start(file);
 	QObject::connect(qApp, SIGNAL(aboutToQuit()), process, SLOT(kill()));
 #endif

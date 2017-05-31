@@ -16,10 +16,10 @@ INCLUDEPATH *= Emoty-Desktop
 #################################### Windows #####################################
 
 win32 {
+    DEFINES += WINDOWS_SYS
     #if you want to compile borderless login window
     #just define these variables
     {
-
         DEFINES += BORDERLESS_LOGIN
         DEFINES += BORDERLESS_MAINWINDOW
 
