@@ -52,7 +52,7 @@ View {
 		top: parent.top
 		right: parent.right
 		bottom: parent.bottom
-		topMargin: dp(50)
+		topMargin: borderless ? dp(50) : 0
 	}
 
 	width: dp(210)

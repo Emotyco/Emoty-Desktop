@@ -393,6 +393,8 @@ Rectangle {
 		height: dp(50)
 		width: dp(210)
 
+		enabled: borderless
+
 		backgroundColor: "white"
 		elevation: 3
 		z: 1
