@@ -30,6 +30,7 @@
 #include <QApplication>
 #include <QQmlEngine>
 #include <QQmlContext>
+#include <QDir>
 
 //Emoty-GUI
 #include "notifier.h"
@@ -50,14 +51,7 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 	QObject::connect(engine,SIGNAL(quit()),qApp, SLOT(quit()));
 	QPM_INIT((*engine));
 
-	QString sockPath;
-
-#ifdef QT_DEBUG
-	sockPath = "RS/";
-#else
-	sockPath = QCoreApplication::applicationDirPath();
-#endif
-
+	QString sockPath = QDir::homePath() + "/.retroshare";
 	sockPath.append("/libresapi.sock");
 
 	rsApi = new LibresapiLocalClient();

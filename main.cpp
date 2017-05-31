@@ -39,6 +39,8 @@
 #include "Util/screensize.h"
 
 #ifndef BORDERLESS_MAINWINDOW
+    #include <QDir>
+
     #include "Util/cursorshape.h"
     #include "Util/qquickviewhelper.h"
 #endif
@@ -107,14 +109,7 @@ int main(int argc, char *argv[])
 	CursorShape cursor(view);
 	ctxt->setContextProperty("cursor", &cursor);
 
-	QString sockPath;
-
-#ifdef QT_DEBUG
-	sockPath = "RS/";
-#else
-	sockPath = QCoreApplication::applicationDirPath();
-#endif
-
+	QString sockPath = QDir::homePath() + "/.retroshare";
 	sockPath.append("/libresapi.sock");
 
 	LibresapiLocalClient rsApi;

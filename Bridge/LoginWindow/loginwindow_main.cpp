@@ -37,6 +37,7 @@
     #include <QQuickView>
     #include <QQmlEngine>
     #include <QSize>
+    #include <QDir>
 
     //Emoty-GUI
     #include "libresapilocalclient.h"
@@ -60,19 +61,11 @@ int loginwindow_main(int argc, char **argv)
 	QObject::connect(engine,SIGNAL(quit()),qApp, SLOT(quit()));
 	QPM_INIT((*engine));
 
-	QString sockPath;
-
-#ifdef QT_DEBUG
-	sockPath = "RS/";
-#else
-	sockPath = QCoreApplication::applicationDirPath();
-#endif
-
+	QString sockPath = QDir::homePath() + "/.retroshare";
 	sockPath.append("/libresapi.sock");
 
 	LibresapiLocalClient rsApi;
 	rsApi.openConnection(sockPath);
-
 
 	QQmlContext *ctxt = view.rootContext();
 
