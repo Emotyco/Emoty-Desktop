@@ -355,7 +355,7 @@ Component {
 						radius: width/2
 
 						elevation: 1
-						backgroundColor: Theme.primaryColor
+						backgroundColor: statuscolor
 
 						visible: model.unread_count > 0 ? true : false
 
