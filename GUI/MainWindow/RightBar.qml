@@ -218,7 +218,7 @@ View {
 
 	JSONListModel {
 		id: gxsIdModel
-		query: "$.data[*]"
+		query: "$.data[?(@.is_contact)]"
 	}
 
 	JSONListModel {
