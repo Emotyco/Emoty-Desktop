@@ -190,8 +190,8 @@ View {
 	}
 
 	Component.onCompleted: {
-		refreshGxsIdModel()
 		refreshAllGxsIdModel()
+		refreshGxsIdModel()
 		refreshPgpIdModel()
 		getUnreadedMsgs()
 		getStateString()
@@ -205,15 +205,15 @@ View {
 	}
 
 	WorkerScript {
-		id: knownContactsWorker
-		source: "qrc:/ContactSort.js"
-		onMessage: gxsIdModel.json = JSON.stringify(messageObject)
-	}
-
-	WorkerScript {
 		id: allContactsWorker
 		source: "qrc:/ContactSort.js"
 		onMessage: allGxsIdModel.json = JSON.stringify(messageObject)
+	}
+
+	WorkerScript {
+		id: knownContactsWorker
+		source: "qrc:/ContactSort.js"
+		onMessage: gxsIdModel.json = JSON.stringify(messageObject)
 	}
 
 	JSONListModel {
