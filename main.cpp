@@ -57,15 +57,15 @@ int main(int argc, char *argv[])
 	SoundNotifier::Create();
 
 #ifndef QT_DEBUG
-	QProcess *process = new QProcess();
+	QProcess process;
 	QString file = QCoreApplication::applicationDirPath() + "/RS-Core";
 
     #ifdef WINDOWS_SYS
 	    file += ".exe";
     #endif
 
-	process->start(file);
-	QObject::connect(qApp, SIGNAL(aboutToQuit()), process, SLOT(kill()));
+	process.start(file);
+	QObject::connect(qApp, SIGNAL(aboutToQuit()), &process, SLOT(kill()));
 #endif
 
 	loginwindow_main(argc, argv);
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 	if(RunStateHelper::getInstance()->getRunState() != "running_ok" && RunStateHelper::getInstance()->getRunState() != "waiting_startup")
 	{
 #ifndef QT_DEBUG
-		process->kill();
+		process.kill();
 #endif
 		return 0;
 	}
