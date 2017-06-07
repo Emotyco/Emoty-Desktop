@@ -19,47 +19,42 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor,
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
+#ifndef SOUNDNOTIFIER_H
+#define SOUNDNOTIFIER_H
 
-import QtQuick 2.5
-import QtQuick.Controls 1.4 as Controls
-import Material 0.3
+//Qt
+#include <QObject>
+#include <QMap>
+#include <QSound>
 
-Controls.TextArea {
-	id: textArea
+#define SOUND_MESSAGE_SENDED    "MessageSended"
+#define SOUND_MESSAGE_RECEIVED  "MessageReceived"
 
-	property color color: Theme.accentColor
-	property color errorColor: Palette.colors["red"]["500"]
-	property string placeholderText
+class SoundNotifier : public QObject
+{
+	Q_OBJECT
 
-	style: TextAreaStyle {}
+public:
+	static SoundNotifier *Create();
+	static void Destroy();
+	static SoundNotifier *getInstance();
 
-	Text {
-		id: fieldPlaceholder
+	void play(const QString &sound);
+	QSound* getSound(const QString &sound);
 
-		anchors {
-			fill: parent
-			margins: 3.3 * Units.dp
-		}
+	bool isMute();
 
-		text: placeholderText
-		color: Theme.light.hintColor
+public slots:
+	void setMute(bool mute);
+	void playChatMessageReceived(QString chat_type);
+	void playChatMessageSended();
 
-		font {
-			pixelSize: textArea.font.pixelSize
-			family: "Roboto"
-		}
+private:
+	SoundNotifier(QObject *parent = 0);
+	static SoundNotifier *_instance;
 
-		wrapMode: Text.WrapAnywhere
-		textFormat: textArea.textFormat
+	std::map<std::string, QSound*> soundsMap;
+	bool muted;
+};
 
-		states: [
-			State {
-				name: "hidden"; when: textArea.text.length > 0
-				PropertyChanges {
-					target: fieldPlaceholder
-					visible: false
-				}
-			}
-		]
-	}
-}
+#endif	//SOUNDNOTIFIER_H

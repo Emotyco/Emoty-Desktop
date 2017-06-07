@@ -1,15 +1,15 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -31,12 +31,18 @@ Component {
 	Rectangle {
 		id: friendroot
 
+		property bool contact: model.contact != undefined ? (model.contact || model.own) : true
 		property bool entered: false
 		property string msg: ""
-		property int msgcount: 0
+
+		property string state_string: model.state_string
+		property color statuscolor: state_string === "online"   ? "#4caf50" :   // green
+									state_string === "busy"		? "#FF5722" :   // red
+									state_string === "away"		? "#FFEB3B" :   // yellow
+																  "#9E9E9E"		// grey
 
 		width: parent.width
-		height: 50
+		height: dp(50)
 
 		clip: true
 
@@ -48,7 +54,7 @@ Component {
 					NumberAnimation {
 						target: icons
 						property: "y"
-						from: 40
+						from: dp(40)
 						to: 0
 						duration: MaterialAnimation.pageTransitionDuration
 					}
@@ -64,7 +70,7 @@ Component {
 						target: text
 						property: "y"
 						from: 0
-						to: -40
+						to: -dp(40)
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 					NumberAnimation {
@@ -83,7 +89,7 @@ Component {
 					NumberAnimation {
 						target: text
 						property: "y"
-						from: -40
+						from: -dp(40)
 						to: 0
 						duration: MaterialAnimation.pageTransitionDuration
 					}
@@ -99,7 +105,7 @@ Component {
 						target: icons
 						property: "y"
 						from: 0
-						to: 40
+						to: dp(40)
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 					NumberAnimation {
@@ -157,21 +163,32 @@ Component {
 				id: overflowMenu
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
-				width: 200 * Units.dp
-				height: dp(4*30)
+				width: dp(200)
+				height: main.advmode ? dp(3*30) : dp(2*30)
 				enabled: true
 				anchor: Item.TopLeft
-				durationSlow: 200
-				durationFast: 100
+				durationSlow: 300
+				durationFast: 150
 
 				Column{
 					anchors.fill: parent
+
 					ListItem.Standard {
 						height: dp(30)
-						text: "Profile"
+						text: "Add to contacts"
 						itemLabel.style: "menu"
+
+						visible: !contact
+						enabled: !contact
+
 						onClicked: {
 							overflowMenu.close()
+
+							var jsonData = {
+								gxs_id: model.gxs_id
+							}
+
+							rsApi.request("/identity/add_contact", JSON.stringify(jsonData))
 						}
 					}
 
@@ -181,15 +198,20 @@ Component {
 						itemLabel.style: "menu"
 						onClicked: {
 							overflowMenu.close()
+							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
 						}
 					}
 
 					ListItem.Standard {
 						height: dp(30)
-						text: "Call"
+						enabled: main.advmode
+						visible: main.advmode
+
+						text: "Details"
 						itemLabel.style: "menu"
 						onClicked: {
 							overflowMenu.close()
+							identityDetailsDialog.showIdentity(model.name, model.gxs_id)
 						}
 					}
 
@@ -197,8 +219,20 @@ Component {
 						height: dp(30)
 						text: "Remove"
 						itemLabel.style: "menu"
+
+						visible: contact
+						enabled: contact
+
 						onClicked: {
 							overflowMenu.close()
+
+							removeDialog.show("Do you want to remove contact?", function() {
+								var jsonData = {
+									gxs_id: model.gxs_id
+								}
+
+								rsApi.request("/identity/remove_contact", JSON.stringify(jsonData))
+							})
 						}
 					}
 				}
@@ -209,9 +243,9 @@ Component {
 
 				anchors.verticalCenter: parent.verticalCenter
 
-				x: 14
-				width: 32
-				height: 32
+				x: dp(14)
+				width: dp(32)
+				height: dp(32)
 
 				Component.onCompleted:loadImage("avatar.png")
 				onPaint: {
@@ -247,8 +281,8 @@ Component {
 			Item {
 				id: text
 
-				x: 60
-				width: 151
+				x: dp(60)
+				width: dp(151)
 				height: parent.height
 
 				Text {
@@ -261,7 +295,7 @@ Component {
 
 					font {
 						family: "Roboto"
-						pixelSize: 14
+						pixelSize: dp(14)
 					}
 
 					verticalAlignment: Text.AlignVCenter
@@ -277,7 +311,7 @@ Component {
 					font.family: "Roboto"
 					verticalAlignment: Text.AlignTop
 					horizontalAlignment: Text.AlignLeft
-					font.pixelSize: 12
+					font.pixelSize: dp(12)
 				}
 			}
 
@@ -285,8 +319,8 @@ Component {
 				id: icons
 
 				height: parent.height
-				x: 60
-				y: 50
+				x: dp(60)
+				y: dp(50)
 
 				Icon {
 					id: circle1
@@ -299,7 +333,15 @@ Component {
 					visible: true
 					color: Theme.light.iconColor
 
-					size: 31 * Units.dp
+					size: dp(31)
+
+					MouseArea {
+						anchors.fill: parent
+
+						onClicked: {
+							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+						}
+					}
 
 					View {
 						anchors {
@@ -311,13 +353,15 @@ Component {
 						width: dp(14)
 						height: dp(14)
 						radius: width/2
-						elevation: 1
 
-						visible: msgcount > 0 ? true : false
+						elevation: 1
+						backgroundColor: statuscolor
+
+						visible: model.unread_count > 0 ? true : false
 
 						Text {
 							anchors.fill: parent
-							text: ""
+							text: model.unread_count
 							color: "white"
 							font.family: "Roboto"
 							verticalAlignment: Text.AlignVCenter
@@ -331,14 +375,14 @@ Component {
 
 					anchors.verticalCenter: parent.verticalCenter
 
-					x: 40
+					x: dp(40)
 					height: parent.height
 
 					name: "awesome/phone"
 					visible: true
-					color: Theme.light.iconColor
+					color: Theme.light.hintColor
 
-					size: 31 * Units.dp
+					size: dp(31)
 				}
 
 				Icon {
@@ -346,14 +390,14 @@ Component {
 
 					anchors.verticalCenter: parent.verticalCenter
 
-					x: 80
+					x: dp(80)
 					height: parent.height
 
 					name: "awesome/video_camera"
 					visible: true
 					color: Theme.light.hintColor
 
-					size: 31 * Units.dp
+					size: dp(31)
 				}
 			}
 
@@ -361,23 +405,27 @@ Component {
 				anchors {
 					verticalCenter: parent.verticalCenter
 					right: parent.right
-					rightMargin: msgcount > 0 ? 10 : 15
+					rightMargin: model.unread_count > 0 ? dp(10) : dp(15)
 				}
 
-				width: msgcount > 0 ? 20 : 10
-				height: msgcount > 0 ? 20 : 10
+				width: model.unread_count > 0 ? dp(20) : dp(10)
+				height: model.unread_count > 0 ? dp(20) : dp(10)
 				radius: width/2
 
-				elevation: msgcount > 0 ? 1 : 0
+				elevation: model.unread_count > 0 ? 1 : 0
+				backgroundColor: statuscolor
+
+				visible: model.unread_count > 0 ? true
+												: (!model.own && model.pgp_linked)
 
 				Text {
 					anchors.fill: parent
 
-					text: msgcount
+					text: model.unread_count
 					color: "white"
 
 					font.family: "Roboto"
-					visible: msgcount > 0 ? true : false
+					visible: model.unread_count > 0 ? true : false
 
 					verticalAlignment: Text.AlignVCenter
 					horizontalAlignment: Text.AlignHCenter

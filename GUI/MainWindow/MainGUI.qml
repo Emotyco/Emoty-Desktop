@@ -1,15 +1,16 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
+ *  Copyright (C) 2017, Gioacchino Mazzurco <gio@eigenlab.org>
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -40,9 +41,10 @@ Rectangle {
 	property string defaultGxsName
 	property string defaultGxsId
 
+	property int unreadMsgsLobbies: 0
 	property Item controls: controlView
 
-	property int visibleRows: Math.round((main.height-dp(30))/(50 + gridLayout.rowSpacing))
+	property int visibleRows: Math.round((main.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
 
 	property alias pageStack: __pageStack
 	property alias gridLayout: gridLayout
@@ -109,10 +111,15 @@ Rectangle {
 	Component.onCompleted: {
 		updateVisibleRows()
 		getOwnIdentities()
+		getUnreadMsgs()
 		getRunState()
 		getAdvancedMode()
 		getFlickableGridMode()
 	}
+
+	// For handling tokens
+	property int stateToken_ownGxs: 0
+	property int stateToken_unreadMsgs: 0
 
 	function getOwnIdentities() {
 		var jsonData = {
@@ -121,9 +128,31 @@ Rectangle {
 
 		function callbackFn(par) {
 			ownGxsIdModel.json = par.response; haveOwnId()
+
+			stateToken_ownGxs = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_ownGxs, getOwnIdentities)
 		}
 
 		rsApi.request("/identity/own_ids/", JSON.stringify(jsonData), callbackFn)
+	}
+
+	function getUnreadMsgs() {
+		function callbackFn(par) {
+			notifier.handleChatMessages(par.response)
+			var jsonResp = JSON.parse(par.response)
+
+			var count = 0
+			for (var i = 0; i<jsonResp.data.length; i++) {
+				if(jsonResp.data[i].is_lobby == true)
+					count++
+			}
+			main.unreadMsgsLobbies = count
+
+			stateToken_unreadMsgs = jsonResp.statetoken
+			main.registerToken(stateToken_unreadMsgs, getUnreadMsgs)
+		}
+
+		rsApi.request("/chat/unread_msgs/", "", callbackFn)
 	}
 
 	function getRunState() {
@@ -135,7 +164,9 @@ Rectangle {
 			main.state = String(JSON.parse(par.response).data.runstate)
 		}
 
-		rsApi.request("/control/runstate/", JSON.stringify(jsonData), callbackFn)
+		var ret = rsApi.request("/control/runstate/", JSON.stringify(jsonData), callbackFn)
+		if(ret < 1)
+			main.state = "fatal_error"
 	}
 
 	function getAdvancedMode() {
@@ -145,6 +176,7 @@ Rectangle {
 
 		function callbackFn(par) {
 			main.advmode = Boolean(JSON.parse(par.response).data.advanced_mode)
+			notifier.setAdvMode(Boolean(JSON.parse(par.response).data.advanced_mode))
 		}
 
 		rsApi.request("/settings/get_advanced_mode/", JSON.stringify(jsonData), callbackFn)
@@ -194,6 +226,48 @@ Rectangle {
 		primaryColor: Palette.colors["green"]["500"]
 		accentColor: Palette.colors["deepOrange"]["500"]
 		tabHighlightColor: "white"
+	}
+
+	MouseArea {
+		property bool controlPressed
+
+		anchors.fill: parent
+
+		z: -1
+		focus: true
+		acceptedButtons: Qt.MidButton | Qt.LeftButton
+
+		Keys.onPressed: {
+			if(event.key == Qt.Key_Control)
+				controlPressed = true
+		}
+
+		Keys.onReleased: {
+			if(event.key == Qt.Key_Control)
+				controlPressed = false
+		}
+
+		onClicked: {
+			mouse.accepted = false
+			focus = true
+		}
+
+		onPressed: {
+			mouse.accepted = false
+		}
+
+		onWheel: {
+			wheel.accepted = false
+			if(controlPressed)
+				if(wheel.angleDelta.y > 0 && Units.multiplier < 2) {
+					Units.setMultiplier(Units.multiplier+0.1)
+					wheel.accepted = true
+				}
+				else if(wheel.angleDelta.y < 0 && Units.multiplier > 0.2) {
+					Units.setMultiplier(Units.multiplier-0.1)
+					wheel.accepted = true
+				}
+		}
 	}
 
 	Image {
@@ -319,6 +393,8 @@ Rectangle {
 		height: dp(50)
 		width: dp(210)
 
+		enabled: borderless
+
 		backgroundColor: "white"
 		elevation: 3
 		z: 1
@@ -328,7 +404,7 @@ Rectangle {
 			NumberAnimation {
 				target: controlView;
 				property: "anchors.rightMargin";
-				from: -50;
+				from: -dp(50);
 				to: 0;
 				duration: MaterialAnimation.pageTransitionDuration
 			}
@@ -356,7 +432,7 @@ Rectangle {
                         topMargin: dp(12)
                     }
 
-                    spacing: 5 * Units.dp
+                    spacing: dp(5)
 
                     Item {
                         width: dp(26)
@@ -370,7 +446,7 @@ Rectangle {
                                 margins: dp(4)
                             }
 
-                            width: parent.width-8
+                            width: parent.width-dp(8)
                             height: dp(2)
 
                             color: Palette.colors["grey"]["500"]
@@ -488,7 +564,7 @@ Rectangle {
 
 		clip: true
 		interactive: flickablemode
-		contentHeight: Math.max(gridLayout.implicitHeight + 40, height)
+		contentHeight: Math.max(gridLayout.implicitHeight + dp(40), height)
 
 		GridLayout {
 			id: gridLayout
@@ -511,8 +587,8 @@ Rectangle {
 
 			columns: parseInt(gridLayout.width / dp(60))
 			columnSpacing: dp(10)
-			rowSpacing: h<650 ? (h-((rowspace-1)*50))/(rowspace-2)
-							  : (h-((rowspace-2)*50))/(rowspace-3)
+			rowSpacing: h<dp(650) ? (h-((rowspace-1)*dp(50)))/(rowspace-2)
+							  : (h-((rowspace-2)*dp(50)))/(rowspace-3)
 
 			onColumnsChanged: main.gridChanged()
 
@@ -538,13 +614,13 @@ Rectangle {
 				width: 0
 				height: 0
 
-				col: parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))>= 14
+				col: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
 					    ? 14
-						: parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))
+						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))
 
 				row: main.visibleRows
 
-				gridX: Math.floor(((parseInt(gridLayout.width / (50 + gridLayout.columnSpacing)))-content.col)/2)
+				gridX: Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-content.col)/2)
 
 				Behavior on col {
 					ScriptAction {
@@ -565,6 +641,8 @@ Rectangle {
 
 					initialItem:	Content{}
 				}
+
+				Component.onCompleted: {main.content.activated = false}
 			}
 		}
 	}
@@ -587,6 +665,7 @@ Rectangle {
 
 	OverlayLayer {
 		id: overlayLayer
+		z: 11
 	}
 
 	// Dialog Pop-ups
@@ -599,7 +678,29 @@ Rectangle {
 		positiveButtonText: "Yes"
 		negativeButtonText: "No"
 
-		onAccepted: Qt.quit()
+		onAccepted: {
+			function callbackFn(par) {
+				Qt.quit()
+			}
+
+			rsApi.request("/control/shutdown/", "", callbackFn)
+		}
+	}
+
+	RemoveDialog {
+		id: removeDialog
+	}
+
+	PGPFriendDetailsDialog {
+		id: pgpFriendDetailsDialog
+	}
+
+	NodeDetailsDialog {
+		id: nodeDetailsDialog
+	}
+
+	IdentityDetailsDialog {
+		id: identityDetailsDialog
 	}
 
 	SettingsDialog {
@@ -612,8 +713,57 @@ Rectangle {
 
 	function updateVisibleRows() {
 		main.visibleRows = Qt.binding(function() {
-			return Math.round((main.height-dp(30))/(50 + gridLayout.rowSpacing))
+			return Math.round((main.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
 		});
+	}
+
+	///////
+	// Code made by Gioacchino Mazzurco
+	// Github: https://github.com/G10h4ck
+
+	property var tokens: ({})
+
+	function registerToken(token, callback)
+	{
+		if (Array.isArray(tokens[token]))
+			tokens[token].push(callback)
+		else
+			tokens[token] = [callback]
+	}
+
+	function tokenExpire(token)
+	{
+		if(Array.isArray(tokens[token]))
+		{
+			var arrLen = tokens[token].length
+			for(var i=0; i<arrLen; ++i)
+			{
+				var tokCallback = tokens[token][i]
+				if (typeof tokCallback == 'function')
+					tokCallback()
+			}
+		}
+
+		delete tokens[token]
+	}
+
+	function isTokenValid(token) {
+		return Array.isArray(tokens[token])
+	}
+
+	function checkTokens(par)
+	{
+		var jsonData = JSON.parse(par.response).data
+		var arrayLength = jsonData.length;
+		for (var i = 0; i < arrayLength; i++)
+			main.tokenExpire(jsonData[i])
+	}
+
+	//
+	//////
+
+	function unregisterToken(token) {
+		delete tokens[token]
 	}
 
 	/*
@@ -623,17 +773,58 @@ Rectangle {
 	  (We couldn't e.g. click on mousearea in new created objects)
 	  */
 
-	function createChatCardPeer(friendname, rspeerid, chat_id, objectName) {
+	function createChatGxsCard(friendname, gxsid, objectName) {
 		var component = Qt.createComponent(objectName, gridLayout);
 		if (component.status === Component.Ready) {
-			var chat = component.createObject(gridLayout);
-			chat.name = friendname
-			chat.rsPeerId = rspeerid
-			chat.chatId = chat_id
-			chat.col = 5;
+			var chat = component.createObject(gridLayout,
+											  {"name": friendname,
+												"gxsId": gxsid});
 			updateVisibleRows()
-			chat.row = main.visibleRows;
-			chat.gridY = 0;
+
+			chat.col = Qt.binding(function() {
+				return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 11
+						? 11
+						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)) || 1
+			})
+			chat.row = Qt.binding(function() {
+				return main.visibleRows
+			})
+			chat.gridY = 0
+			chat.gridX = Qt.binding(function() {
+				return Math.floor(
+							((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-chat.col)/2
+						)
+			})
+
+			gridLayout.reorder()
+		}
+	}
+
+	function createChatCardPeer(friendname, location, rspeerid, chat_id, objectName) {
+		var component = Qt.createComponent(objectName, gridLayout);
+		if (component.status === Component.Ready) {
+			var chat = component.createObject(gridLayout,
+											  {"name": friendname,
+											   "location": location,
+											   "chatId": chat_id,
+											   "rsPeerId": rspeerid});
+			updateVisibleRows()
+
+			chat.col = Qt.binding(function() {
+				return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 11
+						? 11
+						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)) || 1
+			})
+			chat.row = Qt.binding(function() {
+				return main.visibleRows
+			})
+			chat.gridY = 0
+			chat.gridX = Qt.binding(function() {
+				return Math.floor(
+							((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-chat.col)/2
+						)
+			})
+
 			gridLayout.reorder()
 		}
 	}
@@ -644,6 +835,15 @@ Rectangle {
 		repeat: true
 		onTriggered: {
 			getRunState()
+		}
+	}
+
+	Timer {
+		interval: 500
+		running: true
+		repeat: true
+		onTriggered: {
+			rsApi.request("/statetokenservice/*", '['+Object.keys(main.tokens)+']', checkTokens)
 		}
 	}
 

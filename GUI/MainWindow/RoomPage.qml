@@ -1,15 +1,15 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -33,6 +33,19 @@ Item{
 	property string roomName
 	property string chatId
 
+	// For handling tokens
+	property int stateToken_p: 0
+	property int stateToken_msg: 0
+	property int stateToken_gxs: 0
+
+	Component.onDestruction: {
+		main.unregisterToken(stateToken_p)
+		main.unregisterToken(stateToken_msg)
+		main.unregisterToken(stateToken_gxs)
+	}
+
+	property bool firstTime_msg: true
+
 	// Just for "restore" option
 	property int tmpCol: 0
 	property int tmpRow: 0
@@ -42,41 +55,38 @@ Item{
 	//
 
 	function getLobbyParticipants() {
-		var jsonData = {
-			callback_name: "roompage_chat_lobby_participants"+chatId
-		}
-
 		function callbackFn(par) {
 			lobbyParticipantsModel.json = par.response
+			stateToken_p = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_p, getLobbyParticipants)
 		}
 
-		rsApi.request("/chat/lobby_participants/"+chatId, JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/chat/lobby_participants/"+chatId, "", callbackFn)
 	}
 
 	function getLobbyMessages() {
-		var jsonData = {
-			callback_name: "roompage_chat_messages"+chatId
-		}
-
 		function callbackFn(par) {
-			console.log(par.response)
+			if(firstTime_msg)
+				firstTime_msg = false
+
 			messagesModel.json = par.response
 			contentm.positionViewAtEnd()
+
+			stateToken_msg = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_msg, getLobbyMessages)
 		}
 
-		rsApi.request("/chat/messages/"+chatId, JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/chat/messages/"+chatId, "", callbackFn)
 	}
 
 	function getGxsId() {
-		var jsonData = {
-			callback_name: "roompage_identity_notown_ids"
-		}
-
 		function callbackFn(par) {
 			gxsIdModel.json = par.response
+			stateToken_gxs = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_gxs, getGxsId)
 		}
 
-		rsApi.request("/identity/notown_ids/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/identity/notown_ids/", "", callbackFn)
 	}
 
 	Component.onCompleted: {
@@ -90,11 +100,11 @@ Item{
 		onRefresh: {
 			updateVisibleRows()
 			if(
-					main.content.col === (parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))>= 14
+					main.content.col === (parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
 										  ? 14
-										  : parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))) &&
+										  : parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))) &&
 					main.content.row === main.visibleRows &&
-					main.content.gridX === Math.floor(((parseInt(gridLayout.width / (50 + gridLayout.columnSpacing)))-main.content.col)/2) &&
+					main.content.gridX === Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-main.content.col)/2) &&
 					main.content.gridY === 0
 					)
 				maximized = true
@@ -126,6 +136,13 @@ Item{
 		elevation: 2
 		backgroundColor: Palette.colors["grey"]["50"]
 
+		LoadingMask {
+			id: loadingMask
+			anchors.fill: parent
+
+			state: firstTime_msg ? "visible" : "non-visible"
+		}
+
 		Rectangle {
 			id: chatHeader
 
@@ -135,7 +152,7 @@ Item{
 				right: parent.right
 			}
 
-			height: 35
+			height: dp(35)
 			color: Palette.colors["grey"]["50"]
 			z: 2
 
@@ -191,13 +208,13 @@ Item{
 
 					anchor: Item.TopLeft
 
-					width: 200 * Units.dp
+					width: dp(200)
 					height: dp(2*30)
 
 					enabled: true
 
-					durationSlow: 200
-					durationFast: 100
+					durationSlow: 300
+					durationFast: 150
 
 					Column{
 						anchors.fill: parent
@@ -219,9 +236,9 @@ Item{
 									page.tmpRow = main.content.row
 
 									main.content.col = Qt.binding(function() {
-										return parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))>= 14
+										return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
 												? 14
-												: parseInt(gridLayout.width / (50 + gridLayout.columnSpacing))
+												: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))
 									});
 
 									main.content.row = Qt.binding(function() {
@@ -230,7 +247,7 @@ Item{
 									});
 
 									main.content.gridX = Qt.binding(function() {
-										return Math.floor(((parseInt(gridLayout.width / (50 + gridLayout.columnSpacing)))-main.content.col)/2)
+										return Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-main.content.col)/2)
 									});
 
 									main.content.gridY = 0
@@ -268,7 +285,7 @@ Item{
 		DropShadow {
 			anchors.fill: chatHeader
 
-			verticalOffset: 5
+			verticalOffset: dp(5)
 			radius: 30
 			samples: 61
 
@@ -299,7 +316,7 @@ Item{
 				Item {
 					anchors {
 						fill: parent
-						margins: 2
+						margins: dp(2)
 					}
 
 					ListView {
@@ -307,8 +324,8 @@ Item{
 
 						anchors {
 							fill: parent
-							leftMargin: 5
-							rightMargin: 5
+							leftMargin: dp(5)
+							rightMargin: dp(5)
 						}
 
 						clip: true
@@ -335,8 +352,8 @@ Item{
 					right: parent.right
 				}
 
-				height: (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+30)
-													   : (msgBox.contentHeight+22)) < dp(200) ? (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+30) : (msgBox.contentHeight+22)) : dp(200)
+				height: (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(30))
+													   : (msgBox.contentHeight+dp(22))) < dp(200) ? (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(30)) : (msgBox.contentHeight+dp(22))) : dp(200)
 				z: 1
 
 				Behavior on height {
@@ -375,7 +392,7 @@ Item{
 						placeholderText: footerView.width > dp(195) ? "Say hello to your friend"
 																	: "Say hello"
 
-						font.pixelSize: 15 * Units.dp
+						font.pixelSize: dp(15)
 						wrapMode: Text.WordWrap
 
 						horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
@@ -386,7 +403,8 @@ Item{
 
 						onActiveFocusChanged: {
 							if(activeFocus) {
-								rsApi.request("/chat/mark_chat_as_read/"+chatId)
+								if(chatId.length > 0)
+									rsApi.request("/chat/mark_chat_as_read/"+chatId)
 
 								footerView.elevation = 2
 							}
@@ -407,6 +425,8 @@ Item{
 								contentm.positionViewAtEnd()
 								msgBox.text = "";
 								event.accepted = true;
+
+								soundNotifier.playChatMessageSended()
 							}
 						}
 					}
@@ -420,7 +440,7 @@ Item{
 				bottom: parent.bottom
 				left: parent.left
 				right: parent.right
-				leftMargin: chat.width < 6*60 ? chat.width - dp(15+32+16) : chat.width*0.7
+				leftMargin: chat.width < 6*dp(60) ? chat.width - dp(15+32+16) : chat.width*0.7
 				rightMargin: dp(15)
 			}
 
@@ -431,10 +451,10 @@ Item{
 
 				anchors.top: parent.top
 
-				visible: chat.width > 6*60
-				enabled: chat.width > 6*60
+				visible: chat.width > 6*dp(60)
+				enabled: chat.width > 6*dp(60)
 
-				height: 45
+				height: dp(45)
 				width: parent.width
 				z: 1
 
@@ -463,23 +483,25 @@ Item{
 							rightMargin: dp(18)
 						}
 
+						readOnly: true
+
 						placeholderText: "Search friends"
 						placeholderPixelSize: dp(15)
 
 						font {
 							weight: Font.Light
-							pixelSize: 15 * Units.dp
+							pixelSize: dp(15)
 						}
 
 						focus: true
 						showBorder: false
 
-						onActiveFocusChanged: {
+						/*onActiveFocusChanged: {
 							if(activeFocus)
 								friendFilter.elevation = 2
 							else
 								friendFilter.elevation = 1
-						}
+						}*/
 					}
 				}
 			}
@@ -488,7 +510,7 @@ Item{
 				id: roomFriendsList
 
 				anchors {
-					top: chat.width < 6*60 ? parent.top : filterItem.bottom
+					top: chat.width < 6*dp(60) ? parent.top : filterItem.bottom
 					bottom: parent.bottom
 					left: parent.left
 					right: parent.right
@@ -514,11 +536,14 @@ Item{
 				footer: RoomFriend {
 					width: parent.width
 
+					interactive: false
+
 					text: "Add to room"
-					textColor: Theme.light.textColor
+					textColor: Theme.light.hintColor//Theme.light.textColor
 					itemLabel.style: "body1"
 
 					iconName: "awesome/plus"
+					iconColor: Theme.light.hintColor
 
 					onClicked: {
 						addFriendRoom.show()
@@ -541,8 +566,8 @@ Item{
 			contentMargins: dp(8)
 			width: dp(250)
 
-			positiveButtonSize: 13
-			negativeButtonSize: 13
+			positiveButtonSize: dp(13)
+			negativeButtonSize: dp(13)
 
 			Item {
 				anchors {
@@ -561,7 +586,7 @@ Item{
 						rightMargin: dp(8)
 					}
 
-					height: 45
+					height: dp(45)
 					width: parent.width
 					z: 1
 
@@ -593,7 +618,7 @@ Item{
 
 							font {
 								weight: Font.Light
-								pixelSize: 15 * Units.dp
+								pixelSize: dp(15)
 							}
 
 							focus: true
@@ -644,25 +669,6 @@ Item{
 					flickableItem: addRoomFriendsList
 				}
 			}
-		}
-
-		Timer {
-			interval: 10000
-			running: true
-			repeat: true
-
-			onTriggered: {
-				getLobbyParticipants()
-				getGxsId()
-			}
-		}
-
-		Timer {
-			interval: 2000
-			repeat: true
-			running: true
-
-			onTriggered: getLobbyMessages()
 		}
 
 		ParallelAnimation {

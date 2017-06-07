@@ -1,15 +1,15 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -107,10 +107,10 @@ Rectangle
 			if(jsonData) {
 				if(jsonData.data) {
 					if (jsonData.data.key_name) {
+						passwordLogin.incorrect = jsonData.data.prev_is_bad;
 						if(jsonData.data.want_password) {
 							var jsonPass = { password: passwordLogin.text }
 							rsApi.request("/control/password/", JSON.stringify(jsonPass))
-							main.attemptLogin = false
 						}
 					}
 				}
@@ -309,9 +309,9 @@ Rectangle
 
 			anchors.horizontalCenter: parent.horizontalCenter
 
-			y: parent.height*0.42
+			y: parent.height*0.4
 			width: parent.width*0.88
-			height: parent.height*0.5
+			height: parent.height*0.52
 
 			elevation: 4
 
@@ -340,7 +340,6 @@ Rectangle
 						property alias selectedIndex: listView.currentIndex
 
 						anchors.centerIn: parent
-
 						width: parent.width
 
 						color: Theme.primaryColor
@@ -373,20 +372,19 @@ Rectangle
 							objectName: "overflowMenu2"
 							overlayLayer: "dialogOverlayLayer"
 
-							width: 250 * Units.dp
-							height: Math.min(10 * 48 * Units.dp + 16 * Units.dp, locationsModel.count * 40 * Units.dp)
+							width: 200 * Units.dp
+							height: Math.min(8 * 48 * Units.dp + 16 * Units.dp, locationsModel.count * 40 * Units.dp)
 
 							enabled: true
 
 							ListView {
 								id: listView
 
-								height: count > 0 ? contentHeight : 0
-								width: parent.width
+								anchors.fill: parent
 
 								model: locationsModel.model
 								delegate: ListItem.Standard {
-									height: 40
+									height: dp(40)
 									text: model.name
 									onClicked: {
 										listView.currentIndex = index
@@ -394,11 +392,16 @@ Rectangle
 									}
 								}
 							}
+
+							Scrollbar {
+								flickableItem: listView
+							}
 						}
 					}
 				}
 
 				ListItem.Standard {
+					height: dp(58)
 					margins: 0
 					spacing: dp(5)
 					action: Icon {
@@ -408,12 +411,18 @@ Rectangle
 
 					content: TextField {
 						id: passwordLogin
+						property bool incorrect: false
+
 						anchors.centerIn: parent
 						width: parent.width
+
 						color: Theme.primaryColor
 
 						echoMode: TextInput.Password
 						placeholderText: "Password"
+
+						helperText: incorrect ?  "Incorrect password" : ""
+						hasError: incorrect
 
 						onAccepted: {
 							if(passwordLogin.text.length >= 3) {
@@ -424,6 +433,8 @@ Rectangle
 								rsApi.request("/control/login/", JSON.stringify(jsonData))
 								main.attemptLogin = true
 							}
+							else
+								passwordLogin.incorrect = true
 						}
 					}
 				}
@@ -438,8 +449,8 @@ Rectangle
 							leftMargin: dp(29)
 						}
 
-						y: -20
-						spacing: -10
+						y: passwordLogin.incorrect ? -dp(15) : -dp(25)
+						spacing: -dp(10)
 
 						CheckBox {
 							id: checkBox
@@ -450,7 +461,7 @@ Rectangle
 
 						Label {
 							text: "Remember me"
-							color: Theme.light.textColor
+							color: checkBox.enabled ? Theme.light.textColor : Theme.light.hintColor
 
 							MouseArea{
 								anchors.fill: parent
@@ -488,6 +499,8 @@ Rectangle
 								rsApi.request("/control/login/", JSON.stringify(jsonData))
 								main.attemptLogin = true
 							}
+							else
+								passwordLogin.incorrect = true
 						}
 					}
 				}
@@ -625,29 +638,127 @@ Rectangle
 					overlayLayer: "dialogOverlayLayer"
 
 					width: 250 * Units.dp
-					height: columnView.height + 16 * Units.dp
+					height: columnView.height + columnView2.height
 
 					enabled: true
 
-					Column {
-						id: columnView
+					Behavior on height {
+						NumberAnimation { duration: 200 }
+					}
 
-						anchors.centerIn: parent
-						width: parent.width*0.8
+					Rectangle {
+						anchors.top: parent.top
+
+						width: parent.width
+						height: columnView.height
+
+						z: 1
+
+						Column {
+							id: columnView
+
+							anchors.top: parent.top
+							width: parent.width
+
+							spacing: 0
+
+							Item {
+								width: parent.width
+								height: dp(10)
+							}
+
+							Item {
+								width: parent.width
+								height: dp(38)
+
+								TextField {
+									id: node
+
+									anchors.centerIn: parent
+									width: parent.width-dp(32)
+
+									placeholderText: "Node name"
+									floatingLabel: true
+									text: "Desktop"
+								}
+							}
+
+							ListItem.Subtitled {
+								text: "TOR/I2P Hidden node"
+
+								height: dp(43)
+
+								secondaryItem: Switch {
+									id: hiddenNode
+									anchors.verticalCenter: parent.verticalCenter
+									enabled: true
+								}
+
+								onClicked: {
+									hiddenNode.checked = !hiddenNode.checked
+								}
+							}
+						}
+					}
+
+
+
+					Column {
+						id: columnView2
+
+						anchors.bottom: parent.bottom
+						width: parent.width
+
+						spacing: 0
 
 						Item {
 							width: parent.width
-							height: dp(10)
+							height: hiddenNode.checked ? dp(10) : 0
 						}
 
-						TextField {
-							id: node
-
+						Item {
 							width: parent.width
+							height: hiddenNode.checked ? dp(38) : 0
 
-							placeholderText: "Node name"
-							floatingLabel: true
-							text: "Desktop"
+							enabled: hiddenNode.checked
+							visible: hiddenNode.checked
+
+							TextField {
+								id: hiddenAddress
+
+								anchors.centerIn: parent
+								width: parent.width-dp(32)
+
+								placeholderText: "TOR/I2P address"
+								floatingLabel: true
+								text: "xa76giaf6ifda7ri63i263.onion"
+							}
+						}
+
+						Item {
+							width: parent.width
+							height: hiddenNode.checked ? dp(10) : 0
+						}
+
+						Item {
+							width: parent.width
+							height: hiddenNode.checked ? dp(38) : 0
+
+							enabled: hiddenNode.checked
+							visible: hiddenNode.checked
+
+							TextField {
+								id: port
+
+								anchors.centerIn: parent
+								width: parent.width-dp(32)
+
+								placeholderText: "Port"
+								floatingLabel: true
+								text: "7812"
+
+								validator: IntValidator {bottom: 0; top: 65535;}
+							}
 						}
 					}
 				}
@@ -665,7 +776,7 @@ Rectangle
 
 
 					Item {
-						width: 1
+						width: dp(1)
 						height: parent.height*0.15
 					}
 
@@ -681,8 +792,10 @@ Rectangle
 
 						content: TextField {
 							id: username
+							property bool emptyName: false
 
 							anchors.centerIn: parent
+							anchors.verticalCenterOffset: emptyName ? -dp(5) : 0
 							width: parent.width
 
 							color: "white"
@@ -693,6 +806,9 @@ Rectangle
 
 							focus: true
 							borderColor: Qt.rgba(255,255,255,0.5)
+
+							helperText: emptyName ?  "Name is too short" : ""
+							hasError: emptyName
 						}
 					}
 
@@ -720,6 +836,8 @@ Rectangle
 							placeholderText: "Password"
 
 							borderColor: Qt.rgba(255,255,255,0.5)
+
+							hasError: password2.different
 						}
 					}
 
@@ -736,7 +854,9 @@ Rectangle
 						content: TextField {
 							id: password2
 
+							property bool different: false
 							anchors.centerIn: parent
+							anchors.verticalCenterOffset: -dp(5)
 							width: parent.width
 
 							color: "white"
@@ -747,6 +867,36 @@ Rectangle
 
 							echoMode: TextInput.Password
 							borderColor: Qt.rgba(255,255,255,0.5)
+
+							helperText: "Password can not be recovered!!!"
+							hasError: different
+
+							onAccepted: {
+								if(username.text.length >= 3 && password.text.length >= 3 && password.text === password2.text) {
+									var jsonData = {
+										pgp_name: username.text,
+										ssl_name: node.text,
+										pgp_password: password.text,
+										hidden_adress: hiddenNode.checked ? hiddenAddress.text : "",
+										hidden_port: hiddenNode.checked ? port.text : ""
+									}
+
+									rsApi.request("/control/create_location/", JSON.stringify(jsonData))
+								}
+								else {
+									if(username.text.length < 3)
+										username.emptyName = true
+
+									if(password.text.length < 3) {
+										password2.different = true
+										password2.helperText = "Password is too short"
+									}
+									else if(password.text !== password2.text) {
+										password2.different = true
+										password2.helperText = "Passwords do not match"
+									}
+								}
+							}
 						}
 					}
 				}
@@ -770,14 +920,29 @@ Rectangle
 					backgroundColor: Theme.primaryColor
 
 					onClicked: {
-						if(password.text === password2.text) {
+						if(username.text.length >= 3 && password.text.length >= 3 && password.text === password2.text) {
 							var jsonData = {
 								pgp_name: username.text,
 								ssl_name: node.text,
-								pgp_password: password.text
+								pgp_password: password.text,
+								hidden_adress: hiddenNode.checked ? hiddenAddress.text : "",
+								hidden_port: hiddenNode.checked ? port.text : ""
 							}
 
 							rsApi.request("/control/create_location/", JSON.stringify(jsonData))
+						}
+						else {
+							if(username.text.length < 3)
+								username.emptyName = true
+
+							if(password.text.length < 3) {
+								password2.different = true
+								password2.helperText = "Password is too short"
+							}
+							else if(password.text !== password2.text) {
+								password2.different = true
+								password2.helperText = "Passwords do not match"
+							}
 						}
 					}
 				}

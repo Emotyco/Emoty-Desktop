@@ -1,16 +1,16 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (c) 2015: Deimos
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -30,9 +30,9 @@
 #include <QApplication>
 #include <QQmlEngine>
 #include <QQmlContext>
+#include <QDir>
 
-//Sonet-GUI
-//#include "retroshare/rsinit.h"
+//Emoty-GUI
 #include "Util/runstatehelper.h"
 
 QMainPanel::QMainPanel(HWND hWnd) : QWinView(hWnd)
@@ -45,14 +45,7 @@ QMainPanel::QMainPanel(HWND hWnd) : QWinView(hWnd)
 	QObject::connect(engine,SIGNAL(quit()),qApp, SLOT(quit()));
 	QPM_INIT((*engine));
 
-	QString sockPath;
-
-#ifdef QT_DEBUG
-	sockPath = "RS/";
-#else
-	sockPath = QCoreApplication::applicationDirPath();
-#endif
-
+	QString sockPath = QDir::homePath() + "/.retroshare";
 	sockPath.append("/libresapi.sock");
 
 	rsApi = new LibresapiLocalClient();

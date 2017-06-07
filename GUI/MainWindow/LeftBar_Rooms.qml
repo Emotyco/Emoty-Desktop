@@ -6,61 +6,89 @@ import Material.ListItems 0.1 as ListItem
 Rectangle {
 	color: "#f2f2f2"
 
-	function getPrivateLobbies() {
-		var jsonData = {
-			callback_name: "leftbar_rooms_chat_private_lobbies"
-		}
+	// For handling tokens
+	property int stateToken: 0
 
+	Component.onDestruction: main.unregisterToken(stateToken)
+
+	property bool firstTime: true
+
+	function getLobbies() {
 		function callbackFn(par) {
+			if(firstTime)
+				firstTime = false
+
 			privateLobbiesModel.json = par.response
-		}
-
-		rsApi.request("/chat/private_lobbies/", JSON.stringify(jsonData), callbackFn)
-	}
-
-	function getSubscribedPublicLobbies() {
-		var jsonData = {
-			callback_name: "leftbar_rooms_chat_subscribed_public_lobbies"
-		}
-
-		function callbackFn(par) {
 			subscribedPublicLobbiesModel.json = par.response
+			unsubscribedPublicLobbiesModel.json = par.response
+
+			stateToken = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken, getLobbies)
 		}
 
-		rsApi.request("/chat/subscribed_public_lobbies/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/chat/lobbies/", "", callbackFn)
 	}
 
-	function getUnsubscribedPublicLobbies() {
+	function subscribeLobby(chatId) {
 		var jsonData = {
-			callback_name: "leftbar_rooms_chat_unsubscribed_public_lobbies"
+			id: chatId,
+			gxs_id: main.defaultGxsId
 		}
 
 		function callbackFn(par) {
-			unsubscribedPublicLobbiesModel.json = par.response
+			getLobbies()
 		}
 
-		rsApi.request("/chat/unsubscribed_public_lobbies/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/chat/subscribe_lobby/", JSON.stringify(jsonData), callbackFn)
 	}
 
-	Component.onCompleted: {
-		getPrivateLobbies()
-		getSubscribedPublicLobbies()
-		getUnsubscribedPublicLobbies()
+	function unsubsribeLobby(chatId) {
+		var jsonData = {
+			id: chatId
+		}
+
+		function callbackFn(par) {
+			getLobbies()
+		}
+
+		rsApi.request("/chat/unsubscribe_lobby/", JSON.stringify(jsonData), callbackFn)
+	}
+
+	function setAutosubsribeLobby(chatId, autosubsribe) {
+		var jsonData = {
+			chatid: chatId,
+			autosubsribe: autosubsribe
+		}
+
+		function callbackFn(par) {
+			getLobbies()
+		}
+
+		rsApi.request("/chat/autosubscribe_lobby/", JSON.stringify(jsonData), callbackFn)
+	}
+
+	Component.onCompleted: getLobbies()
+
+	LoadingMask {
+		id: loadingMask
+		anchors.fill: parent
+
+		state: firstTime ? "visible" : "non-visible"
 	}
 
 	JSONListModel {
 		id: privateLobbiesModel
-		query: "$.data[*]"
+		query: "$.data[?(@.is_private==true)]"
 	}
 
 	JSONListModel {
 		id: subscribedPublicLobbiesModel
-		query: "$.data[*]"
+		query: "$.data[?((@.is_private==false)&&(@.subscribed==true)&&(@.is_broadcast==false))]"
 	}
 
 	JSONListModel {
 		id: unsubscribedPublicLobbiesModel
-		query: "$.data[*]"
+		query: "$.data[?((@.is_private==false)&&(@.subscribed==false)&&(@.is_broadcast==false))]"
 	}
 
 	Flickable {
@@ -100,7 +128,42 @@ Rectangle {
 						pageStack.push({item: Qt.resolvedUrl("RoomPage.qml"), immediate: true, replace: true,
 										   properties: {roomName: model.name, chatId: model.chat_id}})
 
+						main.content.refresh()
 						leftBar.state = "narrow"
+					}
+
+					secondaryItem: View {
+						anchors {
+							verticalCenter: parent.verticalCenter
+							right: parent.right
+							rightMargin: dp(20)
+						}
+
+						width: dp(20)
+						height: dp(20)
+						radius: width/2
+
+						backgroundColor: Theme.primaryColor
+						elevation: 1
+
+						visible: model.unread_msg_count > 0 ? true : false
+
+						Text {
+							anchors.fill: parent
+							text: model.unread_msg_count
+							color: "white"
+							font.family: "Roboto"
+							verticalAlignment: Text.AlignVCenter
+							horizontalAlignment: Text.AlignHCenter
+						}
+					}
+
+					Tooltip {
+						text: "Topic: " + model.topic
+							  + (main.advmode
+								   ? "\n" + "Chat Id: " + model.chat_id
+								   : "")
+						mouseArea: ink
 					}
 				}
 			}
@@ -115,7 +178,14 @@ Rectangle {
 				itemLabel.style: "body1"
 				iconName: "awesome/plus"
 
-				onClicked: leftBar.state = "narrow"
+				onClicked: {
+					leftBar.state = "narrow"
+					var component = Qt.createComponent("CreateLobby.qml");
+					if (component.status === Component.Ready) {
+						var createId = component.createObject(main, {"isPrivate": true});
+						createId.show();
+					}
+				}
 			}
 
 			ListItem.Subheader {
@@ -128,6 +198,7 @@ Rectangle {
 			Repeater {
 				model: subscribedPublicLobbiesModel.model
 				delegate: ListItem.Standard {
+					id: subscribedPublicDelegate
 					width: parent.width
 
 					text: model.name
@@ -140,7 +211,82 @@ Rectangle {
 						pageStack.push({item: Qt.resolvedUrl("RoomPage.qml"), immediate: true, replace: true,
 										   properties: {roomName: model.name, chatId: model.chat_id}})
 
+						main.content.refresh()
 						leftBar.state = "narrow"
+					}
+
+					secondaryItem: View {
+						anchors {
+							verticalCenter: parent.verticalCenter
+							right: parent.right
+							rightMargin: dp(20)
+						}
+
+						width: dp(20)
+						height: dp(20)
+						radius: width/2
+
+						backgroundColor: Theme.primaryColor
+						elevation: 1
+
+						visible: model.unread_msg_count > 0 ? true : false
+
+						Text {
+							anchors.fill: parent
+							text: model.unread_msg_count
+							color: "white"
+							font.family: "Roboto"
+							verticalAlignment: Text.AlignVCenter
+							horizontalAlignment: Text.AlignHCenter
+						}
+					}
+
+					Tooltip {
+						text: "Topic: " + model.topic
+							  + (main.advmode
+								   ? "\n" + "Chat Id: " + model.chat_id
+								   : "")
+						mouseArea: ink
+					}
+
+					MouseArea {
+						anchors.fill: parent
+
+						acceptedButtons: Qt.RightButton
+						onClicked: overflowMenu.open(subscribedPublicDelegate, mouse.x, mouse.y);
+					}
+
+					Dropdown {
+						id: overflowMenu
+						objectName: "overflowMenu"
+						overlayLayer: "dialogOverlayLayer"
+
+						anchor: Item.TopLeft
+
+						width: dp(200)
+						height: dp(1*30)
+
+						enabled: true
+
+						durationSlow: 300
+						durationFast: 150
+
+						Column {
+							anchors.fill: parent
+
+							ListItem.Standard {
+								height: dp(30)
+
+								text: "Leave"
+								itemLabel.style: "menu"
+
+								onClicked: {
+									overflowMenu.close()
+									unsubsribeLobby(model.id)
+									setAutosubsribeLobby(model.id, false)
+								}
+							}
+						}
 					}
 				}
 			}
@@ -155,7 +301,14 @@ Rectangle {
 				itemLabel.style: "body1"
 				iconName: "awesome/plus"
 
-				onClicked: leftBar.state = "narrow"
+				onClicked: {
+					leftBar.state = "narrow"
+					var component = Qt.createComponent("CreateLobby.qml");
+					if (component.status === Component.Ready) {
+						var createId = component.createObject(main, {"isPrivate": false});
+						createId.show();
+					}
+				}
 			}
 
 			ListItem.Subheader {
@@ -168,6 +321,7 @@ Rectangle {
 			Repeater {
 				model: unsubscribedPublicLobbiesModel.model
 				delegate: ListItem.Standard {
+					id: unsubscribedDelegate
 					width: parent.width
 
 					text: model.name
@@ -175,27 +329,93 @@ Rectangle {
 
 					itemLabel.style: "body1"
 
-					onClicked: {
+					function openUnsubscribedPublicLobby() {
+						subscribeLobby(model.id)
+						setAutosubsribeLobby(model.id, true)
 						main.content.activated = true;
 						pageStack.push({item: Qt.resolvedUrl("RoomPage.qml"), immediate: true, replace: true,
 										   properties: {roomName: model.name, chatId: model.chat_id}})
 
+						main.content.refresh()
 						leftBar.state = "narrow"
+					}
+
+					onClicked: openUnsubscribedPublicLobby()
+
+					secondaryItem: View {
+						anchors {
+							verticalCenter: parent.verticalCenter
+							right: parent.right
+							rightMargin: dp(20)
+						}
+
+						width: dp(20)
+						height: dp(20)
+						radius: width/2
+
+						backgroundColor: Theme.primaryColor
+						elevation: 1
+
+						visible: model.unread_msg_count > 0 ? true : false
+
+						Text {
+							anchors.fill: parent
+							text: model.unread_msg_count
+							color: "white"
+							font.family: "Roboto"
+							verticalAlignment: Text.AlignVCenter
+							horizontalAlignment: Text.AlignHCenter
+						}
+					}
+
+					Tooltip {
+						text: "Topic: " + model.topic
+							  + (main.advmode
+								   ? "\n" + "Chat Id: " + model.chat_id
+								   : "")
+						mouseArea: ink
+					}
+
+					MouseArea {
+						anchors.fill: parent
+
+						acceptedButtons: Qt.RightButton
+						onClicked: overflowMenu2.open(unsubscribedDelegate, mouse.x, mouse.y);
+					}
+
+					Dropdown {
+						id: overflowMenu2
+						objectName: "overflowMenu2"
+						overlayLayer: "dialogOverlayLayer"
+
+						anchor: Item.TopLeft
+
+						width: dp(200)
+						height: dp(1*30)
+
+						enabled: true
+
+						durationSlow: 300
+						durationFast: 150
+
+						Column {
+							anchors.fill: parent
+
+							ListItem.Standard {
+								height: dp(30)
+
+								text: "Join"
+								itemLabel.style: "menu"
+
+								onClicked: {
+									overflowMenu2.close()
+									openUnsubscribedPublicLobby()
+								}
+							}
+						}
 					}
 				}
 			}
-		}
-	}
-
-	Timer {
-		interval: 5000
-		running: true
-		repeat: true
-
-		onTriggered: {
-			getPrivateLobbies()
-			getSubscribedPublicLobbies()
-			getUnsubscribedPublicLobbies()
 		}
 	}
 }

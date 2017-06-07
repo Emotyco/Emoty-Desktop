@@ -1,15 +1,15 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -27,14 +27,20 @@
 #include <QQmlEngine>
 #include <QQmlContext>
 
-//#include <retroshare/rsinit.h>
+#ifndef QT_DEBUG
+    #include <QProcess>
+#endif
 
 #include "libresapilocalclient.h"
+#include "notifier.h"
+#include "soundnotifier.h"
 #include "Bridge/LoginWindow/loginwindow_main.h"
 #include "Util/runstatehelper.h"
 #include "Util/screensize.h"
 
 #ifndef BORDERLESS_MAINWINDOW
+    #include <QDir>
+
     #include "Util/cursorshape.h"
     #include "Util/qquickviewhelper.h"
 #endif
@@ -47,11 +53,30 @@ int main(int argc, char *argv[])
 	QApplication app(argc, argv);
 
 	RunStateHelper::Create();
+	Notifier::Create();
+	SoundNotifier::Create();
+
+#ifndef QT_DEBUG
+	QProcess process;
+	QString file = QCoreApplication::applicationDirPath() + "/RS-Core";
+
+    #ifdef WINDOWS_SYS
+	    file += ".exe";
+    #endif
+
+	process.start(file);
+	QObject::connect(qApp, SIGNAL(aboutToQuit()), &process, SLOT(kill()));
+#endif
 
 	loginwindow_main(argc, argv);
 
 	if(RunStateHelper::getInstance()->getRunState() != "running_ok" && RunStateHelper::getInstance()->getRunState() != "waiting_startup")
+	{
+#ifndef QT_DEBUG
+		process.kill();
+#endif
 		return 0;
+	}
 
 	QApplication::setQuitOnLastWindowClosed(false);
 
@@ -77,29 +102,26 @@ int main(int argc, char *argv[])
 	view->setResizeMode(QQuickView::SizeRootObjectToView);
 
 	QQmlEngine *engine = view->engine();
-	QObject::connect(engine,SIGNAL(quit()),qApp, SLOT(quit())) ;
+	QObject::connect(engine,SIGNAL(quit()),qApp, SLOT(quit()));
 	QPM_INIT((*engine));
 
 	QQmlContext *ctxt = view->rootContext();
 	ctxt->setContextProperty("view", view);
 
 	QQuickViewHelper helper(view);
+	QObject::connect(Notifier::getInstance(), SIGNAL(chatMessage(QString)), &helper, SLOT(flashMessageReceived(QString)));
+
 	CursorShape cursor(view);
 	ctxt->setContextProperty("cursor", &cursor);
 
-	QString sockPath;
-
-#ifdef QT_DEBUG
-	sockPath = "RS/";
-#else
-	sockPath = QCoreApplication::applicationDirPath();
-#endif
-
+	QString sockPath = QDir::homePath() + "/.retroshare";
 	sockPath.append("/libresapi.sock");
 
 	LibresapiLocalClient rsApi;
 	rsApi.openConnection(sockPath);
 
+	ctxt->setContextProperty("notifier", Notifier::getInstance());
+	ctxt->setContextProperty("soundNotifier", SoundNotifier::getInstance());
 	ctxt->setContextProperty("rsApi", &rsApi);
 	ctxt->setContextProperty("runStateHelper", RunStateHelper::getInstance());
 

@@ -1,15 +1,15 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -220,6 +220,7 @@ View {
 						else {
 							main.content.activated = true;
 							pageStack.push({item: Qt.resolvedUrl(page), immediate: true, replace: true})
+							main.content.refresh()
 						}
 					}
 					onPressAndHold: {
@@ -231,6 +232,35 @@ View {
 							leftBar.state = "narrow"
 						else if(leftBar.state !== "narrow" && tabView.currentIndex !== model.index+1)
 							tabView.currentIndex = model.index+1
+					}
+
+					View {
+						anchors {
+							top: parent.top
+							right: parent.right
+							topMargin: dp(7)
+							rightMargin: dp(7)
+						}
+
+						width: dp(14)
+						height: dp(14)
+						radius: width/2
+
+						backgroundColor: Theme.primaryColor
+						elevation: 1
+
+						visible: helperName == "Rooms" ?
+									main.unreadMsgsLobbies > 0 ? true : false
+						          : false
+
+						Text {
+							anchors.fill: parent
+							text: helperName == "Rooms" ? main.unreadMsgsLobbies : ""
+							color: "white"
+							font.family: "Roboto"
+							verticalAlignment: Text.AlignVCenter
+							horizontalAlignment: Text.AlignHCenter
+						}
 					}
 				}
 			}
@@ -297,7 +327,7 @@ View {
 			NumberAnimation {
 				target: leftBar
 				property: "anchors.leftMargin"
-				from: -50
+				from: -dp(50)
 				to: 0
 				duration: MaterialAnimation.pageTransitionDuration
 			}

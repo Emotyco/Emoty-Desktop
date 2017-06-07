@@ -20,7 +20,7 @@
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
 
-import QtQuick 2.4
+import QtQuick 2.5
 import QtQuick.Layouts 1.1
 
 import Material 0.3
@@ -40,15 +40,15 @@ PopupBase {
 	property alias negativeButton: negativeButton
 	property alias positiveButton: positiveButton
 
-	property string negativeButtonText: "Cancel"
-	property string positiveButtonText: "Ok"
+	property string negativeButtonText: "No"
+	property string positiveButtonText: "Yes"
 
 	property bool hasActions: true
 	property bool floatingActions: false
 
 	default property alias dialogContent: column.data
 
-	property bool autoLogin: false
+	property var functionAccepted
 
 	signal accepted()
 	signal rejected()
@@ -101,20 +101,14 @@ PopupBase {
 		}
 	}
 
-	function show() {
+	function show(text, functionAccepted) {
+		dialog.text = text
+		dialog.functionAccepted = functionAccepted
 		open()
 	}
 
-	Component.onCompleted: {
-		getAutoLogin()
-	}
-
-	function getAutoLogin() {
-		function callbackFn(par) {
-			dialog.autoLogin = Boolean(JSON.parse(par.response).data.auto_login)
-		}
-
-		rsApi.request("/settings/get_auto_login/", "", callbackFn)
+	onAccepted: {
+		dialog.functionAccepted()
 	}
 
 	View {
@@ -258,52 +252,8 @@ PopupBase {
 			}
 
 			Item {
-				height: dp(5)
 				width: parent.width
-
-				z: 2
-				visible: dialog.autoLogin
-
-				RowLayout {
-					anchors {
-						left: parent.left
-						leftMargin: dp(9)
-					}
-
-					y: -dp(7)
-					spacing: -dp(10)
-
-					CheckBox {
-						id: checkBox
-						darkBackground: false
-						checked: dialog.autoLogin
-
-						onClicked: {
-							var jsonData = {
-								auto_login: checkBox.checked,
-							}
-							rsApi.request("/settings/set_auto_login/", JSON.stringify(jsonData))
-						}
-					}
-
-					Label {
-						text: "Automatically log in"
-						color: Theme.light.subTextColor
-
-						MouseArea{
-							anchors.fill: parent
-							onClicked: {
-							  checkBox.checked = !checkBox.checked
-							  checkBox.clicked()
-							}
-						}
-					}
-				}
-			}
-
-			Item {
-				width: parent.width
-				height: dialog.autoLogin ? contentMargins+dp(10) : contentMargins/2
+				height: contentMargins/2
 
 				visible: textLabel.visible
 			}
@@ -343,8 +293,7 @@ PopupBase {
 					id: negativeButton
 
 					anchors {
-						verticalCenter: dialog.autoLogin ? undefined : parent.verticalCenter
-						top: dialog.autoLogin ? parent.top : undefined
+						verticalCenter: parent.verticalCenter
 						left: positiveButton.visible ? positiveButton.right : parent.left
 						leftMargin: 4 * Units.dp
 						rightMargin: 8 * Units.dp
@@ -367,8 +316,7 @@ PopupBase {
 					id: positiveButton
 
 					anchors {
-						verticalCenter: dialog.autoLogin ? undefined : parent.verticalCenter
-						top: dialog.autoLogin ? parent.top : undefined
+						verticalCenter: parent.verticalCenter
 						right: parent.horizontalCenter
 						rightMargin: 4 * Units.dp
 						leftMargin: 8 * Units.dp

@@ -30,16 +30,15 @@ import Material.ListItems 0.1 as ListItem
 DragTile {
 	id: drag
 
-	property string rsPeerId
+	property string gxsId
 	property string chatId
 	property string name
-	property string location
 	property alias contentm: contentm
+
+	property int status: 1
 
 	// For handling tokens
 	property int stateToken: 0
-
-	Component.onDestruction: main.unregisterToken(stateToken)
 
 	// Just for "restore" option
 	property int tmpCol
@@ -69,28 +68,49 @@ DragTile {
 		ScriptAction { script: {contentm.positionViewAtEnd()} }
 	}
 
-	ParallelAnimation {
-		running: true
-		SequentialAnimation {
-			NumberAnimation {
-				duration: 50
-			}
-			NumberAnimation {
-				target: drag
-				property: "opacity"
-				from: 0
-				to: 1
-				duration: MaterialAnimation.pageTransitionDuration/2
-			}
+	function initiateChat() {
+		var jsonData = {
+			own_gxs_hex: main.defaultGxsId,
+			remote_gxs_hex: drag.gxsId
 		}
+
+		function callbackFn(par) {
+			chatId = String(JSON.parse(par.response).data.chat_id)
+			timer.running = true
+		}
+
+		rsApi.request("/chat/initiate_distant_chat/", JSON.stringify(jsonData), callbackFn)
 	}
 
-	JSONListModel {
-		id: msgModel
-		query: "$.data[*]"
+	function checkChatStatus() {
+		var jsonData = {
+			chat_id: drag.chatId
+		}
+
+		function callbackFn(par) {
+			if(status != String(JSON.parse(par.response).data.status)) {
+				status = String(JSON.parse(par.response).data.status)
+				if(status == 2)
+					drag.getChatMessages()
+			}
+
+		}
+
+		rsApi.request("/chat/distant_chat_status/", JSON.stringify(jsonData), callbackFn)
+	}
+
+	function closeChat() {
+		var jsonData = {
+			distant_chat_hex: drag.chatId
+		}
+
+		rsApi.request("/chat/close_distant_chat/", JSON.stringify(jsonData))
 	}
 
 	function getChatMessages() {
+		if (drag.chatId == "")
+			return
+
 		function callbackFn(par) {
 			msgModel.json = par.response
 			contentm.positionViewAtEnd()
@@ -102,7 +122,16 @@ DragTile {
 		rsApi.request("/chat/messages/"+drag.chatId, "", callbackFn)
 	}
 
-	Component.onCompleted: drag.getChatMessages()
+	Component.onCompleted: drag.initiateChat()
+	Component.onDestruction: {
+		main.unregisterToken(stateToken)
+		closeChat()
+	}
+
+	JSONListModel {
+		id: msgModel
+		query: "$.data[*]"
+	}
 
 	View {
 		id: chat
@@ -171,7 +200,7 @@ DragTile {
 							pixelSize: dp(17)
 						}
 
-						text: name + "@" + location
+						text: name
 
 						color: Theme.primaryColor
 					}
@@ -316,7 +345,7 @@ DragTile {
 		Item {
 			anchors {
 				top: chatHeader.bottom
-				bottom: chatFooter.top
+				bottom: itemInfo.top
 				horizontalCenter: parent.horizontalCenter
 			}
 
@@ -348,6 +377,149 @@ DragTile {
 				Scrollbar {
 					anchors.margins: 0
 					flickableItem: contentm
+				}
+			}
+		}
+
+		Item {
+			id: itemInfo
+			anchors {
+				bottom: chatFooter.top
+				horizontalCenter: parent.horizontalCenter
+			}
+
+			width: parent.width > dp(9*60+(30)) ? dp(9*60) : (parent.width-dp(30))
+			height: viewInfo.height + dp(5)
+
+			states: [
+				State {
+					name: "hide"; when: drag.status == 2
+					PropertyChanges {
+						target: itemInfo
+						visible: false
+					}
+				},
+				State {
+					name: "show"; when: drag.status != 2
+					PropertyChanges {
+						target: itemInfo
+						visible: true
+					}
+				}
+			]
+
+			transitions: [
+				Transition {
+					from: "hide"; to: "show"
+
+					SequentialAnimation {
+						PropertyAction {
+							target: itemInfo
+							property: "visible"
+							value: true
+						}
+						ParallelAnimation {
+							NumberAnimation {
+								target: itemInfo
+								property: "opacity"
+								from: 0
+								to: 1
+								easing.type: Easing.InOutQuad;
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+							NumberAnimation {
+								target: itemInfo
+								property: "anchors.bottomMargin"
+								from: -itemInfo.height
+								to: 0
+								easing.type: Easing.InOutQuad;
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+						}
+					}
+				},
+				Transition {
+					from: "show"; to: "hide"
+
+					SequentialAnimation {
+						PauseAnimation {
+							duration: 2000
+						}
+						ParallelAnimation {
+							NumberAnimation {
+								target: itemInfo
+								property: "opacity"
+								from: 1
+								to: 0
+								easing.type: Easing.InOutQuad
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+							NumberAnimation {
+								target: itemInfo
+								property: "anchors.bottomMargin"
+								from: 0
+								to: -itemInfo.height
+								easing.type: Easing.InOutQuad
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+						}
+						PropertyAction {
+							target: itemInfo;
+							property: "visible";
+							value: false
+						}
+					}
+				}
+			]
+
+			View {
+				id: viewInfo
+				anchors {
+					right: parent.right
+					left: parent.left
+					top: parent.top
+					rightMargin: parent.width*0.03
+					leftMargin: parent.width*0.03
+				}
+
+				height: textMsg.implicitHeight + dp(12)
+				width: (parent.width*0.8)
+
+				backgroundColor: Theme.accentColor
+				elevation: 1
+				radius: 10
+
+
+				TextEdit {
+					id: textMsg
+
+					anchors {
+						top: parent.top
+						topMargin: dp(6)
+						left: parent.left
+						right: parent.right
+					}
+
+					text: drag.status == 0 ? "Something goes wrong..."
+						: drag.status == 1 ? "Tunnel is pending..."
+						: drag.status == 2 ? "Connection is established"
+						: drag.status == 3 ? "Your friend closed chat."
+						: "Something goes wrong..."
+
+					textFormat: Text.RichText
+					wrapMode: Text.WordWrap
+
+					color: "white"
+					readOnly: true
+
+					selectByMouse: false
+
+					horizontalAlignment: TextEdit.AlignHCenter
+
+					font {
+						family: "Roboto"
+						pixelSize: dp(13)
+					}
 				}
 			}
 		}
@@ -436,6 +608,31 @@ DragTile {
 						}
 					}
 				}
+			}
+		}
+
+		Timer {
+			id: timer
+			interval: 1000
+			repeat: true
+			running: false
+
+			onTriggered: drag.checkChatStatus()
+		}
+	}
+
+	ParallelAnimation {
+		running: true
+		SequentialAnimation {
+			NumberAnimation {
+				duration: 50
+			}
+			NumberAnimation {
+				target: drag
+				property: "opacity"
+				from: 0
+				to: 1
+				duration: MaterialAnimation.pageTransitionDuration/2
 			}
 		}
 	}

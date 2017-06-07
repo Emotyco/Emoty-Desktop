@@ -1,15 +1,15 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -166,7 +166,7 @@ Item {
 			verticalCenter: parent.verticalCenter
 		}
 
-		width: 5
+		width: dp(5)
 		height: parent.height
 
 		MouseArea {
@@ -196,8 +196,8 @@ Item {
 				if(drag.active) {
 					root.width = root.width - mouseX
 					root.x = root.x + mouseX
-					if(root.width < 30)
-						root.width = 30
+					if(root.width < dp(30))
+						root.width = dp(30)
 				}
 			}
 			onReleased: {
@@ -224,7 +224,7 @@ Item {
 			verticalCenter: parent.verticalCenter
 		}
 
-		width: 5
+		width: dp(5)
 		height: parent.height
 
 		MouseArea {
@@ -253,8 +253,8 @@ Item {
 			onMouseXChanged: {
 				if(drag.active) {
 					root.width = root.width + mouseX
-					if(root.width < 30)
-						root.width = 30
+					if(root.width < dp(30))
+						root.width = dp(30)
 				}
 			}
 
@@ -280,7 +280,7 @@ Item {
 		}
 
 		width: parent.width
-		height: 5
+		height: dp(5)
 
 		MouseArea {
 			id: topMA
@@ -309,8 +309,8 @@ Item {
 				if(drag.active) {
 					root.height = root.height - mouseY
 					root.y = root.y + mouseY
-					if(root.height < 30)
-						root.height = 30
+					if(root.height < dp(30))
+						root.height = dp(30)
 				}
 			}
 			onReleased: {
@@ -336,7 +336,7 @@ Item {
 		}
 
 		width: parent.width
-		height: 5
+		height: dp(5)
 
 		MouseArea {
 			id: botMA
@@ -364,14 +364,14 @@ Item {
 			onMouseXChanged: {
 				if(drag.active) {
 					root.height = root.height + mouseY
-					if(root.height < 30)
-						root.height = 30
+					if(root.height < dp(30))
+						root.height = dp(30)
 				}
 			}
 
 			onReleased: {
 				if(root.Drag.target !== null) {
-					var rows = Math.round(root.height/(50 + gridLayout.rowSpacing))
+					var rows = Math.round(root.height/(dp(50) + gridLayout.rowSpacing))
 					root.row = rows
 					root.refresh()
 				}
@@ -389,7 +389,8 @@ Item {
 
 		anchors.centerIn: parent
 
-		width: parent.width - 10; height: parent.height - 10
+		width: parent.width - dp(10)
+		height: parent.height - dp(10)
 
 		drag.target: root
 

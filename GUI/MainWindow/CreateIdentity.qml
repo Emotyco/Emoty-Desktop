@@ -1,15 +1,15 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -21,6 +21,7 @@
  ****************************************************************/
 
 import QtQuick 2.5
+import QtQuick.Layouts 1.1
 //import QtQuick.Dialogs 1.0
 
 import Material 0.3
@@ -69,15 +70,15 @@ PopupBase {
 	}
 
 	function createIdentity(name) {
+		var isNotAnonymous = main.advmode ? !checkBox.checked : true
+
 		var jsonData = {
-			callback_name: "createidentity_get_flickable_grid_mode",
 			name: name,
-			pgp_linked: true
+			pgp_linked: isNotAnonymous
 		}
 
 		function callbackFn(par) {
 			if(JSON.parse(par.response).data.name === name) {
-				main.getOwnIdentities()
 				dialog.close()
 			}
 		}
@@ -100,12 +101,17 @@ PopupBase {
 		}
 
 		width: dp(350)
-		height: dp(400)
+		height: main.advmode ? dp(430) : dp(400)
 
 		elevation: 5
-		radius: 2 * Units.dp
+		radius: dp(2)
 		backgroundColor: "white"
 		clip: true
+
+		MouseArea {
+			anchors.fill: parent
+			onClicked: {}
+		}
 
 		Rectangle {
 			id: mask
@@ -227,6 +233,8 @@ PopupBase {
 		TextField {
 			id: name
 
+			property bool emptyName: false
+
 			anchors {
 				top: canvas.bottom
 				topMargin: dp(30)
@@ -238,6 +246,7 @@ PopupBase {
 			color: Theme.primaryColor
 
 			horizontalAlignment: TextInput.AlignHCenter
+			focus: true
 
 			placeholderHorizontalCenter: true
 			placeholderText: "Joe Smith"
@@ -245,14 +254,66 @@ PopupBase {
 
 			font {
 				family: "Roboto"
-				pixelSize: 18 * Units.dp
+				pixelSize: dp(18)
 				capitalization: Font.MixedCase
 			}
 
+			helperText: emptyName ?  "Name is too short" : ""
+			hasError: emptyName
+
 			onAccepted: {
-				mask.enabled = true
-				mask.visible = true
-				createIdentity(name.text)
+				if(name.text.length > 3) {
+					mask.enabled = true
+					mask.visible = true
+					createIdentity(name.text)
+				}
+				else if(name.text.length < 3)
+					name.emptyName = true
+			}
+		}
+
+		Item {
+			anchors {
+				top: name.bottom
+				topMargin: name.emptyName ? dp(5) : 0
+				horizontalCenter: parent.horizontalCenter
+			}
+
+			height: dp(50)
+			width: parent.width*0.63
+
+			visible: main.advmode
+			enabled: main.advmode
+			clip: true
+
+			CheckBox {
+				id: checkBox
+				anchors {
+					left: parent.left
+					verticalCenter: parent.verticalCenter
+					leftMargin: -dp(15)
+				}
+
+				darkBackground: false
+			}
+
+			Label {
+				anchors {
+					left: checkBox.right
+					verticalCenter: parent.verticalCenter
+				}
+
+				text: "Anonymous"
+				color: Theme.light.textColor
+
+				MouseArea{
+					anchors.fill: parent
+
+					onClicked: {
+					  checkBox.checked = !checkBox.checked
+					  checkBox.clicked()
+					}
+				}
 			}
 		}
 
@@ -267,14 +328,18 @@ PopupBase {
 
 			anchors {
 				horizontalCenter: parent.horizontalCenter
-				bottomMargin: 25 * Units.dp
+				bottomMargin: dp(25)
 				bottom: parent.bottom
 			}
 
 			onClicked: {
-				mask.enabled = true
-				mask.visible = true
-				createIdentity(name.text)
+				if(name.text.length > 3) {
+					mask.enabled = true
+					mask.visible = true
+					createIdentity(name.text)
+				}
+				else if(name.text.length < 3)
+					name.emptyName = true
 			}
 		}
 	}

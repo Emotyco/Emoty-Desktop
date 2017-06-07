@@ -1,15 +1,15 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -26,6 +26,8 @@
 #include <QQuickView>
 #include <QSystemTrayIcon>
 
+#include "notifier.h"
+
 class QQuickViewHelper : public QObject
 {
 	Q_OBJECT
@@ -38,6 +40,19 @@ public slots:
 	{
 		if(reason == QSystemTrayIcon::Trigger)
 			view->show();
+	}
+
+	void flash()
+	{
+		view->alert(0);
+	}
+
+	void flashMessageReceived(QString chat_type)
+	{
+		if(chat_type == "distant_chat" || chat_type == "lobby")
+			view->alert(0);
+		else if(chat_type == "direct_chat" && Notifier::getInstance()->getAdvMode())
+			view->alert(0);
 	}
 
 private:

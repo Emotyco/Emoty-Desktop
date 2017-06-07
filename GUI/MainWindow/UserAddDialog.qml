@@ -1,15 +1,15 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -30,8 +30,8 @@ Dialog {
 	positiveButtonText: "Cancel"
 	negativeButtonText: "Add"
 
-	positiveButtonSize: 13
-	negativeButtonSize: 13
+	positiveButtonSize: dp(13)
+	negativeButtonSize: dp(13)
 
 	onRejected: {
 		var jsonData = {
@@ -46,18 +46,18 @@ Dialog {
 		rsApi.request("PUT /peers", JSON.stringify(jsonData))
 	}
 
+	Behavior on opacity {
+		NumberAnimation { duration: 200 }
+	}
+
 	Component.onCompleted: getSelfCert()
 
 	function getSelfCert() {
-		var jsonData = {
-			callback_name: "useradddialog_peers_self_certificate"
-		}
-
 		function callbackFn(par) {
 			myKey = JSON.parse(par.response).data.cert_string
 		}
 
-		rsApi.request("/peers/self/certificate/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/peers/self/certificate/", "", callbackFn)
 	}
 
 	Label {
@@ -87,7 +87,7 @@ Dialog {
 					right: parent.right
 				}
 
-				height: 35
+				height: dp(35)
 
 				text: "It's your certificate. Share it with friends."
 				textFormat: Text.PlainText
@@ -96,20 +96,20 @@ Dialog {
 
 				font {
 					family: "Roboto"
-					pixelSize: 16 * Units.dp
+					pixelSize: dp(16)
 				}
 			}
 
 			TextArea {
 				anchors {
 					fill: parent
-					topMargin: 35
+					topMargin: dp(35)
 				}
 
 				text: myKey.replace(/(\r\n|\n|\r)/gm,"")
 				textFormat: Text.PlainText
 				wrapMode: Text.WrapAnywhere
-				font.pixelSize: 12 * Units.dp
+				font.pixelSize: dp(12)
 			}
 		}
 
@@ -123,7 +123,7 @@ Dialog {
 					right: parent.right
 				}
 
-				height: 35
+				height: dp(35)
 
 				text: "Paste your friend's certificate here"
 				textFormat: Text.PlainText
@@ -131,7 +131,7 @@ Dialog {
 
 				font {
 					family: "Roboto"
-					pixelSize: 16 * Units.dp
+					pixelSize: dp(16)
 				}
 			}
 
@@ -140,13 +140,13 @@ Dialog {
 
 				anchors {
 					fill: parent
-					topMargin: 35
+					topMargin: dp(35)
 				}
 
 				placeholderText: myKey.replace(/(\r\n|\n|\r)/gm,"")
 				textFormat: Text.PlainText
 				wrapMode: Text.WrapAnywhere
-				font.pixelSize: 12 * Units.dp
+				font.pixelSize: dp(12)
 			}
 		}
 	}

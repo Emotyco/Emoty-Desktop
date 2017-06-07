@@ -1,93 +1,127 @@
-/****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+/*
+ * RetroShare Android QML App
+ * Copyright (C) 2016-2017  Gioacchino Mazzurco <gio@eigenlab.org>
+ * Copyright (C) 2016  Manu Pineda <manu@cooperativa.cat>
  *
- *  Copyright (C) 2016  Gioacchino Mazzurco <gio@eigenlab.org>
- *  Copyright (C) 2016  Manu Pineda <manu@cooperativa.cat>
- *  Copyright (C) 2017, Konrad Dębiec
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  Sonet is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 3
- *  of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  Sonet is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor,
- *  Boston, MA  02110-1301, USA.
- ****************************************************************/
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "libresapilocalclient.h"
 
 #include <QJSEngine>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonValue>
-
-LibresapiLocalClient::LibresapiLocalClient(QObject *parent) : QObject(parent)
-{
-	mLocalSocket = new QLocalSocket();
-}
+#include <QtDebug>
 
 void LibresapiLocalClient::openConnection(QString socketPath)
 {
-	connect(mLocalSocket, SIGNAL(error(QLocalSocket::LocalSocketError)),
+	connect(& mLocalSocket, SIGNAL(error(QLocalSocket::LocalSocketError)),
 	        this, SLOT(socketError(QLocalSocket::LocalSocketError)));
-	connect(mLocalSocket, SIGNAL(readyRead()),
+	connect(& mLocalSocket, SIGNAL(readyRead()),
 	        this, SLOT(read()));
-	mLocalSocket->connectToServer(socketPath);
+	mLocalSocket.connectToServer(socketPath);
 }
 
 int LibresapiLocalClient::request( const QString& path, const QString& jsonData,
                                    QJSValue callback )
 {
+#ifdef QT_DEBUG
+	if(mDebug)
+		qDebug() << reqCount++ << __PRETTY_FUNCTION__ << path << jsonData
+		         << callback.toString();
+#endif // QT_DEBUG
+
 	QByteArray data;
 	data.append(path); data.append('\n');
 	data.append(jsonData); data.append('\n');
-
-	QJsonObject qJsonObject = QJsonDocument::fromJson(jsonData.toUtf8()).object();
-	QJsonValue jsValue = qJsonObject.value("callback_name");
-
-	callbackMap.insert(jsValue.toString(), callback);
-	mLocalSocket->write(data);
-
-	return 1;
+	processingQueue.enqueue(PQRecord(path, jsonData, callback));
+	return mLocalSocket.write(data);
 }
 
 void LibresapiLocalClient::socketError(QLocalSocket::LocalSocketError)
 {
-	qDebug() << "Socket Eerror!!" << mLocalSocket->errorString();
+	qCritical() << __PRETTY_FUNCTION__ << "Socket Eerror! "
+	            << mLocalSocket.errorString();
 }
 
 void LibresapiLocalClient::read()
 {
-	QString receivedMsg(mLocalSocket->readLine());
-
-	if(!callbackMap.isEmpty())
+	if(processingQueue.isEmpty())
 	{
-		QJsonObject qJsonObject = QJsonDocument::fromJson(receivedMsg.toUtf8()).object();
-		QJsonValue jsValue = qJsonObject.value("callback_name");
-
-		if(callbackMap.contains(jsValue.toString()))
-		{
-			QJSValue callback(callbackMap.take(jsValue.toString()));
-			if(callback.isCallable())
-			{
-				QJSValue params = callback.engine()->newObject();
-				params.setProperty("response", receivedMsg);
-
-				callback.call(QJSValueList { params });
-			}
-			else
-				emit responseReceived(receivedMsg);
-		}
-		else
-			emit responseReceived(receivedMsg);
+		qCritical() << __PRETTY_FUNCTION__ << "callbackQueue is empty "
+		            << "something really fishy is happening!";
+		return;
 	}
-	else
-		emit responseReceived(receivedMsg);
+
+	if(!mLocalSocket.canReadLine())
+	{
+		qWarning() << __PRETTY_FUNCTION__
+		           << "Strange, can't read a complete line!";
+		return;
+	}
+
+	QByteArray&& ba(mLocalSocket.readLine());
+	if(ba.size() < 2)
+	{
+		qWarning() << __PRETTY_FUNCTION__ << "Got answer of less then 2 bytes,"
+		           << "something fishy is happening!";
+		return;
+	}
+
+	QString receivedMsg(ba);
+	PQRecord&& p(processingQueue.dequeue());
+
+#ifdef QT_DEBUG
+	if(mDebug)
+		qDebug() << ansCount++ << __PRETTY_FUNCTION__ << receivedMsg << p.mPath
+		         << p.mJsonData << p.mCallback.toString();
+#endif // QT_DEBUG
+
+	emit goodResponseReceived(receivedMsg); /// @deprecated
+	emit responseReceived(receivedMsg);
+
+	if(p.mCallback.isCallable())
+	{
+		QJSValue&& params(p.mCallback.engine()->newObject());
+		params.setProperty("response", receivedMsg);
+
+		p.mCallback.call(QJSValueList { params });
+	}
+
+	// In case of multiple reply coaleshed in the same signal
+	if(mLocalSocket.bytesAvailable() > 0) read();
 }
+
+LibresapiLocalClient::PQRecord::PQRecord( const QString&
+#ifdef QT_DEBUG
+                                          path
+#endif //QT_DEBUG
+                                          , const QString&
+#ifdef QT_DEBUG
+                                          jsonData
+#endif //QT_DEBUG
+                                          , const QJSValue& callback) :
+#ifdef QT_DEBUG
+    mPath(path), mJsonData(jsonData),
+#endif //QT_DEBUG
+    mCallback(callback) {}
+
+#ifdef QT_DEBUG
+void LibresapiLocalClient::setDebug(bool v)
+{
+	if(v != mDebug)
+	{
+		mDebug = v;
+		emit debugChanged();
+	}
+}
+#endif // QT_DEBUG

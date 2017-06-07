@@ -19,47 +19,45 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor,
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
+#ifndef NOTIFIER_H
+#define NOTIFIER_H
 
-import QtQuick 2.5
-import QtQuick.Controls 1.4 as Controls
-import Material 0.3
+#include <QObject>
 
-Controls.TextArea {
-	id: textArea
+class Notifier : public QObject
+{
+	Q_OBJECT
+public:
+	enum ChatType
+	{
+		BROADCAST_CHAT,
+		DISTANT_CHAT,
+		DIRECT_CHAT,
+		LOBBY
+	};
 
-	property color color: Theme.accentColor
-	property color errorColor: Palette.colors["red"]["500"]
-	property string placeholderText
+	static Notifier *Create ();
+	static void Destroy();
+	static Notifier *getInstance ();
 
-	style: TextAreaStyle {}
+signals:
+	void chatMessage(QString chat_type);
 
-	Text {
-		id: fieldPlaceholder
+public slots:
+	void handleChatMessages(QString receivedMsg);
 
-		anchors {
-			fill: parent
-			margins: 3.3 * Units.dp
-		}
+	void setAdvMode(bool advmode);
+	bool getAdvMode();
 
-		text: placeholderText
-		color: Theme.light.hintColor
+public:
+	Notifier(QObject *parent = 0) :
+	    QObject(parent), advmode(false), msgStateToken(0) {}
 
-		font {
-			pixelSize: textArea.font.pixelSize
-			family: "Roboto"
-		}
+	static Notifier *_instance;
 
-		wrapMode: Text.WrapAnywhere
-		textFormat: textArea.textFormat
+	bool advmode;
+	int msgStateToken;
+	std::map<ChatType, int> unreaded_msgs;
+};
 
-		states: [
-			State {
-				name: "hidden"; when: textArea.text.length > 0
-				PropertyChanges {
-					target: fieldPlaceholder
-					visible: false
-				}
-			}
-		]
-	}
-}
+#endif // NOTIFIER_H

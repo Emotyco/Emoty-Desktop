@@ -1,15 +1,15 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -34,11 +34,11 @@ Rectangle {
 				left: parent.left
 				top: parent.top
 				bottom: parent.bottom
-				bottomMargin: 5
-				topMargin: 5
+				bottomMargin: 5 * Units.dp
+				topMargin: 5 * Units.dp
 			}
 
-			width: 5
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 			onEntered: cursor.changeCursor(Qt.SizeHorCursor)
@@ -55,11 +55,11 @@ Rectangle {
 				right: parent.right
 				top: parent.top
 				bottom: parent.bottom
-				bottomMargin: 5
-				topMargin: 5
+				bottomMargin: 5 * Units.dp
+				topMargin: 5 * Units.dp
 			}
 
-			width: 5
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 			preventStealing: true
@@ -78,11 +78,11 @@ Rectangle {
 				top: parent.top
 				right: parent.right
 				left: parent.left
-				leftMargin: 5
-				rightMargin: 5
+				leftMargin: 5 * Units.dp
+				rightMargin: 5 * Units.dp
 			}
 
-			height: 5
+			height: 5 * Units.dp
 
 			hoverEnabled: enabled
 
@@ -100,11 +100,11 @@ Rectangle {
 				bottom: parent.bottom
 				right: parent.right
 				left: parent.left
-				leftMargin: 5
-				rightMargin: 5
+				leftMargin: 5 * Units.dp
+				rightMargin: 5 * Units.dp
 			}
 
-			height: 5
+			height: 5 * Units.dp
 
 			hoverEnabled: enabled
 
@@ -123,8 +123,8 @@ Rectangle {
 				left: parent.left
 			}
 
-			height: 5
-			width: 5
+			height: 5 * Units.dp
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 
@@ -143,8 +143,8 @@ Rectangle {
 				right: parent.right
 			}
 
-			height: 5
-			width: 5
+			height: 5 * Units.dp
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 
@@ -163,8 +163,8 @@ Rectangle {
 				left: parent.left
 			}
 
-			height: 5
-			width: 5
+			height: 5 * Units.dp
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 
@@ -183,8 +183,8 @@ Rectangle {
 				right: parent.right
 			}
 
-			height: 5
-			width: 5
+			height: 5 * Units.dp
+			width: 5 * Units.dp
 
 			hoverEnabled: enabled
 			preventStealing: true
@@ -201,7 +201,7 @@ Rectangle {
 		MouseArea {
 			anchors {
 				fill: parent
-				margins: 5
+				margins: 5 * Units.dp
 			}
 
 			acceptedButtons: Qt.LeftButton

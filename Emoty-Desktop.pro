@@ -8,18 +8,18 @@ QT += multimedia
 CONFIG += c++11 qrc
 
 TEMPLATE = app
-TARGET = Sonet-Desktop
+TARGET = Emoty-Desktop
 
-DEPENDPATH *= Sonet-Desktop
-INCLUDEPATH *= Sonet-Desktop
+DEPENDPATH *= Emoty-Desktop
+INCLUDEPATH *= Emoty-Desktop
 
 #################################### Windows #####################################
 
 win32 {
+    DEFINES += WINDOWS_SYS
     #if you want to compile borderless login window
     #just define these variables
     {
-
         DEFINES += BORDERLESS_LOGIN
         DEFINES += BORDERLESS_MAINWINDOW
 
@@ -47,12 +47,16 @@ HEADERS += libresapilocalclient.h \
     Util/cursorshape.h \
     Util/qquickviewhelper.h \
     Bridge/LoginWindow/loginwindow_main.h \
-    Util/screensize.h
+    Util/screensize.h \
+    notifier.h \
+    soundnotifier.h
 
 SOURCES += main.cpp \
     libresapilocalclient.cpp \
     Util/runstatehelper.cpp \
-    Bridge/LoginWindow/loginwindow_main.cpp
+    Bridge/LoginWindow/loginwindow_main.cpp \
+    notifier.cpp \
+    soundnotifier.cpp
 
 RESOURCES += \
     GUI/MainWindow/mainwindow.qrc \

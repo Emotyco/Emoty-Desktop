@@ -1,16 +1,16 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (c) 2015: Deimos
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -30,9 +30,11 @@
 #include <QApplication>
 #include <QQmlEngine>
 #include <QQmlContext>
+#include <QDir>
 
-//Sonet-GUI
-//#include "retroshare/rsinit.h"
+//Emoty-GUI
+#include "notifier.h"
+#include "soundnotifier.h"
 #include "Util/runstatehelper.h"
 
 MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
@@ -42,18 +44,14 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 
 	this->setResizeMode(QQuickView::SizeRootObjectToView);
 
+	QObject::connect(Notifier::getInstance(), SIGNAL(chatMessage(QString)),
+	                 this, SLOT(windowFlashMessageReceived(QString)));
+
 	QQmlEngine *engine = this->engine();
 	QObject::connect(engine,SIGNAL(quit()),qApp, SLOT(quit()));
 	QPM_INIT((*engine));
 
-	QString sockPath;
-
-#ifdef QT_DEBUG
-	sockPath = "RS/";
-#else
-	sockPath = QCoreApplication::applicationDirPath();
-#endif
-
+	QString sockPath = QDir::homePath() + "/.retroshare";
 	sockPath.append("/libresapi.sock");
 
 	rsApi = new LibresapiLocalClient();
@@ -65,6 +63,8 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 	ctxt->setContextProperty("cursor", this);
 	ctxt->setContextProperty("control", this);
 
+	ctxt->setContextProperty("notifier", Notifier::getInstance());
+	ctxt->setContextProperty("soundNotifier", SoundNotifier::getInstance());
 	ctxt->setContextProperty("rsApi", rsApi);
 	ctxt->setContextProperty("runStateHelper", RunStateHelper::getInstance());
 	this->setSource(QUrl("qrc:/Borderless.qml"));
@@ -133,8 +133,22 @@ void MainWindowPanel::resizeWin(int x, int y, bool changeposx, bool changeposy)
 	}
 }
 
-void MainWindowPanel::windowAlert(bool incoming)
+void MainWindowPanel::windowFlash()
 {
-	if(incoming && (GetActiveWindow() != windowHandle))
+	if((GetActiveWindow() != windowHandle))
 		FlashWindow(windowHandle, true);
+}
+
+void MainWindowPanel::windowFlashMessageReceived(QString chat_type)
+{
+	if(chat_type == "distant_chat" || chat_type == "lobby")
+	{
+		if((GetActiveWindow() != windowHandle))
+			FlashWindow(windowHandle, true);
+	}
+	else if(chat_type == "direct_chat" && Notifier::getInstance()->getAdvMode())
+	{
+		if((GetActiveWindow() != windowHandle))
+			FlashWindow(windowHandle, true);
+	}
 }

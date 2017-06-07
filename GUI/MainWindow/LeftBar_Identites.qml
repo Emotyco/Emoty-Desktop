@@ -9,19 +9,10 @@ import Material.ListItems 0.1 as ListItem
 Rectangle {
 	color: "#f2f2f2"
 
-	Flickable {
+	ListView {
 		anchors.fill: parent
 
-		contentHeight: (ownGxsIdModel.model.count+1)*dp(48)+item.height
-
-		clip: true
-		interactive: true
-
-		Item {
-			id: item
-
-			anchors.top: parent.top
-
+		header: Item {
 			height: avatarRect.height + parent.width*0.1 + name.height
 					+ parent.width*0.1 + header.height + parent.width*0.2
 			width: parent.width
@@ -91,7 +82,7 @@ Rectangle {
 			DropShadow {
 				anchors.fill: avatarRect
 
-				verticalOffset: 2
+				verticalOffset: dp(2)
 				radius: 6
 				samples: 8
 
@@ -113,7 +104,7 @@ Rectangle {
 
 				font {
 					family: "Roboto"
-					pixelSize: 17
+					pixelSize: dp(17)
 				}
 
 				verticalAlignment: Text.AlignVCenter
@@ -135,45 +126,95 @@ Rectangle {
 			}
 		}
 
-		Column {
-			anchors.top: item.bottom
+		model: ownGxsIdModel.model
+		delegate: ListItem.Standard {
+			id: identityDelegate
+
 			width: parent.width
 
-			Repeater {
-				model: ownGxsIdModel.model
-				delegate: ListItem.Standard {
-					width: parent.width
+			text: model.name
+			textColor: selected ? Theme.primaryColor : Theme.light.textColor
 
-					text: model.name
-					textColor: selected ? Theme.primaryColor : Theme.light.textColor
+			selected: main.defaultGxsId === model.own_gxs_id
+			itemLabel.style: "body1"
 
-					selected: main.defaultGxsId === model.own_gxs_id
-					itemLabel.style: "body1"
+			onClicked: {
+				main.defaultGxsName = model.name
+				main.defaultGxsId = model.own_gxs_id
+			}
 
-					onClicked: {
-						main.defaultGxsName = model.name
-						main.defaultGxsId = model.own_gxs_id
+			MouseArea {
+				anchors.fill: parent
+				acceptedButtons: Qt.RightButton
+
+				onClicked: overflowMenu.open(identityDelegate, mouse.x, mouse.y)
+			}
+
+			Dropdown {
+				id: overflowMenu
+				objectName: "overflowMenu"
+				width: dp(200)
+				height: main.advmode ? dp(2*30) : dp(1*30)
+				enabled: true
+				anchor: Item.TopLeft
+				durationSlow: 300
+				durationFast: 150
+
+				Column{
+					anchors.fill: parent
+
+					ListItem.Standard {
+						height: dp(30)
+						enabled: main.advmode
+						visible: main.advmode
+
+						text: "Details"
+						itemLabel.style: "menu"
+						onClicked: {
+							overflowMenu.close()
+
+							identityDetailsDialog.showIdentity(model.name, model.own_gxs_id)
+
+							leftBar.state = "narrow"
+						}
+					}
+
+					ListItem.Standard {
+						height: dp(30)
+						text: "Delete"
+						itemLabel.style: "menu"
+						onClicked: {
+							overflowMenu.close()
+
+							removeDialog.show("Do you want to delete your identity?", function() {
+								var jsonData = {
+									gxs_id: model.own_gxs_id
+								}
+
+								rsApi.request("/identity/delete_identity", JSON.stringify(jsonData))
+							})
+						}
 					}
 				}
 			}
+		}
 
-			ListItem_Button {
-				width: parent.width
+		footer: ListItem_Button {
+			width: parent.width
 
-				text: "Create identity"
-				textColor: Theme.light.textColor
+			text: "Create identity"
+			textColor: Theme.light.textColor
 
-				itemLabel.style: "body1"
-				iconName: "awesome/plus"
+			itemLabel.style: "body1"
+			iconName: "awesome/plus"
 
-				onClicked: {
-					leftBar.state = "narrow"
-					var component = Qt.createComponent("CreateIdentity.qml");
-					if (component.status === Component.Ready) {
-						var createId = component.createObject(main);
-						createId.enableHiding = true;
-						createId.show();
-					}
+			onClicked: {
+				leftBar.state = "narrow"
+				var component = Qt.createComponent("CreateIdentity.qml");
+				if (component.status === Component.Ready) {
+					var createId = component.createObject(main);
+					createId.enableHiding = true;
+					createId.show();
 				}
 			}
 		}

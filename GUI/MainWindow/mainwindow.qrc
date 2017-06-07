@@ -27,5 +27,13 @@
         <file>LeftBar_Rooms.qml</file>
         <file>RoomFriend.qml</file>
         <file>RoomMsgDelegate.qml</file>
+        <file>LoadingMask.qml</file>
+        <file>ChatGxsCard.qml</file>
+        <file>CreateLobby.qml</file>
+        <file>PGPFriendDetailsDialog.qml</file>
+        <file>NodeDetailsDialog.qml</file>
+        <file>IdentityDetailsDialog.qml</file>
+        <file>RemoveDialog.qml</file>
+        <file>ContactSort.js</file>
     </qresource>
 </RCC>

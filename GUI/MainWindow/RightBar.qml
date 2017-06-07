@@ -1,15 +1,15 @@
 /****************************************************************
- *  This file is part of Sonet.
- *  Sonet is distributed under the following license:
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
  *
  *  Copyright (C) 2017, Konrad Dębiec
  *
- *  Sonet is free software; you can redistribute it and/or
+ *  Emoty is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation; either version 3
  *  of the License, or (at your option) any later version.
  *
- *  Sonet is distributed in the hope that it will be useful,
+ *  Emoty is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -21,7 +21,10 @@
  ****************************************************************/
 
 import QtQuick 2.5
+import QtQuick.Controls 1.4
+
 import Material 0.3
+import Material.ListItems 0.1 as ListItem
 
 View {
 	id: rightBar
@@ -33,11 +36,23 @@ View {
 								state_string === "away"	 ? "#FFEB3B" :   // yellow
 														      "#9E9E9E"	 // grey
 
+	property int pgp_unread_msgs: 0
+
+	// For handling tokens
+	property int stateToken_gxsContacts: 0
+	property int stateToken_gxsAll: 0
+	property int stateToken_pgp: 0
+	property int stateToken_unreadedMsgs: 0
+
+	property bool firstTime_gxsContacts: true
+	property bool firstTime_gxsAll: true
+	property bool firstTime_pgp: true
+
 	anchors {
 		top: parent.top
 		right: parent.right
 		bottom: parent.bottom
-		topMargin: dp(50)
+		topMargin: borderless ? dp(50) : 0
 	}
 
 	width: dp(210)
@@ -48,56 +63,110 @@ View {
 	clipContent: true
 
 	function refreshGxsIdModel() {
-		var jsonData = {
-			callback_name: "rightbar_identity_notown_ids"
-		}
-
 		function callbackFn(par) {
-			gxsIdModel.json = par.response
+			if(firstTime_gxsContacts)
+				firstTime_gxsContacts = false
+
+			stateToken_gxsContacts = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_gxsContacts, refreshGxsIdModel)
+
+			knownContactsWorker.sendMessage({
+				'action': 'refreshContacts',
+				'response': par.response
+			})
 		}
 
-		rsApi.request("/identity/notown_ids/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/identity/notown_ids/", "", callbackFn)
+	}
+
+	function refreshAllGxsIdModel() {
+		function callbackFn(par) {
+			if(firstTime_gxsAll)
+				firstTime_gxsAll = false
+
+			stateToken_gxsAll = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_gxsAll, refreshAllGxsIdModel)
+
+			allContactsWorker.sendMessage({
+				'action': 'refreshContacts',
+				'response': par.response
+			})
+		}
+
+		rsApi.request("/identity/*", "", callbackFn)
 	}
 
 	function refreshPgpIdModel() {
-		var jsonData = {
-			callback_name: "rightbar_peers_*"
-		}
-
 		function callbackFn(par) {
+			if(firstTime_pgp)
+				firstTime_pgp = false
+
 			pgpIdModel.json = par.response
+
+			var jsonResp = JSON.parse(par.response)
+
+			var count = 0
+			for (var i = 0; i<jsonResp.data.length; i++) {
+				for (var ii = 0; ii<jsonResp.data[i].locations.length; ii++) {
+					if(jsonResp.data[i].locations[ii].unread_msgs != 0)
+						count++
+				}
+			}
+			pgp_unread_msgs = count
+
+			stateToken_pgp = jsonResp.statetoken
+			main.registerToken(stateToken_pgp, refreshPgpIdModel)
+
+			knownContactsWorker.sendMessage({
+				'action': 'refreshStatus',
+				'response': par.response
+			})
+			allContactsWorker.sendMessage({
+				'action': 'refreshStatus',
+				'response': par.response
+			})
 		}
 
-		rsApi.request("/peers/*", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/peers/*", "", callbackFn)
+	}
+
+	function getUnreadedMsgs() {
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
+			stateToken_unreadedMsgs = jsonResp.statetoken
+			main.registerToken(stateToken_unreadedMsgs, getUnreadedMsgs)
+
+			knownContactsWorker.sendMessage({
+				'action': 'refreshUnread',
+				'response': par.response
+			})
+			allContactsWorker.sendMessage({
+				'action': 'refreshUnread',
+				'response': par.response
+			})
+		}
+
+		rsApi.request("/chat/unread_msgs/", "", callbackFn)
 	}
 
 	function getStateString() {
-		var jsonData = {
-			callback_name: "rightbar_peers_get_state_string"
-		}
-
 		function callbackFn(par) {
 			rightBar.state_string = String(JSON.parse(par.response).data.state_string)
 		}
 
-		rsApi.request("/peers/get_state_string/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/peers/get_state_string/", "", callbackFn)
 	}
 
 	function getCustomStateString() {
-		var jsonData = {
-			callback_name: "rightbar_peers_get_custom_state_string"
-		}
-
 		function callbackFn(par) {
 			rightBar.custom_state_string = String(JSON.parse(par.response).data.custom_state_string)
 		}
 
-		rsApi.request("/peers/get_custom_state_string/", JSON.stringify(jsonData), callbackFn)
+		rsApi.request("/peers/get_custom_state_string/", "", callbackFn)
 	}
 
 	function setStateString(state_string) {
 		var jsonData = {
-			callback_name: "rightbar_peers_set_state_string",
 			state_string: state_string
 		}
 
@@ -110,7 +179,6 @@ View {
 
 	function setCustomStateString(custom_state_string) {
 		var jsonData = {
-			callback_name: "rightbar_peers_set_custom_state_string",
 			custom_state_string: custom_state_string
 		}
 
@@ -122,14 +190,39 @@ View {
 	}
 
 	Component.onCompleted: {
+		refreshAllGxsIdModel()
 		refreshGxsIdModel()
 		refreshPgpIdModel()
+		getUnreadedMsgs()
 		getStateString()
 		getCustomStateString()
 	}
 
+	Component.onDestruction: {
+		main.unregisterToken(stateToken_gxsContacts)
+		main.unregisterToken(stateToken_gxsAll)
+		main.unregisterToken(stateToken_pgp)
+	}
+
+	WorkerScript {
+		id: allContactsWorker
+		source: "qrc:/ContactSort.js"
+		onMessage: allGxsIdModel.json = JSON.stringify(messageObject)
+	}
+
+	WorkerScript {
+		id: knownContactsWorker
+		source: "qrc:/ContactSort.js"
+		onMessage: gxsIdModel.json = JSON.stringify(messageObject)
+	}
+
 	JSONListModel {
 		id: gxsIdModel
+		query: "$.data[?(@.is_contact)]"
+	}
+
+	JSONListModel {
+		id: allGxsIdModel
 		query: "$.data[*]"
 	}
 
@@ -143,48 +236,30 @@ View {
 
 		anchors {
 			top: parent.top
-			bottom: parent.bottom
 			left: parent.left
 			right: parent.right
-			rightMargin: dp(3)
 		}
 
 		state: "bigGxsBox"
 		states: [
 			State {
-				name: "smallGxsBox"; when: main.advmode && pgpBox.state === "bigPgpBox"
-				PropertyChanges {
+				name: "smallGxsBox"; when: main.advmode
+				AnchorChanges {
 					target: gxsBox
-					anchors.bottomMargin: (parent.height/2)-dp(25)
-				}
-			},
-			State {
-				name: "bigGxsBox"; when: main.advmode && pgpBox.state === "smallPgpBox"
-				PropertyChanges {
-					target: gxsBox
-					anchors.bottomMargin: dp(50)
+					anchors.bottom: pgpBox.top
 				}
 			},
 			State{
 				name: "normalMode"; when: !main.advmode
-				PropertyChanges {
+				AnchorChanges {
 					target: gxsBox
-					anchors.bottomMargin: 0
-				}
-			}
-		]
-
-		transitions: [
-			Transition {
-				NumberAnimation {
-					target: gxsBox
-					property: "anchors.bottomMargin"
-					duration: MaterialAnimation.pageTransitionDuration/2
+					anchors.bottom: parent.bottom
 				}
 			}
 		]
 
 		Item {
+			id: header
 			anchors {
 				top: parent.top
 				left: parent.left
@@ -210,7 +285,7 @@ View {
 
 				font {
 					family: "Roboto"
-					pixelSize: 16 * Units.dp
+					pixelSize: dp(16)
 					capitalization: Font.MixedCase
 				}
 
@@ -336,28 +411,212 @@ View {
 			}
 		}
 
-		ListView {
-			id: listView
+		Item {
+			id: tabButtons
 
 			anchors {
-				fill: parent
-				topMargin: dp(50)
+				top: header.bottom
+				left: parent.left
+				right: parent.right
 			}
 
-			clip: true
+			height: dp(25)
 
-			model: gxsIdModel.model
-			delegate: FriendListDelegate{}
+			Component.onCompleted: {
+				visible = main.advmode
+			}
+
+			states: [
+				State {
+					name: "show"; when: main.advmode
+					PropertyChanges {
+						target: tabButtons
+						enabled: true
+					}
+				},
+				State{
+					name: "hide"; when: !main.advmode
+					PropertyChanges {
+						target: tabButtons
+						anchors.topMargin: -tabButtons.height
+						enabled: false
+					}
+				}
+			]
+
+			transitions: [
+				Transition {
+					from: "hide"; to: "show"
+
+					SequentialAnimation {
+						PropertyAction {
+							target: tabButtons
+							property: "visible"
+							value: true
+						}
+						ParallelAnimation {
+							NumberAnimation {
+								target: tabButtons
+								property: "opacity"
+								from: 0
+								to: 1
+								easing.type: Easing.InOutQuad;
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+							NumberAnimation {
+								target: tabButtons
+								property: "anchors.topMargin"
+								from: -tabButtons.height
+								to: 0
+								easing.type: Easing.InOutQuad;
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+						}
+					}
+				},
+				Transition {
+					from: "show"; to: "hide"
+
+					SequentialAnimation {
+						ParallelAnimation {
+							NumberAnimation {
+								target: tabButtons
+								property: "opacity"
+								from: 1
+								to: 0
+								easing.type: Easing.InOutQuad
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+							NumberAnimation {
+								target: tabButtons
+								property: "anchors.topMargin"
+								from: 0
+								to: -tabButtons.height
+								easing.type: Easing.InOutQuad
+								duration: MaterialAnimation.pageTransitionDuration
+							}
+						}
+						PropertyAction {
+							target: tabButtons;
+							property: "visible";
+							value: false
+						}
+					}
+				}
+			]
+
+			Row {
+				anchors.fill: parent
+
+				Button {
+					property bool selected: tabView.currentIndex === 0
+					height: parent.height
+					width: parent.width/2
+
+					text: "Contacts"
+					textColor: selected ? Theme.primaryColor : Theme.light.textColor
+
+					onClicked: tabView.currentIndex = 0
+				}
+
+				Button {
+					property bool selected: tabView.currentIndex === 1
+					height: parent.height
+					width: parent.width/2
+
+					text: "All"
+					textColor: selected ? Theme.primaryColor : Theme.light.textColor
+
+					onClicked: tabView.currentIndex = 1
+				}
+			}
 		}
 
-		Scrollbar {
-			flickableItem: listView
+		TabView {
+			id: tabView
+
+			anchors {
+				top: tabButtons.bottom
+				left: parent.left
+				right: parent.right
+				bottom: parent.bottom
+			}
+
+			frameVisible: false
+			tabsVisible: false
+
+			states: [
+				State {
+					when: main.advmode
+					PropertyChanges {
+						target: tabView
+						currentIndex: 0
+					}
+				}
+			]
+
+			Tab {
+				title: "Contacts"
+
+				Item{
+					ListView {
+						id: listView
+
+						anchors.fill: parent
+
+						clip: true
+
+						model: gxsIdModel.model
+						delegate: FriendListDelegate{}
+
+						LoadingMask {
+							id: loadingMask
+							anchors.fill: parent
+
+							state: firstTime_gxsContacts ? "visible" : "non-visible"
+						}
+					}
+
+					Scrollbar {
+						flickableItem: listView
+					}
+				}
+			}
+
+			Tab {
+				title: "All"
+
+				Item{
+					ListView {
+						id: listView2
+
+						anchors.fill: parent
+
+						clip: true
+
+						model: allGxsIdModel.model
+						delegate: FriendListDelegate{}
+
+						LoadingMask {
+							id: loadingMask2
+							anchors.fill: parent
+
+							state: firstTime_gxsAll ? "visible" : "non-visible"
+						}
+					}
+
+					Scrollbar {
+						flickableItem: listView2
+					}
+				}
+			}
 		}
 	}
 
 	Item {
 		id: pgpBox
 
+		property int previousHeight: parent.height/2
 		anchors {
 			left:parent.left
 			right: parent.right
@@ -366,19 +625,26 @@ View {
 
 		height: dp(50)
 
+		Drag.hotSpot.x: 0
+		Drag.hotSpot.y: 0
+
+		Component.onCompleted: {
+			visible = main.advmode
+		}
+
 		states: [
 			State {
-				name: "notvisible"; when: !main.advmode
+				name: "hide"; when: !main.advmode
 				PropertyChanges {
 					target: pgpBox
-					visible: false
+					enabled: false
 				}
 			},
 			State {
-				name: "visible"; when: !main.advmode
+				name: "show"; when: main.advmode
 				PropertyChanges {
 					target: pgpBox
-					visible: true
+					enabled: true
 				}
 			},
 			State {
@@ -392,7 +658,7 @@ View {
 				name: "bigPgpBox"
 				PropertyChanges {
 					target: pgpBox
-					height: parent.height/2
+					height: previousHeight
 				}
 			}
 		]
@@ -404,10 +670,69 @@ View {
 					property: "height";
 					duration: MaterialAnimation.pageTransitionDuration/2
 				}
+			},
+			Transition {
+				from: "hide"; to: "show"
+
+				SequentialAnimation {
+					PropertyAction {
+						target: pgpBox
+						property: "visible"
+						value: true
+					}
+					ParallelAnimation {
+						NumberAnimation {
+							target: pgpBox
+							property: "opacity"
+							from: 0
+							to: 1
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+						NumberAnimation {
+							target: pgpBox
+							property: "anchors.bottomMargin"
+							from: -pgpBox.height
+							to: 0
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+					}
+				}
+			},
+			Transition {
+				to: "hide"
+
+				SequentialAnimation {
+					ParallelAnimation {
+						NumberAnimation {
+							target: pgpBox
+							property: "opacity"
+							from: 1
+							to: 0
+							easing.type: Easing.InOutQuad
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+						NumberAnimation {
+							target: pgpBox
+							property: "anchors.bottomMargin"
+							from: 0
+							to: -pgpBox.height
+							easing.type: Easing.InOutQuad
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+					}
+					PropertyAction {
+						target: pgpBox;
+						property: "visible";
+						value: false
+					}
+				}
 			}
 		]
 
-		Button {
+		View {
+			id: button
 			anchors {
 				left:parent.left
 				right: parent.right
@@ -416,16 +741,68 @@ View {
 
 			height: dp(50)
 
-			size: 13
-			text: "PgpBox"
-			textColor: "white"
-
 			backgroundColor: Palette.colors["deepOrange"]["500"]
 			elevation: 1
 
-			onClicked: {
-				pgpBox.state === "bigPgpBox" ? pgpBox.state = "smallPgpBox"
-											 : pgpBox.state = "bigPgpBox"
+			View {
+				anchors {
+					verticalCenter: parent.verticalCenter
+					left: parent.left
+					leftMargin: dp(15)
+				}
+
+				width: dp(20)
+				height: dp(20)
+				radius: width/2
+
+				elevation: 1
+				visible: pgp_unread_msgs > 0 ? true : false
+
+				Text {
+					anchors.fill: parent
+					text: pgp_unread_msgs
+					font.family: "Roboto"
+					verticalAlignment: Text.AlignVCenter
+					horizontalAlignment: Text.AlignHCenter
+				}
+			}
+
+			Label {
+				anchors {
+					horizontalCenter: parent.horizontalCenter
+					verticalCenter: parent.verticalCenter
+				}
+
+				text: "direct"
+				color: "white"
+				style: "button"
+			}
+
+			MouseArea {
+				anchors.fill: parent
+
+				drag {
+					target: pgpBox
+					axis: Drag.YAxis
+				}
+
+				onClicked: {
+					pgpBox.state === "bigPgpBox" ? pgpBox.state = "smallPgpBox"
+												 : pgpBox.state = "bigPgpBox"
+				}
+
+				onMouseXChanged: {
+					if(drag.active) {
+						pgpBox.height = pgpBox.height - mouseY
+
+						if(pgpBox.height < dp(50))
+							pgpBox.height = dp(50)
+						else if(pgpBox.height > rightBar.height-dp(50))
+							pgpBox.height = rightBar.height-dp(50)
+
+						pgpBox.previousHeight = pgpBox.height
+					}
+				}
 			}
 
 			Icon {
@@ -459,7 +836,7 @@ View {
 				name: "awesome/chevron_down"
 				color: "white"
 
-				size: 20 * Units.dp
+				size: dp(20)
 
 				Behavior on rotation {
 					NumberAnimation {
@@ -470,12 +847,18 @@ View {
 		}
 
 		ListView {
-			id: listView2
+			id: listView3
+
+			LoadingMask {
+				id: loadingMask3
+				anchors.fill: parent
+
+				state: firstTime_pgp ? "visible" : "non-visible"
+			}
 
 			anchors {
 				fill: parent
 				topMargin: dp(50)
-				rightMargin: dp(3)
 			}
 
 			clip: true
@@ -485,18 +868,7 @@ View {
 		}
 
 		Scrollbar {
-			flickableItem: listView2
-		}
-	}
-
-	Timer {
-		interval: 2000
-		running: true
-		repeat: true
-
-		onTriggered: {
-			refreshGxsIdModel()
-			refreshPgpIdModel()
+			flickableItem: listView3
 		}
 	}
 
@@ -505,7 +877,7 @@ View {
 		NumberAnimation {
 			target: rightBar
 			property: "anchors.rightMargin"
-			from: -50
+			from: -dp(50)
 			to: 0
 			duration: MaterialAnimation.pageTransitionDuration
 		}
