@@ -44,7 +44,7 @@ Rectangle
 		State {
 			name: "waiting_account_select"
 			PropertyChanges { target: mask; state: "invisible"}
-			StateChangeScript {script: {runStateHelper.setRunState("waiting_account_select")}}
+			StateChangeScript {script: {runStateHelper.setRunState("waiting_account_select"); getLocations()}}
 		},
 		State {
 			name: "running_ok"
@@ -81,7 +81,8 @@ Rectangle
 		}
 
 		function callbackFn(par) {
-			main.state = String(JSON.parse(par.response).data.runstate)
+			if(main.state != String(JSON.parse(par.response).data.runstate))
+				main.state = String(JSON.parse(par.response).data.runstate)
 		}
 
 		rsApi.request("/control/runstate/", JSON.stringify(jsonData), callbackFn)
@@ -93,7 +94,8 @@ Rectangle
 		}
 
 		function callbackFn(par) {
-			locationsModel.json = par.response
+			if(JSON.parse(par.response).callback_name == "bordered_control_locations")
+				locationsModel.json = par.response
 		}
 
 		rsApi.request("/control/locations/", JSON.stringify(jsonData), callbackFn)
