@@ -1,6 +1,7 @@
+#pragma once
 /*
  * libresapi local socket client
- * Copyright (C) 2016  Gioacchino Mazzurco <gio@eigenlab.org>
+ * Copyright (C) 2016-2017  Gioacchino Mazzurco <gio@eigenlab.org>
  * Copyright (C) 2016  Manu Pineda <manu@cooperativa.cat>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,12 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBRESAPILOCALCLIENT_H
-#define LIBRESAPILOCALCLIENT_H
-
 #include <QLocalSocket>
 #include <QQueue>
 #include <QJSValue>
+#include <QTimer>
 
 class LibresapiLocalClient : public QObject
 {
@@ -33,11 +32,17 @@ public:
 #ifdef QT_DEBUG
 	    reqCount(0), ansCount(0), mDebug(false),
 #endif // QT_DEBUG
-	    mLocalSocket(this) {}
+	    mLocalSocket(this)
+	{
+		mConnectAttemptTimer.setSingleShot(true);
+		mConnectAttemptTimer.setInterval(500);
+		connect(&mConnectAttemptTimer, SIGNAL(timeout()),
+		        this, SLOT(socketConnectAttempt()));
+	}
 
 	Q_INVOKABLE int request( const QString& path, const QString& jsonData = "",
 	                         QJSValue callback = QJSValue::NullValue );
-	Q_INVOKABLE void openConnection(QString socketPath);
+	Q_INVOKABLE void openConnection(const QString& socketPath);
 
 #ifdef QT_DEBUG
 	Q_PROPERTY(bool debug READ debug WRITE setDebug NOTIFY debugChanged)
@@ -51,6 +56,8 @@ public:
 #endif // QT_DEBUG
 
 private:
+	QTimer mConnectAttemptTimer;
+	QString mSocketPath;
 	QLocalSocket mLocalSocket;
 
 	struct PQRecord
@@ -68,6 +75,7 @@ private:
 	QQueue<PQRecord> processingQueue;
 
 private slots:
+	void socketConnectAttempt() { mLocalSocket.connectToServer(mSocketPath); }
 	void socketError(QLocalSocket::LocalSocketError error);
 	void read();
 
@@ -85,5 +93,3 @@ signals:
 	void debugChanged();
 #endif //  QT_DEBUG
 };
-
-#endif // LIBRESAPILOCALCLIENT_H
