@@ -116,9 +116,13 @@ Component {
 			property int unread_msgs: {
 				var msgs = 0
 
-				for(var i=0; i < locationsModel.model.count; i++)
-				{
-					msgs += locationsModel.model.get(i).unread_msgs
+				var jsonResp = JSON.parse(pgpIdModel.json)
+				for (var i = 0; i<jsonResp.data.length; i++) {
+					if(jsonResp.data[i].pgp_id==pgp)
+						for (var ii = 0; ii<jsonResp.data[i].locations.length; ii++) {
+							if(jsonResp.data[i].locations[ii].unread_msgs != 0)
+								msgs += jsonResp.data[i].locations[ii].unread_msgs
+						}
 				}
 
 				return msgs
