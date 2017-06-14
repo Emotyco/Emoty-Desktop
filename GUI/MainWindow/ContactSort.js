@@ -54,17 +54,20 @@ function cntcmp(left, right, searchText)
 function mergeContactsUnread()
 {
 	var jsonData = contactsData.data
-	var dataLen = jsonData.length
-	for ( var i=0; i<dataLen; ++i)
+	if(jsonData != null)
 	{
-		var el = jsonData[i]
+		var dataLen = jsonData.length
+		for ( var i=0; i<dataLen; ++i)
+		{
+			var el = jsonData[i]
 
-		var isGxsOnList = unreadMessages.hasOwnProperty(el.gxs_id)
+			var isGxsOnList = unreadMessages.hasOwnProperty(el.gxs_id)
 
-		if(isGxsOnList)
-			el['unread_count'] = unreadMessages[el.gxs_id]
-		else if(!isGxsOnList)
-			el['unread_count'] = ""
+			if(isGxsOnList)
+				el['unread_count'] = unreadMessages[el.gxs_id]
+			else if(!isGxsOnList)
+				el['unread_count'] = ""
+		}
 	}
 }
 
@@ -93,13 +96,16 @@ function parseContacts(responseStr)
 function mergeContactsStatus()
 {
 	var jsonData = contactsData.data
-	var dataLen = jsonData.length
-	for ( var i=0; i<dataLen; ++i)
+	if(jsonData != null)
 	{
-		var el = jsonData[i]
+		var dataLen = jsonData.length
+		for ( var i=0; i<dataLen; i++)
+		{
+			var el = jsonData[i]
 
-		if(el.pgp_linked && statusData.hasOwnProperty(el.pgp_id))
-			el['state_string'] = statusData[el.pgp_id]
+			if(el.pgp_linked && statusData.hasOwnProperty(el.pgp_id))
+				el['state_string'] = statusData[el.pgp_id]
+		}
 	}
 }
 
@@ -128,7 +134,8 @@ WorkerScript.onMessage = function(message)
 	else if(message.action === "searchContact")
 		sortFn = function cmp(l,r) { return cntcmp(l,r, message.sexp) }
 
-	contactsData.data.sort(sortFn)
+	if(contactsData.data != null)
+		contactsData.data.sort(sortFn)
 
 	WorkerScript.sendMessage(contactsData)
 }

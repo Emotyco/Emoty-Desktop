@@ -110,7 +110,7 @@ PopupBase {
 					pgp_signed: main.advmode ? checkBox.checked : true
 				}
 
-				rsApi.request("/chat/create_lobby", JSON.stringify(jsonData))
+				rsApi.request("/chat/create_lobby", JSON.stringify(jsonData), function(){})
 
 				dialog.close()
 			}
@@ -181,7 +181,7 @@ PopupBase {
 					pgp_signed: main.advmode ? checkBox.checked : true
 				}
 
-				rsApi.request("/chat/create_lobby", JSON.stringify(jsonData))
+				rsApi.request("/chat/create_lobby", JSON.stringify(jsonData), function(){})
 
 				dialog.close()
 			}

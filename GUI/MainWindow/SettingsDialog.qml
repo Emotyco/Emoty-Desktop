@@ -69,13 +69,13 @@ Dialog {
 			advanced_mode: advmode
 		}
 
-		rsApi.request("/settings/set_advanced_mode/", JSON.stringify(jsonData))
+		rsApi.request("/settings/set_advanced_mode/", JSON.stringify(jsonData), function(){})
 
 		var jsonData2 = {
 			flickable_grid_mode: flickablemode
 		}
 
-		rsApi.request("/settings/set_flickable_grid_mode/", JSON.stringify(jsonData2))
+		rsApi.request("/settings/set_flickable_grid_mode/", JSON.stringify(jsonData2), function(){})
 
 		main.advmode = scrollingDialog.advmode
 		main.flickablemode = scrollingDialog.flickablemode
@@ -167,7 +167,7 @@ Dialog {
 			jsonData.external_port = extPort
 		}
 
-		rsApi.request("/peers/set_network_options", JSON.stringify(jsonData))
+		rsApi.request("/peers/set_network_options", JSON.stringify(jsonData), function(){})
 	}
 
 	JSONListModel {

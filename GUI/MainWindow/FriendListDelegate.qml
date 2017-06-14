@@ -188,7 +188,7 @@ Component {
 								gxs_id: model.gxs_id
 							}
 
-							rsApi.request("/identity/add_contact", JSON.stringify(jsonData))
+							rsApi.request("/identity/add_contact", JSON.stringify(jsonData), function(){})
 						}
 					}
 
@@ -231,7 +231,7 @@ Component {
 									gxs_id: model.gxs_id
 								}
 
-								rsApi.request("/identity/remove_contact", JSON.stringify(jsonData))
+								rsApi.request("/identity/remove_contact", JSON.stringify(jsonData), function(){})
 							})
 						}
 					}

@@ -142,7 +142,7 @@ Dialog {
 		if(!own_sign)
 			jsonData.own_sign = own_sign_temp
 
-		rsApi.request("/peers/set_pgp_options", JSON.stringify(jsonData))
+		rsApi.request("/peers/set_pgp_options", JSON.stringify(jsonData), function(){})
 	}
 
 	onOpened: {
@@ -655,7 +655,7 @@ Dialog {
 											overflowMenu.close()
 
 											main.createChatCardPeer(model.name, model.location, model.peer_id, model.chat_id, "ChatCardPeer.qml")
-											rsApi.request("/chat/mark_chat_as_read/"+model.chat_id)
+											rsApi.request("/chat/mark_chat_as_read/"+model.chat_id, "", function(){})
 
 											scrollingDialog.close()
 										}
@@ -789,7 +789,7 @@ Dialog {
 												gxs_id: model.gxs_id
 											}
 
-											rsApi.request("/identity/add_contact", JSON.stringify(jsonData))
+											rsApi.request("/identity/add_contact", JSON.stringify(jsonData), function(){})
 
 											scrollingDialog.close()
 										}

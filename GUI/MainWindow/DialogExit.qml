@@ -282,7 +282,7 @@ PopupBase {
 							var jsonData = {
 								auto_login: checkBox.checked,
 							}
-							rsApi.request("/settings/set_auto_login/", JSON.stringify(jsonData))
+							rsApi.request("/settings/set_auto_login/", JSON.stringify(jsonData), function(){})
 						}
 					}
 

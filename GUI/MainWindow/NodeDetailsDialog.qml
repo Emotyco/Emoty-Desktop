@@ -112,7 +112,7 @@ Dialog {
 			dyn_dns: dyn_dns
 		}
 
-		rsApi.request("/peers/set_node_options", JSON.stringify(jsonData))
+		rsApi.request("/peers/set_node_options", JSON.stringify(jsonData), function(){})
 	}
 
 	onOpened: {

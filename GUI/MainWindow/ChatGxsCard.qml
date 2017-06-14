@@ -104,7 +104,7 @@ DragTile {
 			distant_chat_hex: drag.chatId
 		}
 
-		rsApi.request("/chat/close_distant_chat/", JSON.stringify(jsonData))
+		rsApi.request("/chat/close_distant_chat/", JSON.stringify(jsonData), function(){})
 	}
 
 	function getChatMessages() {
@@ -585,7 +585,7 @@ DragTile {
 					onActiveFocusChanged: {
 						if(activeFocus) {
 							if(drag.chatId.length > 0)
-								rsApi.request("/chat/mark_chat_as_read/"+drag.chatId)
+								rsApi.request("/chat/mark_chat_as_read/"+drag.chatId, "", function(){})
 
 							footerView.elevation = 2
 						}
@@ -599,7 +599,7 @@ DragTile {
 								chat_id: drag.chatId,
 								msg: msgBox.text
 							}
-							rsApi.request("chat/send_message/", JSON.stringify(jsonData))
+							rsApi.request("chat/send_message/", JSON.stringify(jsonData), function(){})
 							drag.getChatMessages()
 							msgBox.text = ""
 							event.accepted = true
