@@ -104,7 +104,7 @@ Dialog {
 			own_opinion: own_opinion,
 		}
 
-		rsApi.request("/identity/set_opinion", JSON.stringify(jsonData))
+		rsApi.request("/identity/set_opinion", JSON.stringify(jsonData), function(){})
 	}
 
 	function setBanNode() {
@@ -113,7 +113,7 @@ Dialog {
 			bannned_node: bannned_node
 		}
 
-		rsApi.request("/identity/set_ban_node", JSON.stringify(jsonData))
+		rsApi.request("/identity/set_ban_node", JSON.stringify(jsonData), function(){})
 	}
 
 	onOpened: {
@@ -122,7 +122,6 @@ Dialog {
 	}
 
 	onRejected: {
-		console.log("hello")
 		if(!own)
 			setOwnOpinion()
 		if(!anonymous)

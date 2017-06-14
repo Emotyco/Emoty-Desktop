@@ -112,7 +112,7 @@ Rectangle
 						passwordLogin.incorrect = jsonData.data.prev_is_bad;
 						if(jsonData.data.want_password) {
 							var jsonPass = { password: passwordLogin.text }
-							rsApi.request("/control/password/", JSON.stringify(jsonPass))
+							rsApi.request("/control/password/", JSON.stringify(jsonPass), function(){})
 						}
 					}
 				}
@@ -432,7 +432,7 @@ Rectangle
 									id: locationsModel.model.get(usernameLogin.selectedIndex).id
 								}
 
-								rsApi.request("/control/login/", JSON.stringify(jsonData))
+								rsApi.request("/control/login/", JSON.stringify(jsonData), function(){})
 								main.attemptLogin = true
 							}
 							else
@@ -498,7 +498,7 @@ Rectangle
 									id: locationsModel.model.get(usernameLogin.selectedIndex).id
 								}
 
-								rsApi.request("/control/login/", JSON.stringify(jsonData))
+								rsApi.request("/control/login/", JSON.stringify(jsonData), function(){})
 								main.attemptLogin = true
 							}
 							else
@@ -883,7 +883,7 @@ Rectangle
 										hidden_port: hiddenNode.checked ? port.text : ""
 									}
 
-									rsApi.request("/control/create_location/", JSON.stringify(jsonData))
+									rsApi.request("/control/create_location/", JSON.stringify(jsonData), function(){})
 								}
 								else {
 									if(username.text.length < 3)
@@ -931,7 +931,7 @@ Rectangle
 								hidden_port: hiddenNode.checked ? port.text : ""
 							}
 
-							rsApi.request("/control/create_location/", JSON.stringify(jsonData))
+							rsApi.request("/control/create_location/", JSON.stringify(jsonData), function(){})
 						}
 						else {
 							if(username.text.length < 3)
@@ -961,7 +961,7 @@ Rectangle
 			getRunState()
 
 			if (main.attemptLogin)
-				rsApi.request("/control/password/", "")
+				rsApi.request("/control/password/", "", function(){})
 		}
 	}
 

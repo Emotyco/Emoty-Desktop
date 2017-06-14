@@ -43,7 +43,7 @@ Dialog {
 			}
 		}
 
-		rsApi.request("PUT /peers", JSON.stringify(jsonData))
+		rsApi.request("PUT /peers", JSON.stringify(jsonData), function(){})
 	}
 
 	Behavior on opacity {

@@ -404,7 +404,7 @@ Item{
 						onActiveFocusChanged: {
 							if(activeFocus) {
 								if(chatId.length > 0)
-									rsApi.request("/chat/mark_chat_as_read/"+chatId)
+									rsApi.request("/chat/mark_chat_as_read/"+chatId, "", function(){})
 
 								footerView.elevation = 2
 							}
@@ -419,7 +419,7 @@ Item{
 									msg: msgBox.text
 								}
 
-								rsApi.request("chat/send_message/", JSON.stringify(jsonData))
+								rsApi.request("chat/send_message/", JSON.stringify(jsonData), function(){})
 
 								getLobbyMessages()
 								contentm.positionViewAtEnd()

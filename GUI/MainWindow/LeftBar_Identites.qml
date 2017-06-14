@@ -191,7 +191,7 @@ Rectangle {
 									gxs_id: model.own_gxs_id
 								}
 
-								rsApi.request("/identity/delete_identity", JSON.stringify(jsonData))
+								rsApi.request("/identity/delete_identity", JSON.stringify(jsonData), function(){})
 							})
 						}
 					}
