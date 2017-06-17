@@ -1,4 +1,8 @@
 # Emoty-Desktop
+
+![Build Status](https://travis-ci.org/Emotyco/Emoty-Desktop.svg?branch=develop "Linux (Travis CI)")
+[![Github Release](http://img.shields.io/github/release/Emotyco/Emoty-Desktop.svg)](https://github.com/Emotyco/Emoty-Desktop/releases/latest)
+
 **Maintainer:** Konrad Dębiec (konradd@tutanota.com)
 
 ## Introduction
