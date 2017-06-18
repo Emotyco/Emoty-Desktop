@@ -11,8 +11,8 @@ before_install:
  - sudo apt-get -qq update
 
 install:
+ - sudo apt-get -y install libpulse-mainloop-glib0 libpulse libpulse-dev
  - sudo apt-get -y install qt58base qt58graphicaleffects qt58quickcontrols qt58quickcontrols2 qt58svg qt58tools qt58multimedia
- - sudo apt-get -y install libpulse-mainloop-glib0
 
 script:
  - source /opt/qt58/bin/qt58-env.sh
