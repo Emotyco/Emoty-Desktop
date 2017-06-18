@@ -33,6 +33,9 @@ environment:
     QTDIR: C:\Qt\5.8\mingw53_32
 
 install:
+  # Configuring MSys2
+  - set PATH=C:\msys64\usr\bin;%PATH%
+  - set PATH=C:\msys64\mingw32\bin;%PATH%
   # Configuring Qt
   - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw53_32\bin;%PATH%
 
