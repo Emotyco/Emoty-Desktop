@@ -1,0 +1,50 @@
+# Notes:
+#   - Minimal appveyor.yml file is an empty file. All sections are optional.
+#   - Indent each level of configuration with 2 spaces. Do not use tabs!
+#   - All section names are case-sensitive.
+#   - Section names should be unique on each level.
+
+#---------------------------------#
+#      general configuration      #
+#---------------------------------#
+
+# version format
+version: 1.1.{build}-{branch}
+
+skip_commits:
+  message: /Created.*\.(png|jpg|jpeg|bmp|gif)/
+
+#---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+
+init:
+  - git config --global core.autocrlf input
+  #To get RDP while compiling
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+clone_folder: c:\Emoty-Desktop
+
+clone_depth: 1
+
+environment:
+  global:
+    #Qt: https://www.appveyor.com/docs/installed-software#qt
+    QTDIR: C:\Qt\5.8\mingw53_32
+
+install:
+  # Configuring Qt
+  - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw53_32\bin;%PATH%
+
+#---------------------------------#
+#       build configuration       #
+#---------------------------------#
+
+platform: x86
+
+configuration: Release
+
+build_script:
+  - cd C:\Emoty-Desktop
+  - qmake
+  - make
