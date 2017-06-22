@@ -262,7 +262,7 @@ PopupBase {
 			hasError: emptyName
 
 			onAccepted: {
-				if(name.text.length > 3) {
+				if(name.text.length >= 3) {
 					mask.enabled = true
 					mask.visible = true
 					createIdentity(name.text)
@@ -277,6 +277,7 @@ PopupBase {
 				top: name.bottom
 				topMargin: name.emptyName ? dp(5) : 0
 				horizontalCenter: parent.horizontalCenter
+				horizontalCenterOffset: -dp(15)
 			}
 
 			height: dp(50)
@@ -291,7 +292,6 @@ PopupBase {
 				anchors {
 					left: parent.left
 					verticalCenter: parent.verticalCenter
-					leftMargin: -dp(15)
 				}
 
 				darkBackground: false
@@ -333,7 +333,7 @@ PopupBase {
 			}
 
 			onClicked: {
-				if(name.text.length > 3) {
+				if(name.text.length >= 3) {
 					mask.enabled = true
 					mask.visible = true
 					createIdentity(name.text)
