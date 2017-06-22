@@ -113,7 +113,6 @@ PopupBase {
 	}
 
 	onAccepted: {
-		dialog.functionAccepted()
 		timer.stop()
 	}
 
