@@ -269,13 +269,13 @@ Component {
 				}
 				onImageLoaded:requestPaint()
 
-				MouseArea {
+				/*MouseArea {
 					anchors.fill: parent
 					onClicked: {
 						pageStack.push({item: Qt.resolvedUrl("Content.qml"), immediate: true, replace: true})
 						main.content.activated = true;
 					}
-				}
+				}*/
 			}
 
 			Item {

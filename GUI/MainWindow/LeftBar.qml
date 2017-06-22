@@ -216,12 +216,12 @@ View {
 								leftBar.state = "narrow"
 							else if(leftBar.state !== "narrow" && tabView.currentIndex !== model.index+1)
 								tabView.currentIndex = model.index+1
-						}
+						}/*
 						else {
 							main.content.activated = true;
 							pageStack.push({item: Qt.resolvedUrl(page), immediate: true, replace: true})
 							main.content.refresh()
-						}
+						}*/
 					}
 					onPressAndHold: {
 						if(leftBar.state === "narrow") {
