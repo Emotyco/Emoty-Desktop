@@ -81,11 +81,13 @@ Dialog {
 		main.flickablemode = scrollingDialog.flickablemode
 		notifier.setAdvMode(scrollingDialog.advmode)
 
-		var prev_multiplier = Units.multiplier
-		Units.setMultiplier(approximationSize)
-		sizeConfirmationDialog.show(prev_multiplier, function() {
-			Units.setMultiplier(prev_multiplier)
-		})
+		if(approximationSize != Units.multiplier) {
+			var prev_multiplier = Units.multiplier
+			Units.setMultiplier(approximationSize)
+			sizeConfirmationDialog.show(prev_multiplier, function() {
+				Units.setMultiplier(prev_multiplier)
+			})
+		}
 	}
 
 	onOpened: {
