@@ -186,7 +186,6 @@ PopupBase {
 					    ctx.clip();
 					    ctx.drawImage(profile, 0, 0, canvas.width, canvas.height);
 					ctx.restore();
-
 				}
 			}
 

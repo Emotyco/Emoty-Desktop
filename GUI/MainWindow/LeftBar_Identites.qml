@@ -50,11 +50,13 @@ Rectangle {
 							var centreX = width/2;
 							var centreY = height/2;
 
+							ctx.save()
 							ctx.beginPath();
 							ctx.moveTo(centreX, centreY);
 							ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
 							ctx.clip();
 							ctx.drawImage(profile, 0, 0, canvas.width, canvas.height)
+							ctx.restore()
 						}
 					}
 					onImageLoaded:requestPaint()
