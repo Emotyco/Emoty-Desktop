@@ -35,5 +35,6 @@
         <file>IdentityDetailsDialog.qml</file>
         <file>RemoveDialog.qml</file>
         <file>ContactSort.js</file>
+        <file>SizeConfirmationDialog.qml</file>
     </qresource>
 </RCC>
