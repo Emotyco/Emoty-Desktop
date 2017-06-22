@@ -428,15 +428,15 @@ Rectangle {
                     anchors {
                         top: parent.top
                         right: parent.right
-                        rightMargin: dp(10)
-                        topMargin: dp(12)
+                        rightMargin: dp(11)
+                        topMargin: dp(13)
                     }
 
                     spacing: dp(5)
 
                     Item {
-                        width: dp(26)
-                        height: dp(26)
+                        width: dp(24)
+                        height: dp(24)
 
                         Rectangle {
                             id: minimizeButton
@@ -446,7 +446,7 @@ Rectangle {
                                 margins: dp(4)
                             }
 
-                            width: parent.width-dp(8)
+                            width: parent.width-dp(6)
                             height: dp(2)
 
                             color: Palette.colors["grey"]["500"]
@@ -464,8 +464,8 @@ Rectangle {
                     }
 
                     Item {
-                        width: dp(26)
-                        height: dp(26)
+                        width: dp(24)
+                        height: dp(24)
 
                         Rectangle {
                             id: maximizeButton
@@ -499,15 +499,15 @@ Rectangle {
                     }
 
                     Item {
-                        width: dp(26)
-                        height: dp(26)
+                        width: dp(24)
+                        height: dp(24)
 
                         Rectangle {
                             id: closeButton
 
                             anchors.centerIn: parent
 
-                            width: dp(24)
+                            width: dp(22)
                             height: dp(2.5)
 
                             rotation: 45
@@ -519,7 +519,7 @@ Rectangle {
 
                             anchors.centerIn: parent
 
-                            width: dp(24)
+                            width: dp(22)
                             height: dp(2.5)
 
                             rotation: -45
