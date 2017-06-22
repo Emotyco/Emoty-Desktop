@@ -515,6 +515,7 @@ View {
 
 					text: "Contacts"
 					textColor: selected ? Theme.primaryColor : Theme.light.textColor
+					size: dp(11)
 
 					onClicked: tabView.currentIndex = 0
 				}
@@ -526,6 +527,7 @@ View {
 
 					text: "All"
 					textColor: selected ? Theme.primaryColor : Theme.light.textColor
+					size: dp(11)
 
 					onClicked: tabView.currentIndex = 1
 				}
