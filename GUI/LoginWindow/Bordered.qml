@@ -34,6 +34,8 @@ Rectangle
 	property bool borderless: false
 	property bool attemptLogin: false
 
+	property bool prev_is_bad: false
+
 	width: dp(400)
 	height: dp(470)
 
@@ -67,8 +69,22 @@ Rectangle
 			name: "waiting_init"
 			PropertyChanges { target: mask; state: "visible"}
 			StateChangeScript {script: {runStateHelper.setRunState("waiting_init")}}
+		},
+		State {
+			name: "checking_pass"
+			PropertyChanges { target: mask; state: "visible"}
 		}
+
 	]
+
+	transitions: Transition {
+		from: "checking_pass"
+		to: "waiting_account_select"
+
+		ScriptAction {
+			script: {passwordLogin.incorrect = main.prev_is_bad}
+		}
+	}
 
 	Component.onCompleted: {
 		getRunState()
@@ -109,8 +125,15 @@ Rectangle
 			if(jsonData) {
 				if(jsonData.data) {
 					if (jsonData.data.key_name) {
-						passwordLogin.incorrect = jsonData.data.prev_is_bad;
+						if(main.state == "checking_pass")
+							main.prev_is_bad = jsonData.data.prev_is_bad
+						else {
+							main.prev_is_bad = jsonData.data.prev_is_bad
+							passwordLogin.incorrect = main.prev_is_bad
+						}
+
 						if(jsonData.data.want_password) {
+							main.state = "checking_pass"
 							var jsonPass = { password: passwordLogin.text }
 							rsApi.request("/control/password/", JSON.stringify(jsonPass), function(){})
 						}
@@ -428,12 +451,13 @@ Rectangle
 
 						onAccepted: {
 							if(passwordLogin.text.length >= 3) {
+								passwordLogin.incorrect = false
+								main.attemptLogin = true
 								var jsonData = {
 									id: locationsModel.model.get(usernameLogin.selectedIndex).id
 								}
 
 								rsApi.request("/control/login/", JSON.stringify(jsonData), function(){})
-								main.attemptLogin = true
 							}
 							else
 								passwordLogin.incorrect = true
@@ -494,12 +518,13 @@ Rectangle
 
 						onClicked: {
 							if(passwordLogin.text.length >= 3) {
+								passwordLogin.incorrect = false
+								main.attemptLogin = true
 								var jsonData = {
 									id: locationsModel.model.get(usernameLogin.selectedIndex).id
 								}
 
 								rsApi.request("/control/login/", JSON.stringify(jsonData), function(){})
-								main.attemptLogin = true
 							}
 							else
 								passwordLogin.incorrect = true
