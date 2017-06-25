@@ -272,6 +272,7 @@ Rectangle {
 
 		onPressed: {
 			mouse.accepted = false
+			focus = true
 		}
 
 		onWheel: {
