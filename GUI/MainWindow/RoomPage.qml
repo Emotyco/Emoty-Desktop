@@ -523,14 +523,34 @@ Item{
 				model: lobbyParticipantsModel.model
 
 				delegate: RoomFriend {
+					property string avatar: "avatar.png"
+
 					width: parent.width
 
 					text: model.identity.name
 					textColor: Theme.light.textColor
 					itemLabel.style: "body1"
 
-					imageSource: "avatar.png"
+					imageSource: avatar
 					isIcon: false
+
+					Component.onCompleted: {
+						getIdentityAvatar()
+					}
+
+					function getIdentityAvatar() {
+						var jsonData = {
+							gxs_id: model.identity.gxs_id
+						}
+
+						function callbackFn(par) {
+							var json = JSON.parse(par.response)
+							if(json.data.avatar.length > 0)
+								avatar = "data:image/png;base64," + json.data.avatar
+						}
+
+						rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+					}
 				}
 
 				footer: RoomFriend {

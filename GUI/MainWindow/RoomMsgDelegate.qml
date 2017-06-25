@@ -28,8 +28,26 @@ Component {
 		width: parent.width
 		height: model.incoming ? view.height + dp(15) + label.height : view.height + dp(15)
 
+		Component.onCompleted: getIdentityAvatar()
+
+		function getIdentityAvatar() {
+			var jsonData = {
+				gxs_id: model.author_id
+			}
+
+			function callbackFn(par) {
+				var json = JSON.parse(par.response)
+				if(json.data.avatar.length > 0)
+					avatar = "data:image/png;base64," + json.data.avatar
+			}
+
+			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+		}
+
 		Canvas {
 			id: image
+
+			property string avatar: "avatar.png"
 
 			anchors {
 				left: parent.left
@@ -42,14 +60,14 @@ Component {
 			visible: model.incoming
 			enabled: model.incoming
 
-			Component.onCompleted:loadImage("avatar.png")
+			Component.onCompleted:loadImage(avatar)
 			onPaint: {
 				var ctx = getContext("2d");
-				if (image.isImageLoaded("avatar.png")) {
+				if (image.isImageLoaded(avatar)) {
 					var profile = Qt.createQmlObject('
                         import QtQuick 2.5;
                         Image{
-                            source: "avatar.png";
+                            source: avatar;
                             visible:false;
                             fillMode: Image.PreserveAspectCrop
                         }', image);

@@ -31,20 +31,27 @@ Rectangle {
 
 				radius: width/2
 
+				Connections {
+					target: main
+					onDefaultAvatarChanged: {canvas.loadImage(main.defaultAvatar); canvas.requestPaint()}
+
+				}
+
 				Canvas {
 					id: canvas
 
 					anchors.fill: parent
 
-					Component.onCompleted:loadImage("avatar.png")
+					Component.onCompleted:loadImage(main.defaultAvatar)
 					onPaint: {
 						var ctx = getContext("2d");
-						if (canvas.isImageLoaded("avatar.png")) {
+						if (canvas.isImageLoaded(main.defaultAvatar)) {
 							var profile = Qt.createQmlObject('
                                 import QtQuick 2.5;
                                 Image{
-                                    source: "avatar.png"
+                                    source: main.defaultAvatar
                                     visible:false
+                                    fillMode: Image.PreserveAspectCrop
                                 }', canvas);
 
 							var centreX = width/2;
@@ -143,6 +150,7 @@ Rectangle {
 			onClicked: {
 				main.defaultGxsName = model.name
 				main.defaultGxsId = model.own_gxs_id
+				main.getDefaultAvatar()
 			}
 
 			MouseArea {
@@ -244,7 +252,7 @@ Rectangle {
 
 			anchors.fill: parent
 
-			source: Qt.resolvedUrl("avatar.png")
+			source: Qt.resolvedUrl(main.defaultAvatar)
 			fillMode: Image.PreserveAspectCrop
 
 			Behavior on radius {

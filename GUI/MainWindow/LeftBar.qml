@@ -176,22 +176,26 @@ View {
 				margins: 0
 			}
 
+			Connections {
+				target: main
+				onDefaultAvatarChanged: sideModel.setProperty(0, "src", main.defaultAvatar)
+			}
+
 			ListModel {
 				id: sideModel
 
-				ListElement {
-					src: "avatar.png"
-					icon: false
-					page: "Content.qml"
-					pageTitle: "profilePage"
-					helperName: "Profile"
-				}
-
-				ListElement {
-					src: "awesome/comments"
-					icon: true
-					pageTitle: "roomPage"
-					helperName: "Rooms"
+				Component.onCompleted: {
+					append({"src": main.defaultAvatar,
+							   "icon": false,
+							   "page": "Content.qml",
+							   "pageTitle": "profilePage",
+							   "helperName": "Profile"
+						   });
+					append({"src": "awesome/comments",
+							   "icon": true,
+							   "pageTitle": "roomPage",
+							   "helperName": "Rooms"
+						   });
 				}
 			}
 

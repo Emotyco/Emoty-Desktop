@@ -41,6 +41,8 @@ Component {
 									state_string === "away"		? "#FFEB3B" :   // yellow
 																  "#9E9E9E"		// grey
 
+		property string avatar: "avatar.png"
+
 		width: parent.width
 		height: dp(50)
 
@@ -129,6 +131,26 @@ Component {
 				PropertyChanges { target: friendroot; color: Qt.rgba(0,0,0,0.03) }
 			}
 		]
+
+		Component.onCompleted: {
+			getIdentityAvatar()
+		}
+
+		function getIdentityAvatar() {
+			var jsonData = {
+				gxs_id: model.gxs_id
+			}
+
+			function callbackFn(par) {
+				var json = JSON.parse(par.response)
+				if(json.data.avatar.length > 0) {
+					avatar = "data:image/png;base64," + json.data.avatar
+					canvas.loadImage(avatar)
+				}
+			}
+
+			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+		}
 
 		MouseArea {
 			anchors.fill: parent
@@ -247,14 +269,14 @@ Component {
 				width: dp(32)
 				height: dp(32)
 
-				Component.onCompleted: loadImage("avatar.png")
+				Component.onCompleted: loadImage(friendroot.avatar)
 				onPaint: {
 					var ctx = getContext("2d");
-					if (canvas.isImageLoaded("avatar.png")) {
+					if (canvas.isImageLoaded(friendroot.avatar)) {
 						var profile = Qt.createQmlObject('
                             import QtQuick 2.5
                             Image {
-                                source: "avatar.png"
+                                source: friendroot.avatar
                                 visible:false
                             }', canvas);
 						var centreX = width/2;

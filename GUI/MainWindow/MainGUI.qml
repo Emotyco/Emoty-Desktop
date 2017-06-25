@@ -40,6 +40,7 @@ Rectangle {
 
 	property string defaultGxsName
 	property string defaultGxsId
+	property string defaultAvatar: "avatar.png"
 
 	property int unreadMsgsLobbies: 0
 	property Item controls: controlView
@@ -205,6 +206,20 @@ Rectangle {
 		}
 	}
 
+	function getDefaultAvatar() {
+		var jsonData = {
+			gxs_id: defaultGxsId
+		}
+
+		function callbackFn(par) {
+			var json = JSON.parse(par.response)
+			if(json.data.avatar.length > 0)
+				defaultAvatar = "data:image/png;base64," + json.data.avatar
+		}
+
+		rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+	}
+
 	Connections {
 		target: view
 		onHeightChanged: gridLayout.reorder()
@@ -219,6 +234,7 @@ Rectangle {
 		model.onCountChanged: {
 			defaultGxsName = ownGxsIdModel.model.get(0).name
 			defaultGxsId = ownGxsIdModel.model.get(0).own_gxs_id
+			getDefaultAvatar()
 		}
 	}
 
