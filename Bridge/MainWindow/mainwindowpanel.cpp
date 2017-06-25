@@ -57,6 +57,7 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 	rsApi = new LibresapiLocalClient();
 	rsApi->openConnection(sockPath);
 
+	base64 = new Base64();
 	QQmlContext *ctxt = this->rootContext();
 	ctxt->setContextProperty("view", this);
 	ctxt->setContextProperty("qMainPanel", this);
@@ -67,8 +68,17 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 	ctxt->setContextProperty("soundNotifier", SoundNotifier::getInstance());
 	ctxt->setContextProperty("rsApi", rsApi);
 	ctxt->setContextProperty("runStateHelper", RunStateHelper::getInstance());
+	ctxt->setContextProperty("base64", base64);
 	this->setSource(QUrl("qrc:/Borderless.qml"));
 	show();
+}
+
+MainWindowPanel::~MainWindowPanel()
+{
+	if(base64 != NULL)
+		delete base64;
+
+	base64 = NULL;
 }
 
 // Button events

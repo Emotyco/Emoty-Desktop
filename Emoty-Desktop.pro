@@ -49,14 +49,16 @@ HEADERS += libresapilocalclient.h \
     Bridge/LoginWindow/loginwindow_main.h \
     Util/screensize.h \
     notifier.h \
-    soundnotifier.h
+    soundnotifier.h \
+    Util/base64.h
 
 SOURCES += main.cpp \
     libresapilocalclient.cpp \
     Util/runstatehelper.cpp \
     Bridge/LoginWindow/loginwindow_main.cpp \
     notifier.cpp \
-    soundnotifier.cpp
+    soundnotifier.cpp \
+    Util/base64.cpp
 
 RESOURCES += \
     GUI/MainWindow/mainwindow.qrc \

@@ -43,6 +43,7 @@
 
     #include "Util/cursorshape.h"
     #include "Util/qquickviewhelper.h"
+    #include "Util/base64.h"
 #endif
 #ifdef BORDERLESS_MAINWINDOW
     #include "Bridge/MainWindow/mainwindow.h"
@@ -117,6 +118,7 @@ int main(int argc, char *argv[])
 	QString sockPath = QDir::homePath() + "/.retroshare";
 	sockPath.append("/libresapi.sock");
 
+	Base64 *base64 = new Base64();
 	LibresapiLocalClient rsApi;
 	rsApi.openConnection(sockPath);
 
@@ -124,6 +126,7 @@ int main(int argc, char *argv[])
 	ctxt->setContextProperty("soundNotifier", SoundNotifier::getInstance());
 	ctxt->setContextProperty("rsApi", &rsApi);
 	ctxt->setContextProperty("runStateHelper", RunStateHelper::getInstance());
+	ctxt->setContextProperty("base64", base64);
 
 	view->setSource(QUrl("qrc:/MainGUI.qml"));
 	// Create window

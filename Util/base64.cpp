@@ -2,7 +2,6 @@
  *  This file is part of Emoty.
  *  Emoty is distributed under the following license:
  *
- *  Copyright (c) 2015: Deimos
  *  Copyright (C) 2017, Konrad Dębiec
  *
  *  Emoty is free software; you can redistribute it and/or
@@ -20,40 +19,33 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor,
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
-/* File is originally from https://github.com/deimos1877/BorderlessWindow */
-#ifndef MainWindowPanel_H
-#define MainWindowPanel_H
+#include "base64.h"
 
-//Emoty-GUI
-#include "Bridge/Windows/qwinview.h"
-#include "libresapilocalclient.h"
-#include "Util/base64.h"
+#include <QByteArray>
+#include <QPixmap>
+#include <QBuffer>
+#include <QDir>
 
-class MainWindowPanel : public QWinView
+QString Base64::encode(QString string)
 {
-	Q_OBJECT
+	QByteArray ba;
+	ba.append(string);
+	return ba.toBase64();
+}
 
-public:
-	MainWindowPanel(HWND hWnd);
-	~MainWindowPanel();
+QString Base64::decode(QString string)
+{
+	QByteArray ba;
+	ba.append(string);
+	return QByteArray::fromBase64(ba);
+}
 
-public slots:
-	void pushButtonMinimizeClicked();
-	void pushButtonMaximizeClicked();
-	void pushButtonCloseClicked();
-	void mouseLPressed();
-	void changeCursor(int cursorShape);
-
-	void resizeWin(int x, int y, bool changeposx, bool changeposy);
-	void hide();
-
-	void windowFlash();
-	void windowFlashMessageReceived(QString chat_type);
-
-private:
-	HWND windowHandle;
-	LibresapiLocalClient *rsApi;
-	Base64 *base64;
-};
-
-#endif // MainWindowPanel_H
+QString Base64::encode_avatar(QString path)
+{
+	QPixmap avatar = QPixmap(QDir::fromNativeSeparators(path).remove(0, 8)).scaledToHeight(128, Qt::SmoothTransformation).copy( 0, 0, 128, 128);
+	QByteArray ba;
+	QBuffer buffer(&ba);
+	buffer.open(QIODevice::WriteOnly);
+	avatar.save(&buffer, "PNG");
+	return QString(ba.toBase64());
+}

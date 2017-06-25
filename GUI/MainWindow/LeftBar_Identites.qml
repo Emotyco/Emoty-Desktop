@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import QtQuick.Dialogs 1.0
 import QtGraphicalEffects 1.0
 
 import Material 0.3
@@ -8,6 +9,34 @@ import Material.ListItems 0.1 as ListItem
 
 Rectangle {
 	color: "#f2f2f2"
+
+	property string avatar
+
+	FileDialog {
+		id: fileDialog
+		title: "Please choose an avatar"
+		folder: shortcuts.pictures
+		selectMultiple: false
+		onAccepted: {
+			avatar = base64.encode_avatar(fileDialog.fileUrl)
+			setIdentityAvatar()
+		}
+	}
+
+	function setIdentityAvatar() {
+		var jsonData = {
+			gxs_id: main.defaultGxsId,
+			avatar: avatar
+		}
+
+		function callbackFn(par) {
+			var json = JSON.parse(par.response)
+			if(json.data.avatar.length > 0)
+				main.defaultAvatar = "data:image/png;base64," + json.data.avatar
+		}
+
+		rsApi.request("/identity/set_avatar", JSON.stringify(jsonData), callbackFn)
+	}
 
 	ListView {
 		anchors.fill: parent
@@ -276,6 +305,8 @@ Rectangle {
 
 				color: Theme.dark.iconColor
 				size: dp(40)
+
+				onClicked: fileDialog.open()
 			}
 		}
 	}

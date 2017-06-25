@@ -2,7 +2,6 @@
  *  This file is part of Emoty.
  *  Emoty is distributed under the following license:
  *
- *  Copyright (c) 2015: Deimos
  *  Copyright (C) 2017, Konrad Dębiec
  *
  *  Emoty is free software; you can redistribute it and/or
@@ -20,40 +19,23 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor,
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
-/* File is originally from https://github.com/deimos1877/BorderlessWindow */
-#ifndef MainWindowPanel_H
-#define MainWindowPanel_H
+#ifndef BASE64_H
+#define BASE64_H
 
-//Emoty-GUI
-#include "Bridge/Windows/qwinview.h"
-#include "libresapilocalclient.h"
-#include "Util/base64.h"
+#include <QObject>
+#include <QString>
 
-class MainWindowPanel : public QWinView
+class Base64: public QObject
 {
 	Q_OBJECT
-
 public:
-	MainWindowPanel(HWND hWnd);
-	~MainWindowPanel();
+	Base64(QObject *parent = 0) : QObject(parent){}
 
 public slots:
-	void pushButtonMinimizeClicked();
-	void pushButtonMaximizeClicked();
-	void pushButtonCloseClicked();
-	void mouseLPressed();
-	void changeCursor(int cursorShape);
+	QString encode(QString string);
+	QString decode(QString string);
 
-	void resizeWin(int x, int y, bool changeposx, bool changeposy);
-	void hide();
-
-	void windowFlash();
-	void windowFlashMessageReceived(QString chat_type);
-
-private:
-	HWND windowHandle;
-	LibresapiLocalClient *rsApi;
-	Base64 *base64;
+	QString encode_avatar(QString path);
 };
 
-#endif // MainWindowPanel_H
+#endif // BASE64_H
