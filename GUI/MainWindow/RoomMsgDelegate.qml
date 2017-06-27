@@ -25,6 +25,8 @@ import Material 0.3
 
 Component {
 	Item {
+		property string avatar: "avatar.png"
+
 		width: parent.width
 		height: model.incoming ? view.height + dp(15) + label.height : view.height + dp(15)
 
@@ -46,8 +48,6 @@ Component {
 
 		Canvas {
 			id: image
-
-			property string avatar: "avatar.png"
 
 			anchors {
 				left: parent.left
