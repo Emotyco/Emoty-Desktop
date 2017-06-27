@@ -118,6 +118,8 @@ Rectangle {
 		getFlickableGridMode()
 	}
 
+	onDefaultGxsIdChanged: main.getDefaultAvatar()
+
 	// For handling tokens
 	property int stateToken_ownGxs: 0
 	property int stateToken_unreadMsgs: 0
