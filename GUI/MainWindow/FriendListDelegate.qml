@@ -31,7 +31,6 @@ Component {
 	Rectangle {
 		id: friendroot
 
-		property bool contact: model.contact != undefined ? (model.contact || model.own) : true
 		property bool entered: false
 		property string msg: ""
 
@@ -200,8 +199,8 @@ Component {
 						text: "Add to contacts"
 						itemLabel.style: "menu"
 
-						visible: !contact
-						enabled: !contact
+						visible: !model.is_contact
+						enabled: !model.is_contact
 
 						onClicked: {
 							overflowMenu.close()
@@ -242,8 +241,8 @@ Component {
 						text: "Remove"
 						itemLabel.style: "menu"
 
-						visible: contact
-						enabled: contact
+						visible: model.is_contact
+						enabled: model.is_contact
 
 						onClicked: {
 							overflowMenu.close()
