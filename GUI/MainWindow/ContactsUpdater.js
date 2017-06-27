@@ -151,21 +151,19 @@ function sortContacts() {
 			if(gxsModel.get(n).unread_count != gxsModel.get(i).unread_count) {
 				if (parseInt(gxsModel.get(n).unread_count) < parseInt(gxsModel.get(i).unread_count)) {
 					gxsModel.move(i, n, 1);
-					n=0;
-					continue
+					break
 				}
 			}
 			else if(gxsModel.get(n).pgp_linked != gxsModel.get(i).pgp_linked) {
 				if (Boolean(gxsModel.get(n).pgp_linked) < Boolean(gxsModel.get(i).pgp_linked)) {
 					gxsModel.move(i, n, 1);
-					n=0;
-					continue
+					break
 				}
 			}
-			else if(gxsModel.get(n).name != gxsModel.get(i).name) {
-				if (gxsModel.get(n).name > gxsModel.get(i).name) {
+			else if(gxsModel.get(n).name.toLowerCase() != gxsModel.get(i).name.toLowerCase()) {
+				if (gxsModel.get(n).name.toLowerCase() > gxsModel.get(i).name.toLowerCase()) {
 					gxsModel.move(i, n, 1);
-					n=0;
+					break
 				}
 			}
 		}
