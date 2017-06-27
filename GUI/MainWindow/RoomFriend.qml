@@ -107,7 +107,8 @@ ListItem.BaseListItem {
 
 				visible: !isIcon
 
-				Component.onCompleted:loadImage(source)
+				onSourceChanged: loadImage(source)
+				Component.onCompleted: loadImage(source)
 				onPaint: {
 					var ctx = getContext("2d");
 					if (image.isImageLoaded(source)) {
