@@ -40,12 +40,10 @@ View {
 
 	// For handling tokens
 	property int stateToken_gxsContacts: 0
-	property int stateToken_gxsAll: 0
 	property int stateToken_pgp: 0
 	property int stateToken_unreadedMsgs: 0
 
 	property bool firstTime_gxsContacts: true
-	property bool firstTime_gxsAll: true
 	property bool firstTime_pgp: true
 
 	anchors {
@@ -71,29 +69,21 @@ View {
 			main.registerToken(stateToken_gxsContacts, refreshGxsIdModel)
 
 			knownContactsWorker.sendMessage({
+				'action' : 'refreshContacts',
+				'response' : par.response,
+				'query' : '$.data[?(@.is_contact)]',
+				'model' : gxsIdModel
+			})
+
+			allContactsWorker.sendMessage({
 				'action': 'refreshContacts',
-				'response': par.response
+				'response': par.response,
+				'query' : '$.data[*]',
+				'model': allGxsIdModel
 			})
 		}
 
 		rsApi.request("/identity/notown_ids/", "", callbackFn)
-	}
-
-	function refreshAllGxsIdModel() {
-		function callbackFn(par) {
-			if(firstTime_gxsAll)
-				firstTime_gxsAll = false
-
-			stateToken_gxsAll = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_gxsAll, refreshAllGxsIdModel)
-
-			allContactsWorker.sendMessage({
-				'action': 'refreshContacts',
-				'response': par.response
-			})
-		}
-
-		rsApi.request("/identity/*", "", callbackFn)
 	}
 
 	function refreshPgpIdModel() {
@@ -119,11 +109,13 @@ View {
 
 			knownContactsWorker.sendMessage({
 				'action': 'refreshStatus',
-				'response': par.response
+				'response': par.response,
+				'model': gxsIdModel
 			})
 			allContactsWorker.sendMessage({
 				'action': 'refreshStatus',
-				'response': par.response
+				'response': par.response,
+				'model': allGxsIdModel
 			})
 		}
 
@@ -138,11 +130,14 @@ View {
 
 			knownContactsWorker.sendMessage({
 				'action': 'refreshUnread',
-				'response': par.response
+				'response': par.response,
+				'model': gxsIdModel
 			})
+
 			allContactsWorker.sendMessage({
 				'action': 'refreshUnread',
-				'response': par.response
+				'response': par.response,
+				'model': allGxsIdModel
 			})
 		}
 
@@ -190,7 +185,6 @@ View {
 	}
 
 	Component.onCompleted: {
-		refreshAllGxsIdModel()
 		refreshGxsIdModel()
 		refreshPgpIdModel()
 		getUnreadedMsgs()
@@ -200,30 +194,25 @@ View {
 
 	Component.onDestruction: {
 		main.unregisterToken(stateToken_gxsContacts)
-		main.unregisterToken(stateToken_gxsAll)
 		main.unregisterToken(stateToken_pgp)
 	}
 
 	WorkerScript {
 		id: allContactsWorker
-		source: "qrc:/ContactSort.js"
-		onMessage: allGxsIdModel.json = JSON.stringify(messageObject)
+		source: "qrc:/ContactsUpdater.js"
 	}
 
 	WorkerScript {
 		id: knownContactsWorker
-		source: "qrc:/ContactSort.js"
-		onMessage: gxsIdModel.json = JSON.stringify(messageObject)
+		source: "qrc:/ContactsUpdater.js"
 	}
 
-	JSONListModel {
+	ListModel {
 		id: gxsIdModel
-		query: "$.data[?(@.is_contact)]"
 	}
 
-	JSONListModel {
+	ListModel {
 		id: allGxsIdModel
-		query: "$.data[*]"
 	}
 
 	JSONListModel {
@@ -568,7 +557,7 @@ View {
 
 						clip: true
 
-						model: gxsIdModel.model
+						model: gxsIdModel
 						delegate: FriendListDelegate{}
 
 						LoadingMask {
@@ -596,14 +585,14 @@ View {
 
 						clip: true
 
-						model: allGxsIdModel.model
+						model: allGxsIdModel
 						delegate: FriendListDelegate{}
 
 						LoadingMask {
 							id: loadingMask2
 							anchors.fill: parent
 
-							state: firstTime_gxsAll ? "visible" : "non-visible"
+							state: firstTime_gxsContacts ? "visible" : "non-visible"
 						}
 					}
 
