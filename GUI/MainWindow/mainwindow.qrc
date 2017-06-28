@@ -38,5 +38,6 @@
         <file>ContactsUpdater.js</file>
         <file>RoomParticipantsUpdater.js</file>
         <file>MessagesUpdater.js</file>
+        <file>PgpListUpdater.js</file>
     </qresource>
 </RCC>

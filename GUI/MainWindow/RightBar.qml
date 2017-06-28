@@ -91,9 +91,10 @@ View {
 			if(firstTime_pgp)
 				firstTime_pgp = false
 
-			pgpIdModel.json = par.response
-
 			var jsonResp = JSON.parse(par.response)
+
+			stateToken_pgp = jsonResp.statetoken
+			main.registerToken(stateToken_pgp, refreshPgpIdModel)
 
 			var count = 0
 			for (var i = 0; i<jsonResp.data.length; i++) {
@@ -104,9 +105,12 @@ View {
 			}
 			pgp_unread_msgs = count
 
-			stateToken_pgp = jsonResp.statetoken
-			main.registerToken(stateToken_pgp, refreshPgpIdModel)
-
+			pgpIdWorker.sendMessage({
+				'action': 'refreshPgpList',
+				'response': par.response,
+				'query' : '$.data[*]',
+				'model': pgpIdModel
+			})
 			knownContactsWorker.sendMessage({
 				'action': 'refreshStatus',
 				'response': par.response,
@@ -207,6 +211,11 @@ View {
 		source: "qrc:/ContactsUpdater.js"
 	}
 
+	WorkerScript {
+		id: pgpIdWorker
+		source: "qrc:/PgpListUpdater.js"
+	}
+
 	ListModel {
 		id: gxsIdModel
 	}
@@ -215,9 +224,8 @@ View {
 		id: allGxsIdModel
 	}
 
-	JSONListModel {
+	ListModel {
 		id: pgpIdModel
-		query: "$.data[*]"
 	}
 
 	Item {
@@ -854,7 +862,7 @@ View {
 
 			clip: true
 
-			model: pgpIdModel.model
+			model: pgpIdModel
 			delegate: PgpListDelegate{}
 		}
 
