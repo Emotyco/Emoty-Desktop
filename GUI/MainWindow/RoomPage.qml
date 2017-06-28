@@ -56,9 +56,15 @@ Item{
 
 	function getLobbyParticipants() {
 		function callbackFn(par) {
-			lobbyParticipantsModel.json = par.response
 			stateToken_p = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_p, getLobbyParticipants)
+
+			lobbyParticipantsWorker.sendMessage({
+				'action' : 'refreshParticipants',
+				'response' : par.response,
+				'query' : '$.data[*]',
+				'model' : lobbyParticipantsModel
+			})
 		}
 
 		rsApi.request("/chat/lobby_participants/"+chatId, "", callbackFn)
@@ -69,11 +75,15 @@ Item{
 			if(firstTime_msg)
 				firstTime_msg = false
 
-			messagesModel.json = par.response
-			contentm.positionViewAtEnd()
-
 			stateToken_msg = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_msg, getLobbyMessages)
+
+			messagesWorker.sendMessage({
+				'action' : 'refreshMessages',
+				'response' : par.response,
+				'query' : '$.data[*]',
+				'model' : messagesModel
+			})
 		}
 
 		rsApi.request("/chat/messages/"+chatId, "", callbackFn)
@@ -113,14 +123,23 @@ Item{
 		}
 	}
 
-	JSONListModel {
-		id: lobbyParticipantsModel
-		query: "$.data[*]"
+	WorkerScript {
+		id: lobbyParticipantsWorker
+		source: "qrc:/RoomParticipantsUpdater.js"
 	}
 
-	JSONListModel {
+	WorkerScript {
+		id: messagesWorker
+		source: "qrc:/MessagesUpdater.js"
+		onMessage: contentm.positionViewAtEnd()
+	}
+
+	ListModel {
+		id: lobbyParticipantsModel
+	}
+
+	ListModel {
 		id: messagesModel
-		query: "$.data[*]"
 	}
 
 	JSONListModel {
@@ -332,7 +351,7 @@ Item{
 						snapMode: ListView.NoSnap
 						flickableDirection: Flickable.AutoFlickDirection
 
-						model: messagesModel.model
+						model: messagesModel
 						delegate: RoomMsgDelegate{}
 					}
 
@@ -520,7 +539,7 @@ Item{
 				snapMode: ListView.NoSnap
 				flickableDirection: Flickable.AutoFlickDirection
 
-				model: lobbyParticipantsModel.model
+				model: lobbyParticipantsModel
 
 				delegate: RoomFriend {
 					property string avatar: "avatar.png"

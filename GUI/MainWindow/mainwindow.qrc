@@ -36,6 +36,7 @@
         <file>RemoveDialog.qml</file>
         <file>SizeConfirmationDialog.qml</file>
         <file>ContactsUpdater.js</file>
+        <file>RoomParticipantsUpdater.js</file>
         <file>MessagesUpdater.js</file>
     </qresource>
 </RCC>
