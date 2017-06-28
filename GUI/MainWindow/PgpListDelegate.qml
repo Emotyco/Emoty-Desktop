@@ -314,6 +314,10 @@ Component {
 					radius: width/2
 					color: statuscolor
 
+					Behavior on color {
+						ColorAnimation { duration: 200 }
+					}
+
 					Text {
 						anchors.fill: parent
 
