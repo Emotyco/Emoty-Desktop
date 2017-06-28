@@ -112,11 +112,15 @@ DragTile {
 			return
 
 		function callbackFn(par) {
-			msgModel.json = par.response
-			contentm.positionViewAtEnd()
-
 			stateToken = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken, getChatMessages)
+
+			msgWorker.sendMessage({
+				'action' : 'refreshMessages',
+				'response' : par.response,
+				'query' : '$.data[*]',
+				'model' : msgModel
+			})
 		}
 
 		rsApi.request("/chat/messages/"+drag.chatId, "", callbackFn)
@@ -128,9 +132,15 @@ DragTile {
 		closeChat()
 	}
 
-	JSONListModel {
+
+	WorkerScript {
+		id: msgWorker
+		source: "qrc:/MessagesUpdater.js"
+		onMessage: contentm.positionViewAtEnd()
+	}
+
+	ListModel {
 		id: msgModel
-		query: "$.data[*]"
 	}
 
 	View {
@@ -370,7 +380,7 @@ DragTile {
 					snapMode: ListView.NoSnap
 					flickableDirection: Flickable.AutoFlickDirection
 
-					model: msgModel.model
+					model: msgModel
 					delegate: ChatMsgDelegate{}
 				}
 
