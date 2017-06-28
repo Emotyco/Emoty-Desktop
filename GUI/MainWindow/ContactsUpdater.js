@@ -73,13 +73,15 @@ function parseContacts(message) {
 			for ( var ii=0; ii<dataLen; ++ii) {
 				var el = jsonData[ii]
 
-				if(!el.is_contact)
+				if(message.query != "$.data[*]" && !el.is_contact)
 					continue
 
 				var append = true
 				for(var i = 0; i < message.model.count; i++) {
-					if(message.model.get(i).gxs_id == el.gxs_id)
+					if(message.model.get(i).gxs_id == el.gxs_id) {
 						append = false
+						break
+					}
 				}
 
 				if(append)
