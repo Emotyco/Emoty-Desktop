@@ -41,6 +41,9 @@ Component {
 				var json = JSON.parse(par.response)
 				if(json.data.avatar.length > 0)
 					avatar = "data:image/png;base64," + json.data.avatar
+
+				if(json.returncode == "fail")
+					getIdentityAvatar()
 			}
 
 			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)

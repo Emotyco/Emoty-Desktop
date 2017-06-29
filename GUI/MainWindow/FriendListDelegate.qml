@@ -146,6 +146,8 @@ Component {
 					avatar = "data:image/png;base64," + json.data.avatar
 					canvas.loadImage(avatar)
 				}
+				if(json.returncode == "fail")
+					getIdentityAvatar()
 			}
 
 			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)

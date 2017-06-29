@@ -219,6 +219,9 @@ Rectangle {
 				defaultAvatar = "data:image/png;base64," + json.data.avatar
 			else
 				defaultAvatar = "avatar.png"
+
+			if(json.returncode == "fail")
+				getDefaultAvatar()
 		}
 
 		rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
