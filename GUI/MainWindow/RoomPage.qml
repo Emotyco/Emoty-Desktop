@@ -595,11 +595,18 @@ Item{
 
 					MouseArea {
 						anchors.fill: parent
+						acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-						acceptedButtons: Qt.RightButton
 						onClicked: {
-							if(main.advmode || !model.own)
-								overflowMenu2.open(roomFriend, mouse.x, mouse.y)
+							if(mouse.button == Qt.RightButton)
+								if(main.advmode || !model.own)
+									overflowMenu2.open(roomFriend, mouse.x, mouse.y)
+						}
+
+						onDoubleClicked: {
+							if(mouse.button == Qt.LeftButton)
+								if(!model.own)
+									main.createChatGxsCard(model.identity.name, model.identity.gxs_id, "ChatGxsCard.qml")
 						}
 					}
 
