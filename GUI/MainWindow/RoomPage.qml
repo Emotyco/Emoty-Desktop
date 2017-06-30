@@ -37,11 +37,13 @@ Item{
 	property int stateToken_p: 0
 	property int stateToken_msg: 0
 	property int stateToken_gxs: 0
+	property int stateToken_gxsContacts: 0
 
 	Component.onDestruction: {
 		main.unregisterToken(stateToken_p)
 		main.unregisterToken(stateToken_msg)
 		main.unregisterToken(stateToken_gxs)
+		main.unregisterToken(stateToken_gxsContacts)
 	}
 
 	property bool firstTime_msg: true
@@ -99,9 +101,25 @@ Item{
 		rsApi.request("/identity/notown_ids/", "", callbackFn)
 	}
 
+	function getContacts() {
+		function callbackFn(par) {
+			stateToken_gxsContacts = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_gxsContacts, getContacts)
+
+			lobbyParticipantsWorker.sendMessage({
+				'action' : 'refreshContacts',
+				'response' : par.response,
+				'model' : lobbyParticipantsModel
+			})
+		}
+
+		rsApi.request("/identity/*/", "", callbackFn)
+	}
+
 	Component.onCompleted: {
 		getLobbyMessages();
 		getLobbyParticipants()
+		getContacts()
 		getGxsId()
 	}
 
@@ -542,6 +560,7 @@ Item{
 				model: lobbyParticipantsModel
 
 				delegate: RoomFriend {
+					id: roomFriend
 					property string avatar: "avatar.png"
 
 					width: parent.width
@@ -572,6 +591,85 @@ Item{
 						}
 
 						rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+					}
+
+					MouseArea {
+						anchors.fill: parent
+
+						acceptedButtons: Qt.RightButton
+						onClicked: {
+							if(main.advmode || !model.own)
+								overflowMenu2.open(roomFriend, mouse.x, mouse.y)
+						}
+					}
+
+					Dropdown {
+						id: overflowMenu2
+						objectName: "overflowMenu"
+						overlayLayer: "dialogOverlayLayer"
+						width: dp(200)
+						height: (main.advmode
+								 ? (model.is_contact
+									? model.own ? dp(1*30) : dp(2*30)
+									: model.own ? dp(2*30) : dp(3*30))
+								 : (model.is_contact
+									? model.own ? dp(0) : dp(1*30)
+									: model.own ? dp(1*30) : dp(2*30)))
+						enabled: true
+						anchor: Item.TopLeft
+						durationSlow: 300
+						durationFast: 150
+
+						Column{
+							anchors.fill: parent
+
+							ListItem.Standard {
+								height: dp(30)
+								text: "Add to contacts"
+								itemLabel.style: "menu"
+
+								visible: !model.is_contact
+								enabled: !model.is_contact
+
+								onClicked: {
+									overflowMenu2.close()
+
+									var jsonData = {
+										gxs_id: model.identity.gxs_id
+									}
+
+									rsApi.request("/identity/add_contact", JSON.stringify(jsonData), function(){})
+								}
+							}
+
+							ListItem.Standard {
+								height: dp(30)
+								text: "Chat"
+								itemLabel.style: "menu"
+
+								visible: !model.own
+								enabled: !model.own
+
+								onClicked: {
+									overflowMenu2.close()
+									main.createChatGxsCard(model.identity.name, model.identity.gxs_id, "ChatGxsCard.qml")
+								}
+							}
+
+							ListItem.Standard {
+								height: dp(30)
+								text: "Details"
+								itemLabel.style: "menu"
+
+								enabled: main.advmode
+								visible: main.advmode
+
+								onClicked: {
+									overflowMenu2.close()
+									identityDetailsDialog.showIdentity(model.identity.name, model.identity.gxs_id)
+								}
+							}
+						}
 					}
 				}
 

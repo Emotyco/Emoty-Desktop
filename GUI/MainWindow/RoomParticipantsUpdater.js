@@ -55,6 +55,8 @@ function parseParticipants(message) {
 		for ( var key in objectArray ) {
 			var jo = objectArray[key]
 			message.model.append( jo )
+			message.model.setProperty(message.model.count-1, "is_contact", false)
+			message.model.setProperty(message.model.count-1, "own", false)
 		}
 	}
 	else {
@@ -108,9 +110,29 @@ function parseParticipants(message) {
 	}
 }
 
+function parseContacts(message) {
+	var contactsData = JSON.parse(message.response)
+
+	if (contactsData.data.count === 0)
+		return
+
+	for(var i = 0; i < message.model.count; i++) {
+		var participant = message.model.get(i)
+
+		for(var n = 0; n < contactsData.data.length; n++) {
+			if(participant.identity.gxs_id == contactsData.data[n].gxs_id) {
+				message.model.setProperty(i, "is_contact", contactsData.data[n].is_contact)
+				message.model.setProperty(i, "own", contactsData.data[n].own)
+			}
+		}
+	}
+}
+
 WorkerScript.onMessage = function(message) {
 	if(message.action === "refreshParticipants")
 		parseParticipants(message)
+	if(message.action === "refreshContacts")
+		parseContacts(message)
 
 	message.model.sync()
 }
