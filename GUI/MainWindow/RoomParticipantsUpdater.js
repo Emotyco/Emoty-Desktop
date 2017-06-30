@@ -83,20 +83,20 @@ function parseParticipants(message) {
 				var i
 
 				for(i = 0; i < message.model.count; i++) {
-					if(i == 0 && el.identity.name <= message.model.get(i).identity.name) {
+					if(i == 0 && el.identity.name.toLowerCase() <= message.model.get(i).identity.name.toLowerCase()) {
 						if(el.identity.gxs_id == message.model.get(i).identity.gxs_id)
 							append = false
 
 						break
 					}
-					else if(el.identity.name == message.model.get(i).identity.name) {
+					else if(el.identity.name.toLowerCase() == message.model.get(i).identity.name.toLowerCase()) {
 						if(el.identity.gxs_id == message.model.get(i).identity.gxs_id)
 							append = false
 
 						break
 					}
-					else if(el.identity.name < message.model.get(i).identity.name
-							&& el.identity.name > message.model.get(i-1).identity.name)
+					else if(el.identity.name.toLowerCase() < message.model.get(i).identity.name.toLowerCase()
+							&& el.identity.name.toLowerCase() > message.model.get(i-1).identity.name.toLowerCase())
 						break
 				}
 
