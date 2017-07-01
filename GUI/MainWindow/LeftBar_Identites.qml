@@ -112,7 +112,24 @@ Rectangle {
 							radius: width/2
 						}
 
-						onClicked: overlayView.open(canvas)
+						onClicked: {
+							if(main.defaultAvatar != "avatar.png")
+								overlayView.open(canvas)
+							else
+								fileDialog.open()
+						}
+
+						Icon {
+							id: updateIcon
+
+							anchors.centerIn: parent
+							opacity: circleInk.containsMouse ? 1 : 0
+							height: dp(60)
+
+							name: "awesome/edit"
+							color: Theme.dark.iconColor
+							size: dp(40)
+						}
 					}
 				}
 			}
@@ -292,9 +309,11 @@ Rectangle {
 			}
 
 			IconButton {
+				id: updateIcon
+
 				anchors {
 					top: parent.top
-					right: parent.right
+					right: removeIcon.left
 					rightMargin: dp(16)
 				}
 
@@ -307,6 +326,32 @@ Rectangle {
 				size: dp(40)
 
 				onClicked: fileDialog.open()
+			}
+
+			IconButton {
+				id: removeIcon
+
+				anchors {
+					top: parent.top
+					right: parent.right
+					rightMargin: dp(16)
+				}
+
+				height: dp(60)
+				opacity: overlayView.transitionOpacity
+
+				iconName: "awesome/trash"
+
+				color: Theme.dark.iconColor
+				size: dp(40)
+
+				onClicked: {
+					overlayView.close()
+					removeDialog.show("Do you want to remove your avatar?", function() {
+						avatar = ""
+						setIdentityAvatar()
+					})
+				}
 			}
 		}
 	}
