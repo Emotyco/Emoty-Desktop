@@ -120,8 +120,6 @@ Rectangle {
 						}
 
 						Icon {
-							id: updateIcon
-
 							anchors.centerIn: parent
 							opacity: circleInk.containsMouse ? 1 : 0
 							height: dp(60)
