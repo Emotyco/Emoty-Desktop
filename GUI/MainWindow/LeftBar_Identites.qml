@@ -121,8 +121,10 @@ Rectangle {
 
 						Icon {
 							anchors.centerIn: parent
-							opacity: circleInk.containsMouse ? 1 : 0
 							height: dp(60)
+
+							opacity: circleInk.containsMouse ? 1 : 0
+							visible: main.defaultAvatar == "avatar.png"
 
 							name: "awesome/edit"
 							color: Theme.dark.iconColor
