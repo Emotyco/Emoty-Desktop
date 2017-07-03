@@ -36,6 +36,7 @@
 #include "notifier.h"
 #include "soundnotifier.h"
 #include "Util/runstatehelper.h"
+#include "Bridge/Models/contactsmodel.h"
 
 MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 {
@@ -69,6 +70,17 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 	ctxt->setContextProperty("rsApi", rsApi);
 	ctxt->setContextProperty("runStateHelper", RunStateHelper::getInstance());
 	ctxt->setContextProperty("base64", base64);
+
+	ctxt->setContextProperty("gxsModel", ContactsModel::getInstance());
+
+	contactsModel = new ContactsSortModel();
+	contactsModel->setSourceModel(ContactsModel::getInstance());
+	ctxt->setContextProperty("contactsModel", contactsModel);
+
+	identitiesModel = new IdentitiesSortModel();
+	identitiesModel->setSourceModel(ContactsModel::getInstance());
+	ctxt->setContextProperty("identitiesModel", identitiesModel);
+
 	this->setSource(QUrl("qrc:/Borderless.qml"));
 	show();
 }
@@ -77,8 +89,15 @@ MainWindowPanel::~MainWindowPanel()
 {
 	if(base64 != NULL)
 		delete base64;
-
 	base64 = NULL;
+
+	if(contactsModel != NULL)
+		delete contactsModel;
+	contactsModel = NULL;
+
+	if(identitiesModel != NULL)
+		delete identitiesModel;
+	identitiesModel = NULL;
 }
 
 // Button events

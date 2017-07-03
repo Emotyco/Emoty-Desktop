@@ -68,19 +68,7 @@ View {
 			stateToken_gxsContacts = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_gxsContacts, refreshGxsIdModel)
 
-			knownContactsWorker.sendMessage({
-				'action' : 'refreshContacts',
-				'response' : par.response,
-				'query' : '$.data[?(@.is_contact)]',
-				'model' : gxsIdModel
-			})
-
-			allContactsWorker.sendMessage({
-				'action': 'refreshContacts',
-				'response': par.response,
-				'query' : '$.data[*]',
-				'model': allGxsIdModel
-			})
+			gxsModel.loadJSONContacts(par.response)
 		}
 
 		rsApi.request("/identity/notown_ids/", "", callbackFn)
@@ -111,16 +99,8 @@ View {
 				'query' : '$.data[*]',
 				'model': pgpIdModel
 			})
-			knownContactsWorker.sendMessage({
-				'action': 'refreshStatus',
-				'response': par.response,
-				'model': gxsIdModel
-			})
-			allContactsWorker.sendMessage({
-				'action': 'refreshStatus',
-				'response': par.response,
-				'model': allGxsIdModel
-			})
+
+			gxsModel.loadJSONStatus(par.response)
 		}
 
 		rsApi.request("/peers/*", "", callbackFn)
@@ -132,17 +112,7 @@ View {
 			stateToken_unreadedMsgs = jsonResp.statetoken
 			main.registerToken(stateToken_unreadedMsgs, getUnreadedMsgs)
 
-			knownContactsWorker.sendMessage({
-				'action': 'refreshUnread',
-				'response': par.response,
-				'model': gxsIdModel
-			})
-
-			allContactsWorker.sendMessage({
-				'action': 'refreshUnread',
-				'response': par.response,
-				'model': allGxsIdModel
-			})
+			gxsModel.loadJSONUnread(par.response)
 		}
 
 		rsApi.request("/chat/unread_msgs/", "", callbackFn)
@@ -199,16 +169,6 @@ View {
 	Component.onDestruction: {
 		main.unregisterToken(stateToken_gxsContacts)
 		main.unregisterToken(stateToken_pgp)
-	}
-
-	WorkerScript {
-		id: allContactsWorker
-		source: "qrc:/ContactsUpdater.js"
-	}
-
-	WorkerScript {
-		id: knownContactsWorker
-		source: "qrc:/ContactsUpdater.js"
 	}
 
 	WorkerScript {
@@ -288,9 +248,8 @@ View {
 
 				showBorder: false
 
-				onAccepted: {
-					setCustomStateString(statusm.text)
-				}
+				onTextChanged: setCustomStateString(statusm.text)
+				onAccepted: setCustomStateString(statusm.text)
 			}
 
 			MouseArea {
@@ -411,7 +370,7 @@ View {
 			}
 		}
 
-		Item {
+		Rectangle {
 			id: tabButtons
 
 			anchors {
@@ -541,7 +500,7 @@ View {
 				top: tabButtons.bottom
 				left: parent.left
 				right: parent.right
-				bottom: parent.bottom
+				bottom: searcher.top
 			}
 
 			frameVisible: false
@@ -568,7 +527,7 @@ View {
 
 						clip: true
 
-						model: gxsIdModel
+						model: contactsModel
 						delegate: FriendListDelegate{}
 
 						LoadingMask {
@@ -596,7 +555,7 @@ View {
 
 						clip: true
 
-						model: allGxsIdModel
+						model: identitiesModel
 						delegate: FriendListDelegate{}
 
 						LoadingMask {
@@ -610,6 +569,78 @@ View {
 					Scrollbar {
 						flickableItem: listView2
 					}
+				}
+			}
+		}
+
+		Item {
+			id: searcher
+			anchors {
+				bottom: parent.bottom
+				left: parent.left
+				right: parent.right
+			}
+
+			height: dp(36)
+
+			Icon {
+				anchors {
+					left: parent.left
+					leftMargin: dp(10)
+					verticalCenter: parent.verticalCenter
+				}
+
+				name: "awesome/search"
+				size: dp(16)
+				color: searchText.focus ? Theme.light.iconColor : Theme.light.hintColor
+			}
+
+			MouseArea {
+				anchors.fill: parent
+
+				onClicked: searchText.focus = true
+			}
+
+			TextField {
+				id: searchText
+
+				anchors {
+					leftMargin: dp(36)
+					rightMargin: dp(10)
+					verticalCenter: parent.verticalCenter
+					left: parent.left
+					right: parent.right
+				}
+
+				placeholderText: "Find your friend"
+
+				font {
+					family: "Roboto"
+					pixelSize: dp(14)
+					capitalization: Font.MixedCase
+				}
+
+				showBorder: false
+
+				Connections {
+					target: main
+					onAdvmodeChanged: {
+						if(main.advmode)
+							identitiesModel.setSearchText(searchText.text)
+					}
+				}
+
+				onTextChanged: {
+					contactsModel.setSearchText(text)
+
+					if(main.advmode)
+						identitiesModel.setSearchText(text)
+				}
+				onAccepted: {
+					contactsModel.setSearchText(text)
+
+					if(main.advmode)
+						identitiesModel.setSearchText(text)
 				}
 			}
 		}

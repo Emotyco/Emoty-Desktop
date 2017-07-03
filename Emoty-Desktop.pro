@@ -50,7 +50,10 @@ HEADERS += libresapilocalclient.h \
     Util/screensize.h \
     notifier.h \
     soundnotifier.h \
-    Util/base64.h
+    Util/base64.h \
+    Bridge/Models/contactsmodel.h \
+    Bridge/Models/contactssortmodel.h \
+    Bridge/Models/identitiessortmodel.h
 
 SOURCES += main.cpp \
     libresapilocalclient.cpp \
@@ -58,7 +61,10 @@ SOURCES += main.cpp \
     Bridge/LoginWindow/loginwindow_main.cpp \
     notifier.cpp \
     soundnotifier.cpp \
-    Util/base64.cpp
+    Util/base64.cpp \
+    Bridge/Models/contactsmodel.cpp \
+    Bridge/Models/contactssortmodel.cpp \
+    Bridge/Models/identitiessortmodel.cpp
 
 RESOURCES += \
     GUI/MainWindow/mainwindow.qrc \

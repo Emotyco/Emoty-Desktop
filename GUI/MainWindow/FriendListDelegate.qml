@@ -40,7 +40,11 @@ Component {
 									state_string === "away"		? "#FFEB3B" :   // yellow
 																  "#9E9E9E"		// grey
 
-		property string avatar: "avatar.png"
+		property string avatar: model.avatar == ""
+								? "avatar.png"
+								: "data:image/png;base64," + model.avatar
+
+		onAvatarChanged: canvas.loadImage(avatar)
 
 		width: parent.width
 		height: dp(50)
@@ -147,7 +151,8 @@ Component {
 		]
 
 		Component.onCompleted: {
-			getIdentityAvatar()
+			if(model.avatar == "")
+				getIdentityAvatar()
 		}
 
 		function getIdentityAvatar() {
@@ -157,10 +162,9 @@ Component {
 
 			function callbackFn(par) {
 				var json = JSON.parse(par.response)
-				if(json.data.avatar.length > 0) {
-					avatar = "data:image/png;base64," + json.data.avatar
-					canvas.loadImage(avatar)
-				}
+				if(json.data.avatar.length > 0)
+					gxsModel.loadJSONAvatar(model.gxs_id, par.response)
+
 				if(json.returncode == "fail")
 					getIdentityAvatar()
 			}

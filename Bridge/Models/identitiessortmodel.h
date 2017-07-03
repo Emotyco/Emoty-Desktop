@@ -2,7 +2,6 @@
  *  This file is part of Emoty.
  *  Emoty is distributed under the following license:
  *
- *  Copyright (c) 2015: Deimos
  *  Copyright (C) 2017, Konrad Dębiec
  *
  *  Emoty is free software; you can redistribute it and/or
@@ -20,46 +19,26 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor,
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
-/* File is originally from https://github.com/deimos1877/BorderlessWindow */
-#ifndef MainWindowPanel_H
-#define MainWindowPanel_H
+#ifndef IDENTITIESSORTMODEL_H
+#define IDENTITIESSORTMODEL_H
 
-//Emoty-GUI
-#include "Bridge/Windows/qwinview.h"
-#include "libresapilocalclient.h"
-#include "Util/base64.h"
+#include <QSortFilterProxyModel>
 
-#include "Bridge/Models/contactssortmodel.h"
-#include "Bridge/Models/identitiessortmodel.h"
-
-class MainWindowPanel : public QWinView
+class IdentitiesSortModel : public QSortFilterProxyModel
 {
 	Q_OBJECT
-
 public:
-	MainWindowPanel(HWND hWnd);
-	~MainWindowPanel();
+	IdentitiesSortModel(QObject *parent = 0);
 
 public slots:
-	void pushButtonMinimizeClicked();
-	void pushButtonMaximizeClicked();
-	void pushButtonCloseClicked();
-	void mouseLPressed();
-	void changeCursor(int cursorShape);
+	void setSearchText(QString search);
 
-	void resizeWin(int x, int y, bool changeposx, bool changeposy);
-	void hide();
-
-	void windowFlash();
-	void windowFlashMessageReceived(QString chat_type);
+protected:
+	bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+	bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
 
 private:
-	HWND windowHandle;
-	LibresapiLocalClient *rsApi;
-	Base64 *base64;
-
-	ContactsSortModel *contactsModel;
-	IdentitiesSortModel *identitiesModel;
+	QString searchText;
 };
 
-#endif // MainWindowPanel_H
+#endif // IDENTITIESSORTMODEL_H
