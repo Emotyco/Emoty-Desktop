@@ -96,7 +96,10 @@ ListItem.BaseListItem {
 				size: 24 * Units.dp
 
 				Behavior on rotation {
-					NumberAnimation { duration: MaterialAnimation.pageTransitionDuration }
+					NumberAnimation {
+						easing.type: Easing.InOutQuad
+						duration: MaterialAnimation.pageTransitionDuration
+					}
 				}
 			}
 

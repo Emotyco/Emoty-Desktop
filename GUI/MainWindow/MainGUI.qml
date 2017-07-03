@@ -430,6 +430,7 @@ Rectangle {
 				property: "anchors.rightMargin";
 				from: -dp(50);
 				to: 0;
+				easing.type: Easing.InOutQuad;
 				duration: MaterialAnimation.pageTransitionDuration
 			}
 			NumberAnimation {
@@ -437,6 +438,7 @@ Rectangle {
 				property: "opacity";
 				from: 0;
 				to: 1;
+				easing.type: Easing.InOutQuad;
 				duration: MaterialAnimation.pageTransitionDuration
 			}
 		}

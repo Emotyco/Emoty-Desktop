@@ -61,7 +61,10 @@ Dialog {
 	negativeButtonSize: dp(13)
 
 	Behavior on opacity {
-		NumberAnimation { duration: 200 }
+		NumberAnimation {
+			easing.type: Easing.InOutQuad
+			duration: 200
+		}
 	}
 
 	function showAccount(name_pgp, pgp, name_peer, peer_id) {

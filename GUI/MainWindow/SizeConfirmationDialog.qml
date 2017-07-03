@@ -61,7 +61,10 @@ PopupBase {
 		verticalCenterOffset: showing ? 0 : -(dialog.height/3)
 
 		Behavior on verticalCenterOffset {
-			NumberAnimation { duration: 200 }
+			NumberAnimation {
+				easing.type: Easing.InOutQuad
+				duration: 200
+			}
 		}
 	}
 
@@ -80,7 +83,10 @@ PopupBase {
 					 (floatingActions ? 0 : buttonContainer.height))
 
 	Behavior on opacity {
-		NumberAnimation { duration: 200 }
+		NumberAnimation {
+			easing.type: Easing.InOutQuad
+			duration: 200
+		}
 	}
 
 	Keys.onPressed: {

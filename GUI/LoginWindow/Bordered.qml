@@ -580,21 +580,25 @@ Rectangle
 							NumberAnimation {
 								target: buttonCreate
 								property: "anchors.bottomMargin"
+								easing.type: Easing.InOutQuad;
 								duration: 120
 							}
 							NumberAnimation {
 								target: buttonCreate
 								property: "height"
+								easing.type: Easing.InOutQuad;
 								duration: 120
 							}
 							NumberAnimation {
 								target: buttonCreate
 								property: "width"
+								easing.type: Easing.InOutQuad;
 								duration: 120
 							}
 							NumberAnimation {
 								target: text
 								property: "visible"
+								easing.type: Easing.InOutQuad;
 								duration: 50
 							}
 						}

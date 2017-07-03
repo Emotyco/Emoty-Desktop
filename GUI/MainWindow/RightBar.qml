@@ -366,16 +366,19 @@ View {
 							NumberAnimation {
 								target: changeStatus
 								property: "height"
+								easing.type: Easing.InOutQuad
 								duration: MaterialAnimation.pageTransitionDuration/3
 							}
 							NumberAnimation {
 								target: changeStatus
 								property: "width"
+								easing.type: Easing.InOutQuad
 								duration: MaterialAnimation.pageTransitionDuration/3
 							}
 							NumberAnimation {
 								target: changeStatus
 								property: "anchors.rightMargin"
+								easing.type: Easing.InOutQuad
 								duration: MaterialAnimation.pageTransitionDuration/3
 							}
 						}
@@ -667,6 +670,7 @@ View {
 				NumberAnimation {
 					target: pgpBox;
 					property: "height";
+					easing.type: Easing.InOutQuad
 					duration: MaterialAnimation.pageTransitionDuration/2
 				}
 			},
@@ -839,6 +843,7 @@ View {
 
 				Behavior on rotation {
 					NumberAnimation {
+						easing.type: Easing.InOutQuad
 						duration: MaterialAnimation.pageTransitionDuration/2
 					}
 				}
@@ -878,6 +883,7 @@ View {
 			property: "anchors.rightMargin"
 			from: -dp(50)
 			to: 0
+			easing.type: Easing.InOutQuad
 			duration: MaterialAnimation.pageTransitionDuration
 		}
 		NumberAnimation {
@@ -885,6 +891,7 @@ View {
 			property: "opacity"
 			from: 0
 			to: 1
+			easing.type: Easing.InOutQuad
 			duration: MaterialAnimation.pageTransitionDuration
 		}
 	}

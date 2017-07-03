@@ -642,6 +642,7 @@ DragTile {
 				property: "opacity"
 				from: 0
 				to: 1
+				easing.type: Easing.InOutQuad;
 				duration: MaterialAnimation.pageTransitionDuration/2
 			}
 		}

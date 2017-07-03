@@ -97,7 +97,10 @@ Dialog {
 	}
 
 	Behavior on opacity {
-		NumberAnimation { duration: 200 }
+		NumberAnimation {
+			easing.type: Easing.InOutQuad
+			duration: 200
+		}
 	}
 
 	Component.onCompleted: {

@@ -35,7 +35,7 @@ PopupBase {
 		verticalCenterOffset: showing ? 0 : -(dialog.height/3)
 
 		Behavior on verticalCenterOffset {
-			NumberAnimation { duration: 200 }
+			NumberAnimation { easing.type: Easing.InOutQuad; duration: 200 }
 		}
 	}
 
@@ -51,7 +51,7 @@ PopupBase {
 	globalMouseAreaEnabled: true
 
 	Behavior on opacity {
-		NumberAnimation { duration: 200 }
+		NumberAnimation { easing.type: Easing.InOutQuad; duration: 200 }
 	}
 
 	function show() {

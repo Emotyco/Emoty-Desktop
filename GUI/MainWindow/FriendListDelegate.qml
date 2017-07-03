@@ -51,40 +51,51 @@ Component {
 			Transition {
 				from: "hidden"; to: "entered"
 
-				ParallelAnimation {
+				SequentialAnimation {
 					NumberAnimation {
-						target: icons
-						property: "y"
-						from: dp(40)
-						to: 0
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-					NumberAnimation {
-						target: icons
-						property: "opacity"
-						from: 0
-						to: 1
-						duration: MaterialAnimation.pageTransitionDuration
+						duration: 100
 					}
 
-					NumberAnimation {
-						target: text
-						property: "y"
-						from: 0
-						to: -dp(40)
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-					NumberAnimation {
-						target: text
-						property: "opacity"
-						from: 1
-						to: 0
-						duration: MaterialAnimation.pageTransitionDuration
+					ParallelAnimation {
+						NumberAnimation {
+							target: icons
+							property: "y"
+							from: dp(40)
+							to: 0
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+						NumberAnimation {
+							target: icons
+							property: "opacity"
+							from: 0
+							to: 1
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+
+						NumberAnimation {
+							target: text
+							property: "y"
+							from: 0
+							to: -dp(40)
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+						NumberAnimation {
+							target: text
+							property: "opacity"
+							from: 1
+							to: 0
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
 					}
 				}
 			},
 			Transition {
 				from: "entered"; to: "hidden"
+
 
 				ParallelAnimation {
 					NumberAnimation {
@@ -92,6 +103,7 @@ Component {
 						property: "y"
 						from: -dp(40)
 						to: 0
+						easing.type: Easing.InOutQuad;
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 					NumberAnimation {
@@ -99,6 +111,7 @@ Component {
 						property: "opacity"
 						from: 0
 						to: 1
+						easing.type: Easing.InOutQuad;
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 
@@ -107,6 +120,7 @@ Component {
 						property: "y"
 						from: 0
 						to: dp(40)
+						easing.type: Easing.InOutQuad;
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 					NumberAnimation {
@@ -114,6 +128,7 @@ Component {
 						property: "opacity"
 						from: 1
 						to: 0
+						easing.type: Easing.InOutQuad;
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 				}
