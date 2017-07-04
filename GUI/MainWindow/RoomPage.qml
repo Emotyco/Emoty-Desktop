@@ -27,6 +27,7 @@ import Material 0.3
 import Material.ListItems 0.1 as ListItem
 
 import RoomParticipantsSortModel 0.2
+import RoomInvitationSortModel 0.2
 
 Item{
 	id: page
@@ -64,6 +65,7 @@ Item{
 			main.registerToken(stateToken_p, getLobbyParticipants)
 
 			roomParticipantsSortModel.sourceModel.loadJSONParticipants(par.response)
+			roomInvitationSortModel.sourceModel.loadJSONParticipants(par.response)
 		}
 
 		rsApi.request("/chat/lobby_participants/"+chatId, "", callbackFn)
@@ -88,22 +90,13 @@ Item{
 		rsApi.request("/chat/messages/"+chatId, "", callbackFn)
 	}
 
-	function getGxsId() {
-		function callbackFn(par) {
-			gxsIdModel.json = par.response
-			stateToken_gxs = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_gxs, getGxsId)
-		}
-
-		rsApi.request("/identity/notown_ids/", "", callbackFn)
-	}
-
 	function getContacts() {
 		function callbackFn(par) {
 			stateToken_gxsContacts = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_gxsContacts, getContacts)
 
 			roomParticipantsSortModel.sourceModel.loadJSONIdentities(par.response)
+			roomInvitationSortModel.sourceModel.loadJSONInvitations(par.response)
 		}
 
 		rsApi.request("/identity/*/", "", callbackFn)
@@ -113,7 +106,6 @@ Item{
 		getLobbyMessages();
 		getLobbyParticipants()
 		getContacts()
-		getGxsId()
 	}
 
 	Connections {
@@ -138,6 +130,10 @@ Item{
 		id: roomParticipantsSortModel
 	}
 
+	RoomInvitationSortModel {
+		id: roomInvitationSortModel
+	}
+
 	WorkerScript {
 		id: messagesWorker
 		source: "qrc:/MessagesUpdater.js"
@@ -146,11 +142,6 @@ Item{
 
 	ListModel {
 		id: messagesModel
-	}
-
-	JSONListModel {
-		id: gxsIdModel
-		query: "$.data[*]"
 	}
 
 	View {
@@ -685,10 +676,8 @@ Item{
 				footer: RoomFriend {
 					width: parent.width
 
-					interactive: false
-
-					text: "Add to room"
-					textColor: Theme.light.hintColor//Theme.light.textColor
+					text: "Invite to room"
+					textColor: Theme.light.hintColor
 					itemLabel.style: "body1"
 
 					iconName: "awesome/plus"
@@ -788,24 +777,57 @@ Item{
 
 					anchors {
 						fill: parent
-						topMargin: dp(45)
+						topMargin: dp(25)
 					}
 
 					clip: true
 					snapMode: ListView.NoSnap
 					flickableDirection: Flickable.AutoFlickDirection
 
-					model: gxsIdModel.model
+					model: roomInvitationSortModel
 
 					delegate: RoomFriend {
+						property string avatar: model.avatar == ""
+												? "avatar.png"
+												: "data:image/png;base64," + model.avatar
+
 						width: parent.width
 
 						text: model.name
 						textColor: selected ? Theme.primaryColor : Theme.light.textColor
 						itemLabel.style: "body1"
 
-						imageSource: "avatar.png"
+						imageSource: avatar
 						isIcon: false
+
+						Connections {
+							target: addFriendRoom
+							onOpened: getIdentityAvatar()
+						}
+
+						Component.onCompleted: {
+							if(model.avatar == "")
+								getIdentityAvatar()
+						}
+
+						function getIdentityAvatar() {
+							console.log(model.gxs_id)
+							var jsonData = {
+								gxs_id: model.gxs_id
+							}
+
+							function callbackFn(par) {
+								console.log(par.response)
+								var json = JSON.parse(par.response)
+								if(json.data.avatar.length > 0)
+									roomInvitationSortModel.sourceModel.loadJSONAvatar(model.gxs_id, par.response)
+
+								if(json.returncode == "fail")
+									getIdentityAvatar()
+							}
+
+							rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+						}
 
 						onClicked: {
 							selected = !selected

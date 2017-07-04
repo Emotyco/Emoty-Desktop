@@ -55,7 +55,9 @@ HEADERS += libresapilocalclient.h \
     Bridge/Models/contactssortmodel.h \
     Bridge/Models/identitiessortmodel.h \
     Bridge/Models/roomparticipantsmodel.h \
-    Bridge/Models/roomparticipantssortmodel.h
+    Bridge/Models/roomparticipantssortmodel.h \
+    Bridge/Models/roominvitationmodel.h \
+    Bridge/Models/roominvitationsortmodel.h
 
 SOURCES += main.cpp \
     libresapilocalclient.cpp \
@@ -68,7 +70,9 @@ SOURCES += main.cpp \
     Bridge/Models/contactssortmodel.cpp \
     Bridge/Models/identitiessortmodel.cpp \
     Bridge/Models/roomparticipantsmodel.cpp \
-    Bridge/Models/roomparticipantssortmodel.cpp
+    Bridge/Models/roomparticipantssortmodel.cpp \
+    Bridge/Models/roominvitationmodel.cpp \
+    Bridge/Models/roominvitationsortmodel.cpp
 
 RESOURCES += \
     GUI/MainWindow/mainwindow.qrc \

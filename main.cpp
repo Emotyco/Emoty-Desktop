@@ -54,8 +54,10 @@
 #endif
 
 #include "Bridge/Models/roomparticipantssortmodel.h"
+#include "Bridge/Models/roominvitationsortmodel.h"
 
 Q_COREAPP_STARTUP_FUNCTION(registerRoomParticipantsSortModelTypes)
+Q_COREAPP_STARTUP_FUNCTION(registerRoomInvitationSortModelTypes)
 
 int main(int argc, char *argv[])
 {

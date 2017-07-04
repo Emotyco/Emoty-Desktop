@@ -74,9 +74,9 @@ void RoomParticipantsModel::loadJSONParticipants(QString json)
 				if(!found)
 				{
 					QModelIndex qModelIndex;
-					beginInsertRows(qModelIndex, i, i);
+					beginRemoveRows(qModelIndex, i, i);
 					identitiesData.erase(vit);
-					endInsertRows();
+					endRemoveRows();
 				}
 				i++;
 			}
