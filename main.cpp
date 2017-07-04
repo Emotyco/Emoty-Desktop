@@ -53,6 +53,10 @@
     #include "Bridge/MainWindow/mainwindow.h"
 #endif
 
+#include "Bridge/Models/roomparticipantssortmodel.h"
+
+Q_COREAPP_STARTUP_FUNCTION(registerRoomParticipantsSortModelTypes)
+
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);

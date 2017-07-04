@@ -26,6 +26,8 @@ import QtGraphicalEffects 1.0
 import Material 0.3
 import Material.ListItems 0.1 as ListItem
 
+import RoomParticipantsSortModel 0.2
+
 Item{
 	id: page
 	property string title: "roomPage"
@@ -61,12 +63,7 @@ Item{
 			stateToken_p = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_p, getLobbyParticipants)
 
-			lobbyParticipantsWorker.sendMessage({
-				'action' : 'refreshParticipants',
-				'response' : par.response,
-				'query' : '$.data[*]',
-				'model' : lobbyParticipantsModel
-			})
+			roomParticipantsSortModel.sourceModel.loadJSONParticipants(par.response)
 		}
 
 		rsApi.request("/chat/lobby_participants/"+chatId, "", callbackFn)
@@ -106,11 +103,7 @@ Item{
 			stateToken_gxsContacts = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_gxsContacts, getContacts)
 
-			lobbyParticipantsWorker.sendMessage({
-				'action' : 'refreshContacts',
-				'response' : par.response,
-				'model' : lobbyParticipantsModel
-			})
+			roomParticipantsSortModel.sourceModel.loadJSONIdentities(par.response)
 		}
 
 		rsApi.request("/identity/*/", "", callbackFn)
@@ -141,19 +134,14 @@ Item{
 		}
 	}
 
-	WorkerScript {
-		id: lobbyParticipantsWorker
-		source: "qrc:/RoomParticipantsUpdater.js"
+	RoomParticipantsSortModel {
+		id: roomParticipantsSortModel
 	}
 
 	WorkerScript {
 		id: messagesWorker
 		source: "qrc:/MessagesUpdater.js"
 		onMessage: contentm.positionViewAtEnd()
-	}
-
-	ListModel {
-		id: lobbyParticipantsModel
 	}
 
 	ListModel {
@@ -520,8 +508,6 @@ Item{
 							rightMargin: dp(18)
 						}
 
-						readOnly: true
-
 						placeholderText: "Search friends"
 						placeholderPixelSize: dp(15)
 
@@ -533,12 +519,25 @@ Item{
 						focus: true
 						showBorder: false
 
-						/*onActiveFocusChanged: {
+						onActiveFocusChanged: {
 							if(activeFocus)
 								friendFilter.elevation = 2
 							else
 								friendFilter.elevation = 1
-						}*/
+						}
+
+						onTextChanged: {
+							roomParticipantsSortModel.setSearchText(text)
+
+							if(main.advmode)
+								roomParticipantsSortModel.setSearchText(text)
+						}
+						onAccepted: {
+							roomParticipantsSortModel.setSearchText(text)
+
+							if(main.advmode)
+								roomParticipantsSortModel.setSearchText(text)
+						}
 					}
 				}
 			}
@@ -557,15 +556,17 @@ Item{
 				snapMode: ListView.NoSnap
 				flickableDirection: Flickable.AutoFlickDirection
 
-				model: lobbyParticipantsModel
+				model: roomParticipantsSortModel
 
 				delegate: RoomFriend {
 					id: roomFriend
-					property string avatar: "avatar.png"
+					property string avatar: model.avatar == ""
+											? "avatar.png"
+											: "data:image/png;base64," + model.avatar
 
 					width: parent.width
 
-					text: model.identity.name
+					text: model.name
 					textColor: Theme.light.textColor
 					itemLabel.style: "body1"
 
@@ -573,18 +574,19 @@ Item{
 					isIcon: false
 
 					Component.onCompleted: {
-						getIdentityAvatar()
+						if(model.avatar == "")
+							getIdentityAvatar()
 					}
 
 					function getIdentityAvatar() {
 						var jsonData = {
-							gxs_id: model.identity.gxs_id
+							gxs_id: model.gxs_id
 						}
 
 						function callbackFn(par) {
 							var json = JSON.parse(par.response)
 							if(json.data.avatar.length > 0)
-								avatar = "data:image/png;base64," + json.data.avatar
+								roomParticipantsSortModel.sourceModel.loadJSONAvatar(model.gxs_id, par.response)
 
 							if(json.returncode == "fail")
 								getIdentityAvatar()
@@ -606,7 +608,7 @@ Item{
 						onDoubleClicked: {
 							if(mouse.button == Qt.LeftButton)
 								if(!model.own)
-									main.createChatGxsCard(model.identity.name, model.identity.gxs_id, "ChatGxsCard.qml")
+									main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
 						}
 					}
 
@@ -642,7 +644,7 @@ Item{
 									overflowMenu2.close()
 
 									var jsonData = {
-										gxs_id: model.identity.gxs_id
+										gxs_id: model.gxs_id
 									}
 
 									rsApi.request("/identity/add_contact", JSON.stringify(jsonData), function(){})
@@ -659,7 +661,7 @@ Item{
 
 								onClicked: {
 									overflowMenu2.close()
-									main.createChatGxsCard(model.identity.name, model.identity.gxs_id, "ChatGxsCard.qml")
+									main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
 								}
 							}
 
@@ -673,7 +675,7 @@ Item{
 
 								onClicked: {
 									overflowMenu2.close()
-									identityDetailsDialog.showIdentity(model.identity.name, model.identity.gxs_id)
+									identityDetailsDialog.showIdentity(model.name, model.gxs_id)
 								}
 							}
 						}
