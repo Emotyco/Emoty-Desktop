@@ -701,73 +701,77 @@ Item{
 			positiveButtonText: "Cancel"
 			negativeButtonText: "Add"
 
-			contentMargins: dp(8)
-			width: dp(250)
-
 			positiveButtonSize: dp(13)
 			negativeButtonSize: dp(13)
 
+			Label {
+				anchors.left: parent.left
+
+				height: dp(50)
+				verticalAlignment: Text.AlignVCenter
+
+				wrapMode: Text.Wrap
+				text: "Invite Friend"
+				style: "title"
+				color: Theme.accentColor
+			}
+
 			Item {
-				anchors {
-					left: parent.left
-					right: parent.right
-				}
+				width: dp(300)
+				height: dp(320)
 
-				height: dp(350)
+				View {
+					id: addFriendFilter
 
-				Item {
 					anchors {
 						top: parent.top
-						left: parent.left
-						right: parent.right
-						leftMargin: dp(8)
-						rightMargin: dp(8)
+						horizontalCenter: parent.horizontalCenter
 					}
 
-					height: dp(45)
-					width: parent.width
+					height: dp(25)
+					width: parent.width - dp(16)
+
 					z: 1
+					radius: 10
+					elevation: 1
+					backgroundColor: "white"
 
-					View {
-						id: addFriendFilter
-
+					TextField {
 						anchors {
-							horizontalCenter: parent.horizontalCenter
+							fill: parent
 							verticalCenter: parent.verticalCenter
+							leftMargin: dp(18)
+							rightMargin: dp(18)
 						}
 
-						height: dp(25)
-						width: parent.width
+						placeholderText: "Search friend"
+						placeholderPixelSize: dp(15)
 
-						radius: 10
-						elevation: 1
-						backgroundColor: "white"
+						font {
+							weight: Font.Light
+							pixelSize: dp(15)
+						}
 
-						TextField {
-							anchors {
-								fill: parent
-								verticalCenter: parent.verticalCenter
-								leftMargin: dp(18)
-								rightMargin: dp(18)
-							}
+						focus: true
+						showBorder: false
 
-							placeholderText: "Search friends"
-							placeholderPixelSize: dp(15)
+						onActiveFocusChanged: {
+							if(activeFocus)
+								addFriendFilter.elevation = 2
+							else
+								addFriendFilter.elevation = 1
+						}
+						onTextChanged: {
+							roomInvitationSortModel.setSearchText(text)
 
-							font {
-								weight: Font.Light
-								pixelSize: dp(15)
-							}
+							if(main.advmode)
+								roomInvitationSortModel.setSearchText(text)
+						}
+						onAccepted: {
+							roomInvitationSortModel.setSearchText(text)
 
-							focus: true
-							showBorder: false
-
-							onActiveFocusChanged: {
-								if(activeFocus)
-									addFriendFilter.elevation = 2
-								else
-									addFriendFilter.elevation = 1
-							}
+							if(main.advmode)
+								roomInvitationSortModel.setSearchText(text)
 						}
 					}
 				}
@@ -832,6 +836,11 @@ Item{
 						onClicked: {
 							selected = !selected
 						}
+					}
+
+					header: Item {
+						height: dp(15)
+						width: parent.width
 					}
 				}
 
