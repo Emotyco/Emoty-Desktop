@@ -34,7 +34,7 @@ Item{
 	property string title: "roomPage"
 
 	property string roomName
-	property string chatId
+	property var chatId
 
 	// For handling tokens
 	property int stateToken_p: 0
@@ -704,6 +704,25 @@ Item{
 			positiveButtonSize: dp(13)
 			negativeButtonSize: dp(13)
 
+			onRejected: {
+				pgpsList = pgpsList.sort().filter((function(item, pos, ary) {
+					return !pos || item != ary[pos - 1];
+				}))
+				pgpsList.forEach(inviteFriends)
+			}
+			onClosed: pgpsList = []
+
+			property var pgpsList: []
+
+			function inviteFriends(pgp) {
+				var jsonData = {
+					chat_id: chatId,
+					pgp_id: pgp
+				}
+
+				rsApi.request("/chat/invite_to_lobby/", JSON.stringify(jsonData), function(){})
+			}
+
 			Label {
 				anchors.left: parent.left
 
@@ -807,6 +826,7 @@ Item{
 						Connections {
 							target: addFriendRoom
 							onOpened: getIdentityAvatar()
+							onClosed: selected = false
 						}
 
 						Component.onCompleted: {
@@ -815,13 +835,11 @@ Item{
 						}
 
 						function getIdentityAvatar() {
-							console.log(model.gxs_id)
 							var jsonData = {
 								gxs_id: model.gxs_id
 							}
 
 							function callbackFn(par) {
-								console.log(par.response)
 								var json = JSON.parse(par.response)
 								if(json.data.avatar.length > 0)
 									roomInvitationSortModel.sourceModel.loadJSONAvatar(model.gxs_id, par.response)
@@ -834,6 +852,11 @@ Item{
 						}
 
 						onClicked: {
+							if(selected)
+								addFriendRoom.pgpsList.splice(addFriendRoom.pgpsList.indexOf(model.pgp_id), 1)
+							else
+								addFriendRoom.pgpsList.push(model.pgp_id)
+
 							selected = !selected
 						}
 					}
