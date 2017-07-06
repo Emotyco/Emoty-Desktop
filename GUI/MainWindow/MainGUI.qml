@@ -116,6 +116,7 @@ Rectangle {
 		getRunState()
 		getAdvancedMode()
 		getFlickableGridMode()
+		getRoomInvitations()
 	}
 
 	onDefaultGxsIdChanged: main.getDefaultAvatar()
@@ -123,6 +124,7 @@ Rectangle {
 	// For handling tokens
 	property int stateToken_ownGxs: 0
 	property int stateToken_unreadMsgs: 0
+	property int stateToken_invitations: 0
 
 	function getOwnIdentities() {
 		var jsonData = {
@@ -225,6 +227,42 @@ Rectangle {
 		}
 
 		rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+	}
+
+	function getRoomInvitations() {
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
+			stateToken_invitations = jsonResp.statetoken
+			main.registerToken(stateToken_invitations, getRoomInvitations)
+
+			if(jsonResp.data.length > 0)
+				for(var i = 0; i < jsonResp.data.length; i++)
+				{
+					var lobbyId = jsonResp.data[i].lobby_id
+					confirmationDialog.show("You has been invited to room '"+ jsonResp.data[i].lobby_name + "'. Do you want to join?",
+						function() {
+							var jsonData = {
+								lobby_id: lobbyId,
+								join: true,
+								gxs_id: defaultGxsId
+							}
+
+							rsApi.request("/chat/answer_to_invitation", JSON.stringify(jsonData), function(){})
+						},function() {
+							var jsonData = {
+								lobby_id: lobbyId,
+								join: false,
+								gxs_id: defaultGxsId
+							}
+
+							rsApi.request("/chat/answer_to_invitation", JSON.stringify(jsonData), function(){})
+						},
+						"Join", "Ignore", false
+					)
+				}
+		}
+
+		rsApi.request("/chat/get_invitations_to_lobby", "", callbackFn)
 	}
 
 	Connections {
