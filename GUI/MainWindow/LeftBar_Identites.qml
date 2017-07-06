@@ -242,7 +242,7 @@ Rectangle {
 						onClicked: {
 							overflowMenu.close()
 
-							removeDialog.show("Do you want to delete your identity?", function() {
+							confirmationDialog.show("Do you want to delete your identity?", function() {
 								var jsonData = {
 									gxs_id: model.own_gxs_id
 								}
@@ -347,7 +347,7 @@ Rectangle {
 
 				onClicked: {
 					overlayView.close()
-					removeDialog.show("Do you want to remove your avatar?", function() {
+					confirmationDialog.show("Do you want to remove your avatar?", function() {
 						avatar = ""
 						setIdentityAvatar()
 					})

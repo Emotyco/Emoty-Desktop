@@ -202,7 +202,7 @@ Component {
 							onClicked: {
 								overflowMenu.close()
 
-								removeDialog.show("Do you want to remove your friend?", function() {
+								confirmationDialog.show("Do you want to remove your friend?", function() {
 									rsApi.request("/peers/"+pgp+"/delete", "", function(){})
 								})
 							}

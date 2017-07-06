@@ -713,8 +713,8 @@ Rectangle {
 		}
 	}
 
-	RemoveDialog {
-		id: removeDialog
+	ConfirmationDialog {
+		id: confirmationDialog
 	}
 
 	SizeConfirmationDialog {

@@ -268,7 +268,7 @@ Component {
 						onClicked: {
 							overflowMenu.close()
 
-							removeDialog.show("Do you want to remove contact?", function() {
+							confirmationDialog.show("Do you want to remove contact?", function() {
 								var jsonData = {
 									gxs_id: model.gxs_id
 								}

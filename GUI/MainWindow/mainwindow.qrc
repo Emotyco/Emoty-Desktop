@@ -33,7 +33,7 @@
         <file>PGPFriendDetailsDialog.qml</file>
         <file>NodeDetailsDialog.qml</file>
         <file>IdentityDetailsDialog.qml</file>
-        <file>RemoveDialog.qml</file>
+        <file>ConfirmationDialog.qml</file>
         <file>SizeConfirmationDialog.qml</file>
         <file>MessagesUpdater.js</file>
         <file>PgpListUpdater.js</file>
