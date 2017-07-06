@@ -56,7 +56,7 @@ Rectangle {
 
 	function setAutosubsribeLobby(chatId, autosubsribe) {
 		var jsonData = {
-			chatid: chatId,
+			chat_id: chatId,
 			autosubsribe: autosubsribe
 		}
 
@@ -116,6 +116,7 @@ Rectangle {
 			Repeater {
 				model: privateLobbiesModel.model
 				delegate: ListItem.Standard {
+					id: subscribedPrivateDelegate
 					width: parent.width
 
 					text: model.name
@@ -164,6 +165,46 @@ Rectangle {
 								   ? "\n" + "Chat Id: " + model.chat_id
 								   : "")
 						mouseArea: ink
+					}
+
+					MouseArea {
+						anchors.fill: parent
+
+						acceptedButtons: Qt.RightButton
+						onClicked: overflowMenuPrivate.open(subscribedPrivateDelegate, mouse.x, mouse.y);
+					}
+
+					Dropdown {
+						id: overflowMenuPrivate
+						objectName: "overflowMenu"
+						overlayLayer: "dialogOverlayLayer"
+
+						anchor: Item.TopLeft
+
+						width: dp(200)
+						height: dp(1*30)
+
+						enabled: true
+
+						durationSlow: 300
+						durationFast: 150
+
+						Column {
+							anchors.fill: parent
+
+							ListItem.Standard {
+								height: dp(30)
+
+								text: "Leave"
+								itemLabel.style: "menu"
+
+								onClicked: {
+									overflowMenuPrivate.close()
+									unsubsribeLobby(model.id)
+									setAutosubsribeLobby(model.id, false)
+								}
+							}
+						}
 					}
 				}
 			}
