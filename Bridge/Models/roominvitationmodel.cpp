@@ -66,7 +66,7 @@ void RoomInvitationModel::loadJSONInvitations(QString json)
 		else
 		{
 			int n = 0;
-			for(std::list<Invitation>::iterator vit = invitationData.begin(); vit != invitationData.end(); ++vit)
+			for(std::list<Invitation>::iterator vit = invitationData.begin(); vit != invitationData.end();)
 			{
 				bool found = false;
 				for(QJsonArray::iterator it = jsDataArray.begin(); it != jsDataArray.end(); it++)
@@ -83,10 +83,14 @@ void RoomInvitationModel::loadJSONInvitations(QString json)
 				{
 					QModelIndex qModelIndex;
 					beginRemoveRows(qModelIndex, n, n);
-					invitationData.erase(vit);
+					vit = invitationData.erase(vit);
 					endRemoveRows();
 				}
-				n++;
+				else
+				{
+					++vit;
+					n++;
+				}
 			}
 
 			for(QJsonArray::iterator it = jsDataArray.begin(); it != jsDataArray.end(); it++)
