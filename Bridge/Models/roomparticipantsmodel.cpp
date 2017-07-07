@@ -61,7 +61,7 @@ void RoomParticipantsModel::loadJSONParticipants(QString json)
 		else
 		{
 			int i = 0;
-			for(std::list<Identity>::iterator vit = identitiesData.begin(); vit != identitiesData.end(); ++vit)
+			for(std::list<Identity>::iterator vit = identitiesData.begin(); vit != identitiesData.end();)
 			{
 				bool found = false;
 				for(QJsonArray::iterator it = jsDataArray.begin(); it != jsDataArray.end(); it++)
@@ -75,10 +75,14 @@ void RoomParticipantsModel::loadJSONParticipants(QString json)
 				{
 					QModelIndex qModelIndex;
 					beginRemoveRows(qModelIndex, i, i);
-					identitiesData.erase(vit);
+					vit = identitiesData.erase(vit);
 					endRemoveRows();
 				}
-				i++;
+				else
+				{
+					++vit;
+					i++;
+				}
 			}
 
 			for(QJsonArray::iterator it = jsDataArray.begin(); it != jsDataArray.end(); it++)
