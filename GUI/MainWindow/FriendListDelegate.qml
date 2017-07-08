@@ -276,13 +276,26 @@ Component {
 						onClicked: {
 							overflowMenu.close()
 
-							confirmationDialog.show("Do you want to remove contact?", function() {
-								var jsonData = {
-									gxs_id: model.gxs_id
-								}
+							if(!main.advmode  && model.pgp_linked) {
+								confirmationDialog.show("Do you want to remove contact?
+(It will remove all connections.)", function() {
+	                                var jsonData = {
+		                                gxs_id: model.gxs_id
+	                                }
 
-								rsApi.request("/identity/remove_contact", JSON.stringify(jsonData), function(){})
-							})
+	                                rsApi.request("/peers/"+model.pgp_id+"/delete", "", function(){})
+	                                rsApi.request("/identity/remove_contact", JSON.stringify(jsonData), function(){})
+                                })
+							}
+							else {
+								confirmationDialog.show("Do you want to remove contact?", function() {
+									var jsonData = {
+										gxs_id: model.gxs_id
+									}
+
+									rsApi.request("/identity/remove_contact", JSON.stringify(jsonData), function(){})
+								})
+							}
 						}
 					}
 				}
