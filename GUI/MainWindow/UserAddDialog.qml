@@ -34,16 +34,19 @@ Dialog {
 	negativeButtonSize: dp(13)
 
 	onRejected: {
-		var jsonData = {
-			cert_string: friendCert.text,
-			flags: {
-				allow_direct_download: true,
-				allow_push: false,
-				require_whitelist: false
+		if(friendCert.text != "")
+		{
+			var jsonData = {
+				cert_string: friendCert.text,
+				flags: {
+					allow_direct_download: true,
+					allow_push: false,
+					require_whitelist: false
+				}
 			}
-		}
 
-		rsApi.request("PUT /peers", JSON.stringify(jsonData), function(){})
+			rsApi.request("PUT /peers", JSON.stringify(jsonData), function(){})
+		}
 	}
 
 	Behavior on opacity {
