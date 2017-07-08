@@ -34,6 +34,7 @@ Component {
 		property bool entered: false
 		property string msg: ""
 
+		property bool isEmpty: model.gxs_id == ""
 		property string state_string: model.state_string
 		property color statuscolor: state_string === "online"   ? "#4caf50" :   // green
 									state_string === "busy"		? "#FF5722" :   // red
@@ -176,11 +177,14 @@ Component {
 			anchors.fill: parent
 
 			acceptedButtons: Qt.RightButton
-			hoverEnabled: true
+			hoverEnabled: !isEmpty
 
 			onEntered: friendroot.entered = true;
 			onExited: friendroot.entered = false;
-			onClicked: overflowMenu.open(friendroot, mouse.x, mouse.y);
+			onClicked: {
+				if(!isEmpty)
+					overflowMenu.open(friendroot, mouse.x, mouse.y)
+			}
 
 			states: [
 				State {
@@ -206,7 +210,7 @@ Component {
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
 				width: dp(200)
-				height: main.advmode ? dp(3*30) : dp(2*30)
+				height: isEmpty ? 0 : main.advmode ? dp(3*30) : dp(2*30)
 				enabled: true
 				anchor: Item.TopLeft
 				durationSlow: 300
@@ -220,8 +224,8 @@ Component {
 						text: "Add to contacts"
 						itemLabel.style: "menu"
 
-						visible: !model.is_contact
-						enabled: !model.is_contact
+						visible: !model.is_contact && !isEmpty
+						enabled: !model.is_contact && !isEmpty
 
 						onClicked: {
 							overflowMenu.close()
@@ -238,6 +242,10 @@ Component {
 						height: dp(30)
 						text: "Chat"
 						itemLabel.style: "menu"
+
+						visible: !isEmpty
+						enabled: !isEmpty
+
 						onClicked: {
 							overflowMenu.close()
 							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
@@ -246,8 +254,8 @@ Component {
 
 					ListItem.Standard {
 						height: dp(30)
-						enabled: main.advmode
-						visible: main.advmode
+						enabled: main.advmode && !isEmpty
+						visible: main.advmode && !isEmpty
 
 						text: "Details"
 						itemLabel.style: "menu"
@@ -262,8 +270,8 @@ Component {
 						text: "Remove"
 						itemLabel.style: "menu"
 
-						visible: model.is_contact
-						enabled: model.is_contact
+						visible: model.is_contact && !isEmpty
+						enabled: model.is_contact && !isEmpty
 
 						onClicked: {
 							overflowMenu.close()

@@ -49,6 +49,23 @@
 	return _instance;
 }
 
+ContactsModel::ContactsModel(QObject *parent)
+ : QAbstractListModel(parent)
+{
+	QString sockPath = QDir::homePath() + "/.retroshare";
+	sockPath.append("/libresapi.sock");
+
+	rsApi = new LibresapiLocalClient();
+	rsApi->openConnection(sockPath);
+}
+
+ContactsModel::~ContactsModel()
+{
+	if(rsApi != NULL)
+		delete rsApi;
+	rsApi = NULL;
+}
+
 void ContactsModel::loadJSONContacts(QString json)
 {
 	QJsonObject qJsonObject = QJsonDocument::fromJson(json.toUtf8()).object();
@@ -96,9 +113,19 @@ void ContactsModel::loadJSONContacts(QString json)
 				{
 					if((*vit).gxs_id == jsonContact.value("gxs_id").toString())
 					{
-						(*vit).is_contact = jsonContact.value("is_contact").toBool();
+						if((*vit).is_contact != jsonContact.value("is_contact").toBool())
+						{
+							(*vit).is_contact = jsonContact.value("is_contact").toBool();
+							emit dataChanged(index(i),index(i));
+						}
+
+						if((*vit).pgp_linked && (*vit).pgp_id != jsonContact.value("pgp_id").toString())
+						{
+							(*vit).pgp_id = jsonContact.value("pgp_id").toString();
+							emit dataChanged(index(i),index(i));
+						}
+
 						found = true;
-						emit dataChanged(index(i),index(i));
 					}
 				}
 
@@ -128,21 +155,87 @@ void ContactsModel::loadJSONStatus(QString json)
 {
 	QJsonObject qJsonObject = QJsonDocument::fromJson(json.toUtf8()).object();
 
-	if(statusStateToken == qJsonObject.value("statetoken").toInt())
-		return;
-
-	statusStateToken = qJsonObject.value("statetoken").toInt();
-
 	QJsonValue jsData = qJsonObject.value("data");
 	if(!jsData.isNull() && jsData.isArray())
 	{
 		QJsonArray jsDataArray = jsData.toArray();
+
+		for(QJsonArray::iterator it = jsDataArray.begin(); it != jsDataArray.end(); it++)
+		{
+			QJsonObject jsonPGP = (*it).toObject();
+
+			bool emplaceEmpty = true;
+			bool addOrRemove = false;
+
+			for(std::list<Contact>::iterator vit = contactsData.begin(); vit != contactsData.end(); ++vit)
+			{
+				if ((*vit).is_contact && (*vit).pgp_linked && (*vit).pgp_id == jsonPGP.value("pgp_id").toString())
+				{
+					emplaceEmpty = false;
+
+					if((*vit).gxs_id != "")
+					{
+						addOrRemove = true;
+
+					}
+				}
+			}
+
+			int n = 0;
+			for(std::list<Contact>::iterator vit = contactsData.begin(); vit != contactsData.end();)
+			{
+				if(!addOrRemove)
+				{
+					if (!(*vit).is_contact && (*vit).pgp_linked && (*vit).pgp_id == jsonPGP.value("pgp_id").toString())
+					{
+						QString jsonData = "{\"gxs_id\":\"" + (*vit).gxs_id + "\"}";
+						rsApi->request("/identity/add_contact", jsonData);
+						emplaceEmpty = false;
+					}
+					vit++;
+					n++;
+				}
+				else if(addOrRemove)
+				{
+					if ((*vit).gxs_id == "" && (*vit).is_contact && (*vit).pgp_linked && (*vit).pgp_id == jsonPGP.value("pgp_id").toString())
+					{
+						QModelIndex qModelIndex;
+						beginRemoveRows(qModelIndex, n, n);
+						vit = contactsData.erase(vit);
+						endRemoveRows();
+					}
+					else
+					{
+						vit++;
+						n++;
+					}
+				}
+			}
+
+			if(emplaceEmpty)
+			{
+				QModelIndex qModelIndex;
+				beginInsertRows(qModelIndex, contactsData.size(), contactsData.size());
+				contactsData.emplace_back(Contact(
+				                              jsonPGP.value("name").toString(),
+				                              "",
+				                              jsonPGP.value("pgp_id").toString(),
+				                              "undefined",
+				                              "0",
+				                              "",
+				                              true,
+				                              true
+				                              ));
+				endInsertRows();
+			}
+		}
 
 		int i = 0;
 		for(std::list<Contact>::iterator vit = contactsData.begin(); vit != contactsData.end(); ++vit)
 		{
 			if ((*vit).pgp_linked)
 			{
+				bool found = false;
 				for(QJsonArray::iterator it = jsDataArray.begin(); it != jsDataArray.end(); it++)
 				{
 					QJsonObject jsonStatus = (*it).toObject();
@@ -151,7 +244,13 @@ void ContactsModel::loadJSONStatus(QString json)
 					{
 						(*vit).state_string = jsonStatus.value("state_string").toString();
 						emit dataChanged(index(i),index(i));
+						found = true;
 					}
+				}
+				if(!found)
+				{
+					(*vit).state_string = "undefined";
+					emit dataChanged(index(i),index(i));
 				}
 			}
 			i++;

@@ -69,6 +69,7 @@ View {
 			main.registerToken(stateToken_gxsContacts, refreshGxsIdModel)
 
 			gxsModel.loadJSONContacts(par.response)
+			refreshPgpIdModel()
 		}
 
 		rsApi.request("/identity/notown_ids/", "", callbackFn)

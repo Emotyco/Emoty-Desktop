@@ -24,6 +24,10 @@
 
 //Qt
 #include <QAbstractListModel>
+#include <QDir>
+
+//Emoty-GUI
+#include "libresapilocalclient.h"
 
 class ContactsModel : public QAbstractListModel
 {
@@ -42,6 +46,7 @@ public:
 	static ContactsModel *Create ();
 	static void Destroy();
 	static ContactsModel *getInstance ();
+	    ~ContactsModel();
 
 	virtual int rowCount(const QModelIndex & parent = QModelIndex()) const;
 	virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
@@ -76,11 +81,10 @@ private:
 		bool pgp_linked;
 	};
 
-	ContactsModel(QObject *parent = 0)
-	    : QAbstractListModel(parent)
-	{}
+	ContactsModel(QObject *parent = 0);
 
 	static ContactsModel *_instance;
+	LibresapiLocalClient *rsApi;
 
 	int contactsStateToken;
 	int statusStateToken;
