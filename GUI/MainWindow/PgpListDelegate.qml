@@ -110,7 +110,7 @@ Component {
 			property int unread_msgs: {
 				var msgs = 0
 
-				for (var i = 0; i<locations.length; i++) {
+				for (var i = 0; i<locations.count; i++) {
 					if(locations.get(i).unread_msgs != 0)
 						msgs += locations.get(i).unread_msgs
 				}
