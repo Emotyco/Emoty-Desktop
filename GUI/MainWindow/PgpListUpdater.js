@@ -95,8 +95,8 @@ function parsePgpList(message) {
 					}
 
 					if(pgp.locations.count != el.locations.length) {
-						for ( var nn=0; nn<dataLen; ++nn) {
-							var loc = jsonData[nn]
+						for ( var nn=0; nn<el.locations.length; ++nn) {
+							var loc = el.locations[nn]
 							var appendLoc = true
 
 							for(var n = 0; n < pgp.locations.count; n++) {
@@ -107,7 +107,7 @@ function parsePgpList(message) {
 							}
 
 							if(appendLoc)
-								message.model.append({
+								pgp.locations.append({
 									"avatar_address": loc.avatar_address,
 									"chat_id": loc.chat_id,
 									"custom_state_string": loc.custom_state_string,
@@ -149,7 +149,8 @@ function parsePgpList(message) {
 						"is_own": el.is_own,
 						"name": el.name,
 						"pgp_id": el.pgp_id,
-						"state_string": el.state_string
+						"state_string": el.state_string,
+						"locations": []
 					})
 			}
 		}
