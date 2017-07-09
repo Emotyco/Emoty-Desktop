@@ -25,6 +25,7 @@
 //Qt
 #include <QAbstractListModel>
 #include <QDir>
+#include <QVariantList>
 
 //Emoty-GUI
 #include "libresapilocalclient.h"
@@ -57,6 +58,9 @@ public slots:
 	void loadJSONStatus(QString json);
 	void loadJSONUnread(QString json);
 	void loadJSONAvatar(QString gxs_id, QString json);
+
+signals:
+	void chooseIdentities(QVariantList identities);
 
 protected:
 	virtual QHash<int, QByteArray> roleNames() const;

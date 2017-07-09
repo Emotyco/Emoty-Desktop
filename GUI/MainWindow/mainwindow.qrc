@@ -37,5 +37,6 @@
         <file>SizeConfirmationDialog.qml</file>
         <file>MessagesUpdater.js</file>
         <file>PgpListUpdater.js</file>
+        <file>IdentitiesSelectionDialog.qml</file>
     </qresource>
 </RCC>

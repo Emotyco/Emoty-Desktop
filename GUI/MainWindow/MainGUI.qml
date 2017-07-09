@@ -271,6 +271,11 @@ Rectangle {
 		onWidthChanged: gridLayout.reorder()
 	}
 
+	Connections {
+		target: gxsModel
+		onChooseIdentities: identitiesSelectionDialog.showDialog(identities)
+	}
+
 	JSONListModel {
 		id: ownGxsIdModel
 
@@ -777,6 +782,10 @@ Rectangle {
 
 	UserAddDialog {
 		id: userAddDialog
+	}
+
+	IdentitiesSelectionDialog {
+		id: identitiesSelectionDialog
 	}
 
 	function updateVisibleRows() {

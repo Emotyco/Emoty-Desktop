@@ -179,8 +179,14 @@ Component {
 			acceptedButtons: Qt.RightButton
 			hoverEnabled: !isEmpty
 
-			onEntered: friendroot.entered = true;
-			onExited: friendroot.entered = false;
+			onEntered: {
+				if(!isEmpty)
+					friendroot.entered = true
+			}
+			onExited: {
+				if(!isEmpty)
+					friendroot.entered = false
+			}
 			onClicked: {
 				if(!isEmpty)
 					overflowMenu.open(friendroot, mouse.x, mouse.y)

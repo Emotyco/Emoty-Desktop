@@ -170,31 +170,37 @@ void ContactsModel::loadJSONStatus(QString json)
 			bool addOrRemove = false;
 
 			int count = 0;
+			int countContact = 0;
 			for(std::list<Contact>::iterator vit = contactsData.begin(); vit != contactsData.end(); ++vit)
 			{
-				if ((*vit).is_contact && (*vit).pgp_linked && (*vit).pgp_id == jsonPGP.value("pgp_id").toString())
+				if((*vit).pgp_linked && (*vit).pgp_id == jsonPGP.value("pgp_id").toString())
 				{
-					emplaceEmpty = false;
 					count++;
-
-					if((*vit).gxs_id != "")
+					if ((*vit).is_contact)
 					{
-						addOrRemove = true;
+						emplaceEmpty = false;
+
+						if((*vit).gxs_id != "")
+						{
+							countContact++;
+							addOrRemove = true;
+						}
 					}
 				}
 			}
 
+			QVariantList identitiesToAdd;
 			int n = 0;
 			for(std::list<Contact>::iterator vit = contactsData.begin(); vit != contactsData.end();)
 			{
 				if((*vit).pgp_linked && (*vit).pgp_id == jsonPGP.value("pgp_id").toString())
 				{
-					if(count == 1 && !(*vit).is_only)
+					if(countContact == 1 && !(*vit).is_only && (*vit).is_contact)
 					{
 						(*vit).is_only = true;
 						emit dataChanged(index(n),index(n));
 					}
-					else if(count > 1 && (*vit).is_only)
+					else if(countContact > 1 && (*vit).is_only && (*vit).is_contact)
 					{
 						(*vit).is_only = false;
 						emit dataChanged(index(n),index(n));
@@ -204,10 +210,19 @@ void ContactsModel::loadJSONStatus(QString json)
 					{
 						if (!(*vit).is_contact)
 						{
-							QString jsonData = "{\"gxs_id\":\"" + (*vit).gxs_id + "\"}";
-							rsApi->request("/identity/add_contact", jsonData);
-							emplaceEmpty = false;
+							if(count == 1)
+							{
+								QString jsonData = "{\"gxs_id\":\"" + (*vit).gxs_id + "\"}";
+								rsApi->request("/identity/add_contact", jsonData);
+								emplaceEmpty = false;
+							}
+							else if(count > 1)
+								identitiesToAdd.push_back(QVariantList{
+								                           (*vit).gxs_id,
+								                           (*vit).name
+								                       });
 						}
+
 						vit++;
 						n++;
 					}
@@ -233,6 +248,9 @@ void ContactsModel::loadJSONStatus(QString json)
 					n++;
 				}
 			}
+
+			if(identitiesToAdd.length() > 0 && count >= 1)
+				emit chooseIdentities(identitiesToAdd);
 
 			if(emplaceEmpty)
 			{
