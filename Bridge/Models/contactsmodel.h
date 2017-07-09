@@ -41,7 +41,8 @@ public:
 		UnreadCountRole,
 		IsContactRole,
 		PgpLinkedRole,
-		AvatarRole
+		AvatarRole,
+		IsOnlyOneRole
 	};
 	static ContactsModel *Create ();
 	static void Destroy();
@@ -64,10 +65,11 @@ private:
 	struct Contact {
 		Contact(QString name, QString gxs_id, QString pgp_id,
 		        QString state_string, QString unread_count, QString avatar,
-		        bool is_contact, bool pgp_linked)
+		        bool is_contact, bool pgp_linked, bool is_only)
 		    : name(name), gxs_id(gxs_id), pgp_id(pgp_id),
 		      state_string(state_string), unread_count(unread_count),
-		      avatar(avatar), is_contact(is_contact), pgp_linked(pgp_linked)
+		      avatar(avatar), is_contact(is_contact), pgp_linked(pgp_linked),
+		      is_only(is_only)
 		{}
 
 		QString name;
@@ -79,6 +81,7 @@ private:
 
 		bool is_contact;
 		bool pgp_linked;
+		bool is_only;
 	};
 
 	ContactsModel(QObject *parent = 0);

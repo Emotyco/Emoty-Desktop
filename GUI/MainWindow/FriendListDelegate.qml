@@ -276,7 +276,7 @@ Component {
 						onClicked: {
 							overflowMenu.close()
 
-							if(!main.advmode  && model.pgp_linked) {
+							if(!main.advmode && model.is_only && model.pgp_linked) {
 								confirmationDialog.show("Do you want to remove contact?
 (It will remove all connections.)", function() {
 	                                var jsonData = {

@@ -161,7 +161,6 @@ View {
 
 	Component.onCompleted: {
 		refreshGxsIdModel()
-		refreshPgpIdModel()
 		getUnreadedMsgs()
 		getStateString()
 		getCustomStateString()

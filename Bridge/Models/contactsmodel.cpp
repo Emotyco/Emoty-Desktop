@@ -82,6 +82,8 @@ void ContactsModel::loadJSONContacts(QString json)
 
 		if(contactsData.empty())
 		{
+			QModelIndex qModelIndex;
+			beginInsertRows(qModelIndex, 0, jsDataArray.size()-1);
 			for(QJsonArray::iterator it = jsDataArray.begin(); it != jsDataArray.end(); it++)
 			{
 				QJsonObject jsonContact = (*it).toObject();
@@ -94,12 +96,11 @@ void ContactsModel::loadJSONContacts(QString json)
 				                              "0",
 				                              "",
 				                              jsonContact.value("is_contact").toBool(),
-				                              jsonContact.value("pgp_linked").toBool()
+				                              jsonContact.value("pgp_linked").toBool(),
+				                              false
 				                              ));
 			}
-
-			beginResetModel();
-			endResetModel();
+			endInsertRows();
 		}
 		else
 		{
@@ -141,7 +142,8 @@ void ContactsModel::loadJSONContacts(QString json)
 					                              "0",
 					                              "",
 					                              jsonContact.value("is_contact").toBool(),
-					                              jsonContact.value("pgp_linked").toBool()
+					                              jsonContact.value("pgp_linked").toBool(),
+					                              false
 					                              ));
 					endInsertRows();
 				}
@@ -167,16 +169,17 @@ void ContactsModel::loadJSONStatus(QString json)
 			bool emplaceEmpty = true;
 			bool addOrRemove = false;
 
+			int count = 0;
 			for(std::list<Contact>::iterator vit = contactsData.begin(); vit != contactsData.end(); ++vit)
 			{
 				if ((*vit).is_contact && (*vit).pgp_linked && (*vit).pgp_id == jsonPGP.value("pgp_id").toString())
 				{
 					emplaceEmpty = false;
+					count++;
 
 					if((*vit).gxs_id != "")
 					{
 						addOrRemove = true;
-
 					}
 				}
 			}
@@ -184,31 +187,50 @@ void ContactsModel::loadJSONStatus(QString json)
 			int n = 0;
 			for(std::list<Contact>::iterator vit = contactsData.begin(); vit != contactsData.end();)
 			{
-				if(!addOrRemove)
+				if((*vit).pgp_linked && (*vit).pgp_id == jsonPGP.value("pgp_id").toString())
 				{
-					if (!(*vit).is_contact && (*vit).pgp_linked && (*vit).pgp_id == jsonPGP.value("pgp_id").toString())
+					if(count == 1 && !(*vit).is_only)
 					{
-						QString jsonData = "{\"gxs_id\":\"" + (*vit).gxs_id + "\"}";
-						rsApi->request("/identity/add_contact", jsonData);
-						emplaceEmpty = false;
+						(*vit).is_only = true;
+						emit dataChanged(index(n),index(n));
 					}
-					vit++;
-					n++;
-				}
-				else if(addOrRemove)
-				{
-					if ((*vit).gxs_id == "" && (*vit).is_contact && (*vit).pgp_linked && (*vit).pgp_id == jsonPGP.value("pgp_id").toString())
+					else if(count > 1 && (*vit).is_only)
 					{
-						QModelIndex qModelIndex;
-						beginRemoveRows(qModelIndex, n, n);
-						vit = contactsData.erase(vit);
-						endRemoveRows();
+						(*vit).is_only = false;
+						emit dataChanged(index(n),index(n));
 					}
-					else
+
+					if(!addOrRemove)
 					{
+						if (!(*vit).is_contact)
+						{
+							QString jsonData = "{\"gxs_id\":\"" + (*vit).gxs_id + "\"}";
+							rsApi->request("/identity/add_contact", jsonData);
+							emplaceEmpty = false;
+						}
 						vit++;
 						n++;
 					}
+					else if(addOrRemove)
+					{
+						if ((*vit).gxs_id == "" && (*vit).is_contact)
+						{
+							QModelIndex qModelIndex;
+							beginRemoveRows(qModelIndex, n, n);
+							vit = contactsData.erase(vit);
+							endRemoveRows();
+						}
+						else
+						{
+							vit++;
+							n++;
+						}
+					}
+				}
+				else
+				{
+					vit++;
+					n++;
 				}
 			}
 
@@ -224,7 +246,8 @@ void ContactsModel::loadJSONStatus(QString json)
 				                              "0",
 				                              "",
 				                              true,
-				                              true
+				                              true,
+				                              false
 				                              ));
 				endInsertRows();
 			}
@@ -356,6 +379,8 @@ QVariant ContactsModel::data(const QModelIndex & index, int role) const
 		return (*vit).pgp_linked;
 	else if(role == AvatarRole)
 		return (*vit).avatar;
+	else if(role == IsOnlyOneRole)
+		return (*vit).is_only;
 }
 
 QHash<int, QByteArray> ContactsModel::roleNames() const
@@ -370,6 +395,7 @@ QHash<int, QByteArray> ContactsModel::roleNames() const
 	roles[IsContactRole] = "is_contact";
 	roles[PgpLinkedRole] = "pgp_linked";
 	roles[AvatarRole] = "avatar";
+	roles[IsOnlyOneRole] = "is_only";
 
 	return roles;
 }
