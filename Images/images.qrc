@@ -2,7 +2,10 @@
     <qresource prefix="/">
         <file>navigation_close.png</file>
         <file>wallpaper_grey.jpg</file>
-        <file>colorful.jpg</file>
         <file>avatar.png</file>
+        <file>appIconSmall.png</file>
+        <file>colorful.png</file>
+        <file>logo.png</file>
+        <file>Fun_Fair_43.mp4</file>
     </qresource>
 </RCC>

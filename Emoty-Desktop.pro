@@ -77,4 +77,5 @@ SOURCES += main.cpp \
 RESOURCES += \
     GUI/MainWindow/mainwindow.qrc \
     GUI/LoginWindow/login.qrc \
-    Images/images.qrc
+    Images/images.qrc \
+    Fonts/fonts.qrc
