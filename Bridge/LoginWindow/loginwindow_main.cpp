@@ -25,11 +25,11 @@
 
 //Emoty-GUI
 #include "loginwindow_main.h"
+#include "../../util/screensize.h"
 
 #ifdef BORDERLESS_LOGIN
     //Emoty-GUI
     #include "borderlesswindow.h"
-    #include "../../util/screensize.h"
 #endif
 #ifndef BORDERLESS_LOGIN
     //Qt
