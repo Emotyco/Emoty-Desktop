@@ -377,6 +377,7 @@ Rectangle
                             topMargin: dp(12)
                         }
 
+                        z: 100
                         spacing: 7 * Units.dp
 
                         MouseArea {
