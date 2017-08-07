@@ -172,8 +172,19 @@ View {
 			width: parent.width
 			height: parent.height*0.7
 
-			SideImg {
-				margins: 0
+			Item {
+				width: dp(48)
+				height: dp(48)
+
+				Image {
+					id: image
+
+					anchors.fill: parent
+					anchors.margins: dp(10)
+					source: "favicon-194x194.png"
+					smooth: true
+					mipmap: true
+				}
 			}
 
 			Connections {

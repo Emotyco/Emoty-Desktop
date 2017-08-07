@@ -92,9 +92,7 @@ int main(int argc, char *argv[])
 
 	QApplication::setQuitOnLastWindowClosed(false);
 
-	QPixmap pixmap(32, 32);
-	pixmap.fill(QColor("#4caf50"));
-	QIcon icon(pixmap);
+	QIcon icon(":/favicon-32x32.png");
 
 	/** Tray Icon Menu **/
 	QMenu *trayMenu = new QMenu();
