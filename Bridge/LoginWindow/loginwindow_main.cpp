@@ -25,7 +25,7 @@
 
 //Emoty-GUI
 #include "loginwindow_main.h"
-#include "../../util/screensize.h"
+#include "../../Util/screensize.h"
 
 #ifdef BORDERLESS_LOGIN
     //Emoty-GUI
