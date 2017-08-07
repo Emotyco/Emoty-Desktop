@@ -53,8 +53,10 @@ int loginwindow_main(int argc, char **argv)
 	QQuickView view;
 	view.setResizeMode(QQuickView::SizeRootObjectToView);
 
-	view.setMaximumSize(QSize(800, 500));
-	view.setMinimumSize(QSize(800, 500));
+	ScreenSize screenSize;
+
+	view.setMaximumSize(QSize(screenSize.width()/2, screenSize.height()/2));
+	view.setMinimumSize(QSize(screenSize.width()/2, screenSize.height()/2));
 
 	QObject::connect(&view, SIGNAL(closing(QQuickCloseEvent*)), &app, SLOT(quit()));
 
@@ -82,7 +84,7 @@ int loginwindow_main(int argc, char **argv)
 
 	// Create window
 	ScreenSize screenSize;
-	BorderlessWindow window(windowBackground, (screenSize.width()-800)/2, (screenSize.height()-500)/2, 800, 500);
+	BorderlessWindow window(windowBackground, screenSize.width()/4, screenSize.height()/4, screenSize.width()/2, screenSize.height()/2);
 #endif
 
 	return app.exec();

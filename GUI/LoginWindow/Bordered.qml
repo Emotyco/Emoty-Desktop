@@ -24,11 +24,6 @@ import QtQuick 2.5
 import QtMultimedia 5.8
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.1
-/*
-import Material 0.3
-import Material.Extras 0.1
-import Material.ListItems 0.1 as ListItem
-*/
 
 import Material 0.3
 import Material.ListItems 0.1 as ListItem
@@ -41,8 +36,7 @@ Rectangle
 	property bool attemptLogin: false
 	property bool prev_is_bad: false
 
-	width: 800
-	height: 500
+	anchors.fill: parent
 
 	state: "waiting_init"
 	states:[
@@ -258,13 +252,7 @@ Rectangle
 	Video {
 		id: video
 
-		anchors {
-			top: parent.top
-			right: parent.right
-			bottom: parent.bottom
-		}
-
-		width: parent.width*0.5
+		anchors.fill: parent
 
 		autoPlay: true
 		muted: true
@@ -277,36 +265,70 @@ Rectangle
 		onStopped: play()
 
 		Image {
-			anchors.fill: parent
+			anchors {
+				top: parent.top
+				left: parent.horizontalCenter
+				right: parent.right
+				bottom: parent.bottom
+			}
 
 			source: "/colorful.png"
 			fillMode: Image.PreserveAspectCrop
-			opacity: 0.75
+			opacity: 0.5
 		}
 
-		/*Text {
+		Item {
 			anchors {
-				fill: parent
-				margins: 50
-				//left: parent.left
-				//right: parent.right
-				//bottom: parent.bottom
-				//leftMargin: 50
-				//rightMargin: 50
-				//bottomMargin: 50
+				left: parent.horizontalCenter
+				right: parent.right
+				bottom: parent.bottom
+				bottomMargin: parent.height*0.65*0.25
 			}
 
-			horizontalAlignment: Text.AlignHCenter
-			verticalAlignment: Text.AlignVCenter
+			Text {
+				anchors {
+					bottom: secondText.top
+					left: parent.left
+					right: parent.right
 
-			color: "white"
-			text: "Share your emotions, freely!"
-			font.family: "Roboto"
-			font.weight: Font.Black
-			font.pixelSize: 32
+					leftMargin: parent.width*0.2
+					rightMargin: parent.width*0.2
+				}
 
-			wrapMode: Text.WordWrap
-		}*/
+				verticalAlignment: Text.AlignBottom
+				height: dp(40)
+
+				color: "white"
+				text: "Welcome to Emoty"
+				font.family: "Roboto"
+				font.weight: Font.Black
+				font.pixelSize: dp(34)
+
+				wrapMode: Text.WordWrap
+			}
+
+			Text {
+				id: secondText
+				anchors {
+					bottom: parent.bottom
+					left: parent.left
+					right: parent.right
+
+					leftMargin: parent.width*0.2
+					rightMargin: parent.width*0.2
+				}
+
+				verticalAlignment: Text.AlignTop
+				height: dp(27)
+
+				color: "white"
+				text: "Log in or simply get your free account"
+				font.family: "Roboto"
+				font.pixelSize: dp(14)
+
+				wrapMode: Text.WordWrap
+			}
+		}
 	}
 
 	Rectangle {
@@ -315,7 +337,7 @@ Rectangle
 		anchors {
 			top: parent.top
 			left: parent.left
-			right: video.left
+			right: parent.horizontalCenter
 			bottom: parent.bottom
 		}
 
@@ -407,9 +429,9 @@ Rectangle
 
 			anchors {
 				top: parent.top
-				topMargin: dp(20)
+				topMargin: parent.width*0.05
 				right: parent.right
-				rightMargin: dp(20)
+				rightMargin: parent.width*0.05
 			}
 
 			iconName: "awesome/cog"
