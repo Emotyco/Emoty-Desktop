@@ -181,23 +181,10 @@ Rectangle
 
 		transitions: [
 			Transition {
-				from: "visible"; to: "invisible"
 				NumberAnimation {
-					properties: "opacity"
-					from: 1
-					to: 0
+					property: "opacity"
 					easing.type: Easing.InOutQuad
-					duration: MaterialAnimation.pageTransitionDuration*2
-				}
-			},
-			Transition {
-				from: "invisible"; to: "visible"
-				NumberAnimation {
-					properties: "opacity"
-					from: 0
-					to: 1
-					easing.type: Easing.InOutQuad
-					duration: MaterialAnimation.pageTransitionDuration*2
+					duration: 250*2
 				}
 			}
 		]
