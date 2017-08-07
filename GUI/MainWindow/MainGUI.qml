@@ -38,6 +38,8 @@ Rectangle {
 	property bool advmode
 	property bool flickablemode
 
+	property bool loadMask: true
+
 	property string defaultGxsName
 	property string defaultGxsId
 	property string defaultAvatar: "avatar.png"
@@ -294,6 +296,92 @@ Rectangle {
 		tabHighlightColor: "white"
 	}
 
+	Rectangle {
+		id: loadingMask
+
+		anchors.fill: parent
+
+		color: Qt.rgba(0,0,0,0.4)
+		z: 20
+
+		state: main.loadMask ? "visible" : "invisible"
+
+		states:[
+			State {
+				name: "visible"
+				PropertyChanges {
+					target: loadingMask
+					enabled: true
+					opacity: 1
+				}
+			},
+			State {
+				name: "invisible"
+				PropertyChanges {
+					target: loadingMask
+					enabled: false
+					opacity: 0
+				}
+			}
+		]
+
+		transitions: [
+			Transition {
+				NumberAnimation {
+					property: "opacity"
+					easing.type: Easing.InOutQuad
+					duration: 250*2
+				}
+			}
+		]
+
+		MouseArea {
+			anchors.fill: parent
+
+			hoverEnabled: true
+
+			onClicked: {
+				if(mouse.button == Qt.LeftButton)
+					qMainPanel.mouseLPressed()
+			}
+			onPressed: {
+				if(mouse.button == Qt.LeftButton)
+					qMainPanel.mouseLPressed()
+			}
+		}
+
+		Rectangle {
+			anchors.fill: parent
+
+			color: Qt.rgba(1,1,1,0.85)
+
+			Image {
+				id: logoMask
+
+				anchors.centerIn: parent
+				height: parent.height*0.3
+				width: parent.width*0.3
+
+				source: "/logo.png"
+				fillMode: Image.PreserveAspectFit
+				mipmap: true
+			}
+
+			ProgressCircle {
+				anchors {
+					top: logoMask.bottom
+					horizontalCenter: parent.horizontalCenter
+				}
+
+				width: dp(35)
+				height: dp(35)
+				dashThickness: dp(5)
+
+				color: Theme.primaryColor
+			}
+		}
+	}
+
 	MouseArea {
 		property bool controlPressed
 
@@ -502,6 +590,7 @@ Rectangle {
                     }
 
                     spacing: dp(5)
+                    z: 30
 
                     Item {
                         width: dp(24)

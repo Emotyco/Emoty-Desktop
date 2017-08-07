@@ -62,8 +62,10 @@ View {
 
 	function refreshGxsIdModel() {
 		function callbackFn(par) {
-			if(firstTime_gxsContacts)
+			if(firstTime_gxsContacts) {
 				firstTime_gxsContacts = false
+				main.loadMask = false
+			}
 
 			stateToken_gxsContacts = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_gxsContacts, refreshGxsIdModel)
