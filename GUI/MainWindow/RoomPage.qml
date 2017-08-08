@@ -215,6 +215,57 @@ Item{
 
 						color: Theme.primaryColor
 					}
+
+					Item {
+						anchors {
+							verticalCenter: parent.verticalCenter
+							right: parent.right
+							rightMargin: dp(18)
+						}
+
+						width: dp(23)
+						height: dp(23)
+
+						Rectangle {
+							id: closeButton
+
+							anchors.centerIn: parent
+
+							width: dp(20)
+							height: dp(2.5)
+
+							rotation: 45
+							color: Palette.colors["grey"]["500"]
+						}
+
+						Rectangle {
+							id: closeButton2
+
+							anchors.centerIn: parent
+
+							width: dp(20)
+							height: dp(2.5)
+
+							rotation: -45
+							color: Palette.colors["grey"]["500"]
+						}
+
+						MouseArea {
+							anchors.fill: parent
+
+							hoverEnabled: true
+
+							onEntered: {
+								closeButton.color = Theme.accentColor
+								closeButton2.color = Theme.accentColor
+							}
+							onExited: {
+								closeButton.color = Palette.colors["grey"]["500"]
+								closeButton2.color = Palette.colors["grey"]["500"]
+							}
+							onClicked: main.content.activated = false
+						}
+					}
 				}
 
 				Dropdown {
