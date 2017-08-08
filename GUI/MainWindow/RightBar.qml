@@ -56,7 +56,7 @@ View {
 	width: dp(210)
 
 	backgroundColor: Theme.tabHighlightColor
-	elevation: 3
+	elevation: 2
 
 	clipContent: true
 

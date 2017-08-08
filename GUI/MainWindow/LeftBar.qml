@@ -40,7 +40,7 @@ View {
 	width: dp(50)
 
 	backgroundColor: "transparent"
-	elevation: 3
+	elevation: 2
 
 	clipContent: true
 
@@ -63,7 +63,7 @@ View {
 			PropertyChanges {
 				target: leftBar
 				width: dp(50)
-				elevation: 3
+				elevation: 2
 			}
 		}
 	]
@@ -219,7 +219,7 @@ View {
 					isIcon: icon
 
 					margins: 0
-					selected: selectedPage === pageTitle
+					selected: false //selectedPage === pageTitle
 
 					onClicked: {
 						if(helperName === "Rooms") {

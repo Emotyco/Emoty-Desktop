@@ -551,7 +551,7 @@ Rectangle {
 		enabled: borderless
 
 		backgroundColor: "white"
-		elevation: 3
+		elevation: 2
 		z: 1
 
 		ParallelAnimation {
