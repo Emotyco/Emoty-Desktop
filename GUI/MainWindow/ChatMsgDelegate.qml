@@ -38,7 +38,7 @@ Component {
 				leftMargin: parent.width*0.03
 			}
 
-			height: textMsg.implicitHeight + dp(12)
+			height: textMsg.implicitHeight + dp(14)
 			width: (model.msg.length>45) ? (parent.width*0.8)
 										 :  textMsg.implicitWidth + dp(20)
 
@@ -53,7 +53,9 @@ Component {
 					top: parent.top
 					topMargin: dp(6)
 					left: parent.left
+					leftMargin: dp(10)
 					right: parent.right
+					rightMargin: dp(10)
 				}
 
 				text: model.msg
@@ -65,8 +67,6 @@ Component {
 
 				selectByMouse: true
 				selectionColor: Theme.accentColor
-
-				horizontalAlignment: TextEdit.AlignHCenter
 
 				font {
 					family: "Roboto"
