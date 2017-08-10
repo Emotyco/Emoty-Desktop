@@ -21,7 +21,6 @@
  ****************************************************************/
 
 import QtQuick 2.5
-import QtMultimedia 5.8
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.1
 
@@ -236,28 +235,23 @@ Rectangle
 		}
 	}
 
-	Video {
-		id: video
+	Image {
+		anchors {
+			top: parent.top
+			right: parent.right
+			left: parent.horizontalCenter
+			bottom: parent.bottom
+		}
 
-		anchors.fill: parent
-
-		autoPlay: true
-		muted: true
-		source: "/Fun_Fair_43.mp4"
-		//loops: MediaPlayer.Infinite
-
-		fillMode: VideoOutput.PreserveAspectCrop
+		source: "/robin.jpg"
+		fillMode: Image.PreserveAspectCrop
 		clip: true
 
-		onStopped: play()
+		mipmap: true
+		smooth: true
 
 		Image {
-			anchors {
-				top: parent.top
-				left: parent.horizontalCenter
-				right: parent.right
-				bottom: parent.bottom
-			}
+			anchors.fill: parent
 
 			source: "/colorful.png"
 			fillMode: Image.PreserveAspectCrop
@@ -266,7 +260,7 @@ Rectangle
 
 		Item {
 			anchors {
-				left: parent.horizontalCenter
+				left: parent.left
 				right: parent.right
 				bottom: parent.bottom
 				bottomMargin: parent.height*0.65*0.25
@@ -278,8 +272,8 @@ Rectangle
 					left: parent.left
 					right: parent.right
 
-					leftMargin: parent.width*0.2
-					rightMargin: parent.width*0.2
+					leftMargin: parent.width*0.15
+					rightMargin: parent.width*0.15
 				}
 
 				verticalAlignment: Text.AlignBottom
@@ -301,15 +295,15 @@ Rectangle
 					left: parent.left
 					right: parent.right
 
-					leftMargin: parent.width*0.2
-					rightMargin: parent.width*0.2
+					leftMargin: parent.width*0.15
+					rightMargin: parent.width*0.15
 				}
 
 				verticalAlignment: Text.AlignTop
 				height: dp(27)
 
 				color: "white"
-				text: "Log in or simply get your free account"
+				text: "Sign in or simply get your free account"
 				font.family: "Roboto"
 				font.pixelSize: dp(14)
 
