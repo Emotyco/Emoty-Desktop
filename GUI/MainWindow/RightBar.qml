@@ -40,12 +40,10 @@ View {
 
 	// For handling tokens
 	property int stateToken_gxsContacts: 0
-	property int stateToken_gxsAll: 0
 	property int stateToken_pgp: 0
 	property int stateToken_unreadedMsgs: 0
 
 	property bool firstTime_gxsContacts: true
-	property bool firstTime_gxsAll: true
 	property bool firstTime_pgp: true
 
 	anchors {
@@ -58,42 +56,25 @@ View {
 	width: dp(210)
 
 	backgroundColor: Theme.tabHighlightColor
-	elevation: 3
+	elevation: 2
 
 	clipContent: true
 
 	function refreshGxsIdModel() {
 		function callbackFn(par) {
-			if(firstTime_gxsContacts)
+			if(firstTime_gxsContacts) {
 				firstTime_gxsContacts = false
+				main.loadMask = false
+			}
 
 			stateToken_gxsContacts = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_gxsContacts, refreshGxsIdModel)
 
-			knownContactsWorker.sendMessage({
-				'action': 'refreshContacts',
-				'response': par.response
-			})
+			gxsModel.loadJSONContacts(par.response)
+			refreshPgpIdModel()
 		}
 
 		rsApi.request("/identity/notown_ids/", "", callbackFn)
-	}
-
-	function refreshAllGxsIdModel() {
-		function callbackFn(par) {
-			if(firstTime_gxsAll)
-				firstTime_gxsAll = false
-
-			stateToken_gxsAll = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_gxsAll, refreshAllGxsIdModel)
-
-			allContactsWorker.sendMessage({
-				'action': 'refreshContacts',
-				'response': par.response
-			})
-		}
-
-		rsApi.request("/identity/*", "", callbackFn)
 	}
 
 	function refreshPgpIdModel() {
@@ -101,9 +82,10 @@ View {
 			if(firstTime_pgp)
 				firstTime_pgp = false
 
-			pgpIdModel.json = par.response
-
 			var jsonResp = JSON.parse(par.response)
+
+			stateToken_pgp = jsonResp.statetoken
+			main.registerToken(stateToken_pgp, refreshPgpIdModel)
 
 			var count = 0
 			for (var i = 0; i<jsonResp.data.length; i++) {
@@ -114,17 +96,14 @@ View {
 			}
 			pgp_unread_msgs = count
 
-			stateToken_pgp = jsonResp.statetoken
-			main.registerToken(stateToken_pgp, refreshPgpIdModel)
+			pgpIdWorker.sendMessage({
+				'action': 'refreshPgpList',
+				'response': par.response,
+				'query' : '$.data[*]',
+				'model': pgpIdModel
+			})
 
-			knownContactsWorker.sendMessage({
-				'action': 'refreshStatus',
-				'response': par.response
-			})
-			allContactsWorker.sendMessage({
-				'action': 'refreshStatus',
-				'response': par.response
-			})
+			gxsModel.loadJSONStatus(par.response)
 		}
 
 		rsApi.request("/peers/*", "", callbackFn)
@@ -136,14 +115,7 @@ View {
 			stateToken_unreadedMsgs = jsonResp.statetoken
 			main.registerToken(stateToken_unreadedMsgs, getUnreadedMsgs)
 
-			knownContactsWorker.sendMessage({
-				'action': 'refreshUnread',
-				'response': par.response
-			})
-			allContactsWorker.sendMessage({
-				'action': 'refreshUnread',
-				'response': par.response
-			})
+			gxsModel.loadJSONUnread(par.response)
 		}
 
 		rsApi.request("/chat/unread_msgs/", "", callbackFn)
@@ -190,9 +162,7 @@ View {
 	}
 
 	Component.onCompleted: {
-		refreshAllGxsIdModel()
 		refreshGxsIdModel()
-		refreshPgpIdModel()
 		getUnreadedMsgs()
 		getStateString()
 		getCustomStateString()
@@ -200,35 +170,24 @@ View {
 
 	Component.onDestruction: {
 		main.unregisterToken(stateToken_gxsContacts)
-		main.unregisterToken(stateToken_gxsAll)
 		main.unregisterToken(stateToken_pgp)
 	}
 
 	WorkerScript {
-		id: allContactsWorker
-		source: "qrc:/ContactSort.js"
-		onMessage: allGxsIdModel.json = JSON.stringify(messageObject)
+		id: pgpIdWorker
+		source: "qrc:/PgpListUpdater.js"
 	}
 
-	WorkerScript {
-		id: knownContactsWorker
-		source: "qrc:/ContactSort.js"
-		onMessage: gxsIdModel.json = JSON.stringify(messageObject)
-	}
-
-	JSONListModel {
+	ListModel {
 		id: gxsIdModel
-		query: "$.data[?(@.is_contact)]"
 	}
 
-	JSONListModel {
+	ListModel {
 		id: allGxsIdModel
-		query: "$.data[*]"
 	}
 
-	JSONListModel {
+	ListModel {
 		id: pgpIdModel
-		query: "$.data[*]"
 	}
 
 	Item {
@@ -291,9 +250,8 @@ View {
 
 				showBorder: false
 
-				onAccepted: {
-					setCustomStateString(statusm.text)
-				}
+				onTextChanged: setCustomStateString(statusm.text)
+				onAccepted: setCustomStateString(statusm.text)
 			}
 
 			MouseArea {
@@ -369,16 +327,19 @@ View {
 							NumberAnimation {
 								target: changeStatus
 								property: "height"
+								easing.type: Easing.InOutQuad
 								duration: MaterialAnimation.pageTransitionDuration/3
 							}
 							NumberAnimation {
 								target: changeStatus
 								property: "width"
+								easing.type: Easing.InOutQuad
 								duration: MaterialAnimation.pageTransitionDuration/3
 							}
 							NumberAnimation {
 								target: changeStatus
 								property: "anchors.rightMargin"
+								easing.type: Easing.InOutQuad
 								duration: MaterialAnimation.pageTransitionDuration/3
 							}
 						}
@@ -411,7 +372,7 @@ View {
 			}
 		}
 
-		Item {
+		Rectangle {
 			id: tabButtons
 
 			anchors {
@@ -515,6 +476,7 @@ View {
 
 					text: "Contacts"
 					textColor: selected ? Theme.primaryColor : Theme.light.textColor
+					size: dp(11)
 
 					onClicked: tabView.currentIndex = 0
 				}
@@ -526,6 +488,7 @@ View {
 
 					text: "All"
 					textColor: selected ? Theme.primaryColor : Theme.light.textColor
+					size: dp(11)
 
 					onClicked: tabView.currentIndex = 1
 				}
@@ -539,7 +502,7 @@ View {
 				top: tabButtons.bottom
 				left: parent.left
 				right: parent.right
-				bottom: parent.bottom
+				bottom: searcher.top
 			}
 
 			frameVisible: false
@@ -566,7 +529,7 @@ View {
 
 						clip: true
 
-						model: gxsIdModel.model
+						model: contactsModel
 						delegate: FriendListDelegate{}
 
 						LoadingMask {
@@ -594,20 +557,92 @@ View {
 
 						clip: true
 
-						model: allGxsIdModel.model
+						model: identitiesModel
 						delegate: FriendListDelegate{}
 
 						LoadingMask {
 							id: loadingMask2
 							anchors.fill: parent
 
-							state: firstTime_gxsAll ? "visible" : "non-visible"
+							state: firstTime_gxsContacts ? "visible" : "non-visible"
 						}
 					}
 
 					Scrollbar {
 						flickableItem: listView2
 					}
+				}
+			}
+		}
+
+		Item {
+			id: searcher
+			anchors {
+				bottom: parent.bottom
+				left: parent.left
+				right: parent.right
+			}
+
+			height: dp(36)
+
+			Icon {
+				anchors {
+					left: parent.left
+					leftMargin: dp(10)
+					verticalCenter: parent.verticalCenter
+				}
+
+				name: "awesome/search"
+				size: dp(16)
+				color: searchText.focus ? Theme.light.iconColor : Theme.light.hintColor
+			}
+
+			MouseArea {
+				anchors.fill: parent
+
+				onClicked: searchText.focus = true
+			}
+
+			TextField {
+				id: searchText
+
+				anchors {
+					leftMargin: dp(36)
+					rightMargin: dp(10)
+					verticalCenter: parent.verticalCenter
+					left: parent.left
+					right: parent.right
+				}
+
+				placeholderText: "Find your friend"
+
+				font {
+					family: "Roboto"
+					pixelSize: dp(14)
+					capitalization: Font.MixedCase
+				}
+
+				showBorder: false
+
+				Connections {
+					target: main
+					onAdvmodeChanged: {
+						if(main.advmode)
+							identitiesModel.setSearchText(searchText.text)
+					}
+				}
+
+				onTextChanged: {
+					contactsModel.setSearchText(text)
+
+					if(main.advmode)
+						identitiesModel.setSearchText(text)
+				}
+				onAccepted: {
+					contactsModel.setSearchText(text)
+
+					if(main.advmode)
+						identitiesModel.setSearchText(text)
 				}
 			}
 		}
@@ -668,6 +703,7 @@ View {
 				NumberAnimation {
 					target: pgpBox;
 					property: "height";
+					easing.type: Easing.InOutQuad
 					duration: MaterialAnimation.pageTransitionDuration/2
 				}
 			},
@@ -840,6 +876,7 @@ View {
 
 				Behavior on rotation {
 					NumberAnimation {
+						easing.type: Easing.InOutQuad
 						duration: MaterialAnimation.pageTransitionDuration/2
 					}
 				}
@@ -863,7 +900,7 @@ View {
 
 			clip: true
 
-			model: pgpIdModel.model
+			model: pgpIdModel
 			delegate: PgpListDelegate{}
 		}
 
@@ -879,6 +916,7 @@ View {
 			property: "anchors.rightMargin"
 			from: -dp(50)
 			to: 0
+			easing.type: Easing.InOutQuad
 			duration: MaterialAnimation.pageTransitionDuration
 		}
 		NumberAnimation {
@@ -886,6 +924,7 @@ View {
 			property: "opacity"
 			from: 0
 			to: 1
+			easing.type: Easing.InOutQuad
 			duration: MaterialAnimation.pageTransitionDuration
 		}
 	}

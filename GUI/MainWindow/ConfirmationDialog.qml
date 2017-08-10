@@ -49,6 +49,7 @@ PopupBase {
 	default property alias dialogContent: column.data
 
 	property var functionAccepted
+	property var functionRejected
 
 	signal accepted()
 	signal rejected()
@@ -58,7 +59,10 @@ PopupBase {
 		verticalCenterOffset: showing ? 0 : -(dialog.height/3)
 
 		Behavior on verticalCenterOffset {
-			NumberAnimation { duration: 200 }
+			NumberAnimation {
+				easing.type: Easing.InOutQuad
+				duration: 200
+			}
 		}
 	}
 
@@ -77,7 +81,10 @@ PopupBase {
 					 (floatingActions ? 0 : buttonContainer.height))
 
 	Behavior on opacity {
-		NumberAnimation { duration: 200 }
+		NumberAnimation {
+			easing.type: Easing.InOutQuad
+			duration: 200
+		}
 	}
 
 	Keys.onPressed: {
@@ -101,15 +108,34 @@ PopupBase {
 		}
 	}
 
-	function show(text, functionAccepted) {
+	function show(text, functionAccepted, functionRejected, posBut, negBut, dismiss) {
 		dialog.text = text
 		dialog.functionAccepted = functionAccepted
+		dialog.functionRejected = functionRejected
+
+		if(posBut != undefined)
+			positiveButtonText = posBut
+		else
+			positiveButtonText = "Yes"
+
+		if(negBut != undefined)
+			negativeButtonText = negBut
+		else
+			negativeButtonText = "No"
+
+		if(dismiss != undefined)
+			dismissOnTap = dismiss
+		else
+			dismissOnTap = true
+
 		open()
 	}
 
 	onAccepted: {
 		dialog.functionAccepted()
 	}
+
+	onRejected: dialog.functionRejected()
 
 	View {
 		id: dialogContainer

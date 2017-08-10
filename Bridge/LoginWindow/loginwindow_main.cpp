@@ -25,11 +25,11 @@
 
 //Emoty-GUI
 #include "loginwindow_main.h"
+#include "../../Util/screensize.h"
 
 #ifdef BORDERLESS_LOGIN
     //Emoty-GUI
     #include "borderlesswindow.h"
-    #include "../../util/screensize.h"
 #endif
 #ifndef BORDERLESS_LOGIN
     //Qt
@@ -53,8 +53,10 @@ int loginwindow_main(int argc, char **argv)
 	QQuickView view;
 	view.setResizeMode(QQuickView::SizeRootObjectToView);
 
-	view.setMaximumSize(QSize(400, 470));
-	view.setMinimumSize(QSize(400, 470));
+	ScreenSize screenSize;
+
+	view.setMaximumSize(QSize(screenSize.width()/2, screenSize.height()/2));
+	view.setMinimumSize(QSize(screenSize.width()/2, screenSize.height()/2));
 
 	QObject::connect(&view, SIGNAL(closing(QQuickCloseEvent*)), &app, SLOT(quit()));
 
@@ -82,7 +84,7 @@ int loginwindow_main(int argc, char **argv)
 
 	// Create window
 	ScreenSize screenSize;
-	BorderlessWindow window(windowBackground, (screenSize.width()-400)/2, (screenSize.height()-470)/2, 400, 470);
+	BorderlessWindow window(windowBackground, screenSize.width()/4, screenSize.height()/4, screenSize.width()/2, screenSize.height()/2);
 #endif
 
 	return app.exec();

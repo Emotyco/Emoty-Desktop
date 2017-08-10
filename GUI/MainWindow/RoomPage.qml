@@ -26,22 +26,27 @@ import QtGraphicalEffects 1.0
 import Material 0.3
 import Material.ListItems 0.1 as ListItem
 
+import RoomParticipantsSortModel 0.2
+import RoomInvitationSortModel 0.2
+
 Item{
 	id: page
 	property string title: "roomPage"
 
 	property string roomName
-	property string chatId
+	property var chatId
 
 	// For handling tokens
 	property int stateToken_p: 0
 	property int stateToken_msg: 0
 	property int stateToken_gxs: 0
+	property int stateToken_gxsContacts: 0
 
 	Component.onDestruction: {
 		main.unregisterToken(stateToken_p)
 		main.unregisterToken(stateToken_msg)
 		main.unregisterToken(stateToken_gxs)
+		main.unregisterToken(stateToken_gxsContacts)
 	}
 
 	property bool firstTime_msg: true
@@ -56,9 +61,11 @@ Item{
 
 	function getLobbyParticipants() {
 		function callbackFn(par) {
-			lobbyParticipantsModel.json = par.response
 			stateToken_p = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_p, getLobbyParticipants)
+
+			roomParticipantsSortModel.sourceModel.loadJSONParticipants(par.response)
+			roomInvitationSortModel.sourceModel.loadJSONParticipants(par.response)
 		}
 
 		rsApi.request("/chat/lobby_participants/"+chatId, "", callbackFn)
@@ -69,30 +76,36 @@ Item{
 			if(firstTime_msg)
 				firstTime_msg = false
 
-			messagesModel.json = par.response
-			contentm.positionViewAtEnd()
-
 			stateToken_msg = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken_msg, getLobbyMessages)
+
+			messagesWorker.sendMessage({
+				'action' : 'refreshMessages',
+				'response' : par.response,
+				'query' : '$.data[*]',
+				'model' : messagesModel
+			})
 		}
 
 		rsApi.request("/chat/messages/"+chatId, "", callbackFn)
 	}
 
-	function getGxsId() {
+	function getContacts() {
 		function callbackFn(par) {
-			gxsIdModel.json = par.response
-			stateToken_gxs = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_gxs, getGxsId)
+			stateToken_gxsContacts = JSON.parse(par.response).statetoken
+			main.registerToken(stateToken_gxsContacts, getContacts)
+
+			roomParticipantsSortModel.sourceModel.loadJSONIdentities(par.response)
+			roomInvitationSortModel.sourceModel.loadJSONInvitations(par.response)
 		}
 
-		rsApi.request("/identity/notown_ids/", "", callbackFn)
+		rsApi.request("/identity/*/", "", callbackFn)
 	}
 
 	Component.onCompleted: {
 		getLobbyMessages();
 		getLobbyParticipants()
-		getGxsId()
+		getContacts()
 	}
 
 	Connections {
@@ -113,19 +126,22 @@ Item{
 		}
 	}
 
-	JSONListModel {
-		id: lobbyParticipantsModel
-		query: "$.data[*]"
+	RoomParticipantsSortModel {
+		id: roomParticipantsSortModel
 	}
 
-	JSONListModel {
+	RoomInvitationSortModel {
+		id: roomInvitationSortModel
+	}
+
+	WorkerScript {
+		id: messagesWorker
+		source: "qrc:/MessagesUpdater.js"
+		onMessage: contentm.positionViewAtEnd()
+	}
+
+	ListModel {
 		id: messagesModel
-		query: "$.data[*]"
-	}
-
-	JSONListModel {
-		id: gxsIdModel
-		query: "$.data[*]"
 	}
 
 	View {
@@ -198,6 +214,57 @@ Item{
 						font.family: "Roboto"
 
 						color: Theme.primaryColor
+					}
+
+					Item {
+						anchors {
+							verticalCenter: parent.verticalCenter
+							right: parent.right
+							rightMargin: dp(18)
+						}
+
+						width: dp(23)
+						height: dp(23)
+
+						Rectangle {
+							id: closeButton
+
+							anchors.centerIn: parent
+
+							width: dp(20)
+							height: dp(2.5)
+
+							rotation: 45
+							color: Palette.colors["grey"]["500"]
+						}
+
+						Rectangle {
+							id: closeButton2
+
+							anchors.centerIn: parent
+
+							width: dp(20)
+							height: dp(2.5)
+
+							rotation: -45
+							color: Palette.colors["grey"]["500"]
+						}
+
+						MouseArea {
+							anchors.fill: parent
+
+							hoverEnabled: true
+
+							onEntered: {
+								closeButton.color = Theme.accentColor
+								closeButton2.color = Theme.accentColor
+							}
+							onExited: {
+								closeButton.color = Palette.colors["grey"]["500"]
+								closeButton2.color = Palette.colors["grey"]["500"]
+							}
+							onClicked: main.content.activated = false
+						}
 					}
 				}
 
@@ -332,7 +399,7 @@ Item{
 						snapMode: ListView.NoSnap
 						flickableDirection: Flickable.AutoFlickDirection
 
-						model: messagesModel.model
+						model: messagesModel
 						delegate: RoomMsgDelegate{}
 					}
 
@@ -483,8 +550,6 @@ Item{
 							rightMargin: dp(18)
 						}
 
-						readOnly: true
-
 						placeholderText: "Search friends"
 						placeholderPixelSize: dp(15)
 
@@ -496,12 +561,25 @@ Item{
 						focus: true
 						showBorder: false
 
-						/*onActiveFocusChanged: {
+						onActiveFocusChanged: {
 							if(activeFocus)
 								friendFilter.elevation = 2
 							else
 								friendFilter.elevation = 1
-						}*/
+						}
+
+						onTextChanged: {
+							roomParticipantsSortModel.setSearchText(text)
+
+							if(main.advmode)
+								roomParticipantsSortModel.setSearchText(text)
+						}
+						onAccepted: {
+							roomParticipantsSortModel.setSearchText(text)
+
+							if(main.advmode)
+								roomParticipantsSortModel.setSearchText(text)
+						}
 					}
 				}
 			}
@@ -520,26 +598,137 @@ Item{
 				snapMode: ListView.NoSnap
 				flickableDirection: Flickable.AutoFlickDirection
 
-				model: lobbyParticipantsModel.model
+				model: roomParticipantsSortModel
 
 				delegate: RoomFriend {
+					id: roomFriend
+					property string avatar: model.avatar == ""
+											? "avatar.png"
+											: "data:image/png;base64," + model.avatar
+
 					width: parent.width
 
-					text: model.identity.name
+					text: model.name
 					textColor: Theme.light.textColor
 					itemLabel.style: "body1"
 
-					imageSource: "avatar.png"
+					imageSource: avatar
 					isIcon: false
+
+					Component.onCompleted: {
+						if(model.avatar == "")
+							getIdentityAvatar()
+					}
+
+					function getIdentityAvatar() {
+						var jsonData = {
+							gxs_id: model.gxs_id
+						}
+
+						function callbackFn(par) {
+							var json = JSON.parse(par.response)
+							if(json.data.avatar.length > 0)
+								roomParticipantsSortModel.sourceModel.loadJSONAvatar(model.gxs_id, par.response)
+
+							if(json.returncode == "fail")
+								getIdentityAvatar()
+						}
+
+						rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+					}
+
+					MouseArea {
+						anchors.fill: parent
+						acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+						onClicked: {
+							if(mouse.button == Qt.RightButton)
+								if(main.advmode || !model.own)
+									overflowMenu2.open(roomFriend, mouse.x, mouse.y)
+						}
+
+						onDoubleClicked: {
+							if(mouse.button == Qt.LeftButton)
+								if(!model.own)
+									main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+						}
+					}
+
+					Dropdown {
+						id: overflowMenu2
+						objectName: "overflowMenu"
+						overlayLayer: "dialogOverlayLayer"
+						width: dp(200)
+						height: (main.advmode
+								 ? (model.is_contact
+									? model.own ? dp(1*30) : dp(2*30)
+									: model.own ? dp(2*30) : dp(3*30))
+								 : (model.is_contact
+									? model.own ? dp(0) : dp(1*30)
+									: model.own ? dp(1*30) : dp(2*30)))
+						enabled: true
+						anchor: Item.TopLeft
+						durationSlow: 300
+						durationFast: 150
+
+						Column{
+							anchors.fill: parent
+
+							ListItem.Standard {
+								height: dp(30)
+								text: "Add to contacts"
+								itemLabel.style: "menu"
+
+								visible: !model.is_contact
+								enabled: !model.is_contact
+
+								onClicked: {
+									overflowMenu2.close()
+
+									var jsonData = {
+										gxs_id: model.gxs_id
+									}
+
+									rsApi.request("/identity/add_contact", JSON.stringify(jsonData), function(){})
+								}
+							}
+
+							ListItem.Standard {
+								height: dp(30)
+								text: "Chat"
+								itemLabel.style: "menu"
+
+								visible: !model.own
+								enabled: !model.own
+
+								onClicked: {
+									overflowMenu2.close()
+									main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+								}
+							}
+
+							ListItem.Standard {
+								height: dp(30)
+								text: "Details"
+								itemLabel.style: "menu"
+
+								enabled: main.advmode
+								visible: main.advmode
+
+								onClicked: {
+									overflowMenu2.close()
+									identityDetailsDialog.showIdentity(model.name, model.gxs_id)
+								}
+							}
+						}
+					}
 				}
 
 				footer: RoomFriend {
 					width: parent.width
 
-					interactive: false
-
-					text: "Add to room"
-					textColor: Theme.light.hintColor//Theme.light.textColor
+					text: "Invite to room"
+					textColor: Theme.light.hintColor
 					itemLabel.style: "body1"
 
 					iconName: "awesome/plus"
@@ -563,73 +752,96 @@ Item{
 			positiveButtonText: "Cancel"
 			negativeButtonText: "Add"
 
-			contentMargins: dp(8)
-			width: dp(250)
-
 			positiveButtonSize: dp(13)
 			negativeButtonSize: dp(13)
 
-			Item {
-				anchors {
-					left: parent.left
-					right: parent.right
+			onRejected: {
+				pgpsList = pgpsList.sort().filter((function(item, pos, ary) {
+					return !pos || item != ary[pos - 1];
+				}))
+				pgpsList.forEach(inviteFriends)
+			}
+			onClosed: pgpsList = []
+
+			property var pgpsList: []
+
+			function inviteFriends(pgp) {
+				var jsonData = {
+					chat_id: chatId,
+					pgp_id: pgp
 				}
 
-				height: dp(350)
+				rsApi.request("/chat/invite_to_lobby/", JSON.stringify(jsonData), function(){})
+			}
 
-				Item {
+			Label {
+				anchors.left: parent.left
+
+				height: dp(50)
+				verticalAlignment: Text.AlignVCenter
+
+				wrapMode: Text.Wrap
+				text: "Invite Friend"
+				style: "title"
+				color: Theme.accentColor
+			}
+
+			Item {
+				width: dp(300)
+				height: dp(320)
+
+				View {
+					id: addFriendFilter
+
 					anchors {
 						top: parent.top
-						left: parent.left
-						right: parent.right
-						leftMargin: dp(8)
-						rightMargin: dp(8)
+						horizontalCenter: parent.horizontalCenter
 					}
 
-					height: dp(45)
-					width: parent.width
+					height: dp(25)
+					width: parent.width - dp(16)
+
 					z: 1
+					radius: 10
+					elevation: 1
+					backgroundColor: "white"
 
-					View {
-						id: addFriendFilter
-
+					TextField {
 						anchors {
-							horizontalCenter: parent.horizontalCenter
+							fill: parent
 							verticalCenter: parent.verticalCenter
+							leftMargin: dp(18)
+							rightMargin: dp(18)
 						}
 
-						height: dp(25)
-						width: parent.width
+						placeholderText: "Search friend"
+						placeholderPixelSize: dp(15)
 
-						radius: 10
-						elevation: 1
-						backgroundColor: "white"
+						font {
+							weight: Font.Light
+							pixelSize: dp(15)
+						}
 
-						TextField {
-							anchors {
-								fill: parent
-								verticalCenter: parent.verticalCenter
-								leftMargin: dp(18)
-								rightMargin: dp(18)
-							}
+						focus: true
+						showBorder: false
 
-							placeholderText: "Search friends"
-							placeholderPixelSize: dp(15)
+						onActiveFocusChanged: {
+							if(activeFocus)
+								addFriendFilter.elevation = 2
+							else
+								addFriendFilter.elevation = 1
+						}
+						onTextChanged: {
+							roomInvitationSortModel.setSearchText(text)
 
-							font {
-								weight: Font.Light
-								pixelSize: dp(15)
-							}
+							if(main.advmode)
+								roomInvitationSortModel.setSearchText(text)
+						}
+						onAccepted: {
+							roomInvitationSortModel.setSearchText(text)
 
-							focus: true
-							showBorder: false
-
-							onActiveFocusChanged: {
-								if(activeFocus)
-									addFriendFilter.elevation = 2
-								else
-									addFriendFilter.elevation = 1
-							}
+							if(main.advmode)
+								roomInvitationSortModel.setSearchText(text)
 						}
 					}
 				}
@@ -639,28 +851,70 @@ Item{
 
 					anchors {
 						fill: parent
-						topMargin: dp(45)
+						topMargin: dp(25)
 					}
 
 					clip: true
 					snapMode: ListView.NoSnap
 					flickableDirection: Flickable.AutoFlickDirection
 
-					model: gxsIdModel.model
+					model: roomInvitationSortModel
 
 					delegate: RoomFriend {
+						property string avatar: model.avatar == ""
+												? "avatar.png"
+												: "data:image/png;base64," + model.avatar
+
 						width: parent.width
 
 						text: model.name
 						textColor: selected ? Theme.primaryColor : Theme.light.textColor
 						itemLabel.style: "body1"
 
-						imageSource: "avatar.png"
+						imageSource: avatar
 						isIcon: false
 
+						Connections {
+							target: addFriendRoom
+							onOpened: getIdentityAvatar()
+							onClosed: selected = false
+						}
+
+						Component.onCompleted: {
+							if(model.avatar == "")
+								getIdentityAvatar()
+						}
+
+						function getIdentityAvatar() {
+							var jsonData = {
+								gxs_id: model.gxs_id
+							}
+
+							function callbackFn(par) {
+								var json = JSON.parse(par.response)
+								if(json.data.avatar.length > 0)
+									roomInvitationSortModel.sourceModel.loadJSONAvatar(model.gxs_id, par.response)
+
+								if(json.returncode == "fail")
+									getIdentityAvatar()
+							}
+
+							rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+						}
+
 						onClicked: {
+							if(selected)
+								addFriendRoom.pgpsList.splice(addFriendRoom.pgpsList.indexOf(model.pgp_id), 1)
+							else
+								addFriendRoom.pgpsList.push(model.pgp_id)
+
 							selected = !selected
 						}
+					}
+
+					header: Item {
+						height: dp(15)
+						width: parent.width
 					}
 				}
 
@@ -678,6 +932,7 @@ Item{
 				property: "opacity"
 				from: 0
 				to: 1
+				easing.type: Easing.InOutQuad
 				duration: MaterialAnimation.pageTransitionDuration
 			}
 		}

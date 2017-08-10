@@ -31,15 +31,21 @@ Component {
 	Rectangle {
 		id: friendroot
 
-		property bool contact: model.contact != undefined ? (model.contact || model.own) : true
 		property bool entered: false
 		property string msg: ""
 
+		property bool isEmpty: model.gxs_id == ""
 		property string state_string: model.state_string
 		property color statuscolor: state_string === "online"   ? "#4caf50" :   // green
 									state_string === "busy"		? "#FF5722" :   // red
 									state_string === "away"		? "#FFEB3B" :   // yellow
 																  "#9E9E9E"		// grey
+
+		property string avatar: model.avatar == ""
+								? "avatar.png"
+								: "data:image/png;base64," + model.avatar
+
+		onAvatarChanged: canvas.loadImage(avatar)
 
 		width: parent.width
 		height: dp(50)
@@ -50,40 +56,51 @@ Component {
 			Transition {
 				from: "hidden"; to: "entered"
 
-				ParallelAnimation {
+				SequentialAnimation {
 					NumberAnimation {
-						target: icons
-						property: "y"
-						from: dp(40)
-						to: 0
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-					NumberAnimation {
-						target: icons
-						property: "opacity"
-						from: 0
-						to: 1
-						duration: MaterialAnimation.pageTransitionDuration
+						duration: 100
 					}
 
-					NumberAnimation {
-						target: text
-						property: "y"
-						from: 0
-						to: -dp(40)
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-					NumberAnimation {
-						target: text
-						property: "opacity"
-						from: 1
-						to: 0
-						duration: MaterialAnimation.pageTransitionDuration
+					ParallelAnimation {
+						NumberAnimation {
+							target: icons
+							property: "y"
+							from: dp(40)
+							to: 0
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+						NumberAnimation {
+							target: icons
+							property: "opacity"
+							from: 0
+							to: 1
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+
+						NumberAnimation {
+							target: text
+							property: "y"
+							from: 0
+							to: -dp(40)
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+						NumberAnimation {
+							target: text
+							property: "opacity"
+							from: 1
+							to: 0
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
 					}
 				}
 			},
 			Transition {
 				from: "entered"; to: "hidden"
+
 
 				ParallelAnimation {
 					NumberAnimation {
@@ -91,6 +108,7 @@ Component {
 						property: "y"
 						from: -dp(40)
 						to: 0
+						easing.type: Easing.InOutQuad;
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 					NumberAnimation {
@@ -98,6 +116,7 @@ Component {
 						property: "opacity"
 						from: 0
 						to: 1
+						easing.type: Easing.InOutQuad;
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 
@@ -106,6 +125,7 @@ Component {
 						property: "y"
 						from: 0
 						to: dp(40)
+						easing.type: Easing.InOutQuad;
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 					NumberAnimation {
@@ -113,6 +133,7 @@ Component {
 						property: "opacity"
 						from: 1
 						to: 0
+						easing.type: Easing.InOutQuad;
 						duration: MaterialAnimation.pageTransitionDuration
 					}
 				}
@@ -130,15 +151,46 @@ Component {
 			}
 		]
 
+		Component.onCompleted: {
+			if(model.avatar == "")
+				getIdentityAvatar()
+		}
+
+		function getIdentityAvatar() {
+			var jsonData = {
+				gxs_id: model.gxs_id
+			}
+
+			function callbackFn(par) {
+				var json = JSON.parse(par.response)
+				if(json.data.avatar.length > 0)
+					gxsModel.loadJSONAvatar(model.gxs_id, par.response)
+
+				if(json.returncode == "fail")
+					getIdentityAvatar()
+			}
+
+			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+		}
+
 		MouseArea {
 			anchors.fill: parent
 
 			acceptedButtons: Qt.RightButton
-			hoverEnabled: true
+			hoverEnabled: !isEmpty
 
-			onEntered: friendroot.entered = true;
-			onExited: friendroot.entered = false;
-			onClicked: overflowMenu.open(friendroot, mouse.x, mouse.y);
+			onEntered: {
+				if(!isEmpty)
+					friendroot.entered = true
+			}
+			onExited: {
+				if(!isEmpty)
+					friendroot.entered = false
+			}
+			onClicked: {
+				if(!isEmpty)
+					overflowMenu.open(friendroot, mouse.x, mouse.y)
+			}
 
 			states: [
 				State {
@@ -164,7 +216,7 @@ Component {
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
 				width: dp(200)
-				height: main.advmode ? dp(3*30) : dp(2*30)
+				height: isEmpty ? 0 : main.advmode ? dp(3*30) : dp(2*30)
 				enabled: true
 				anchor: Item.TopLeft
 				durationSlow: 300
@@ -178,8 +230,8 @@ Component {
 						text: "Add to contacts"
 						itemLabel.style: "menu"
 
-						visible: !contact
-						enabled: !contact
+						visible: !model.is_contact && !isEmpty
+						enabled: !model.is_contact && !isEmpty
 
 						onClicked: {
 							overflowMenu.close()
@@ -196,6 +248,10 @@ Component {
 						height: dp(30)
 						text: "Chat"
 						itemLabel.style: "menu"
+
+						visible: !isEmpty
+						enabled: !isEmpty
+
 						onClicked: {
 							overflowMenu.close()
 							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
@@ -204,8 +260,8 @@ Component {
 
 					ListItem.Standard {
 						height: dp(30)
-						enabled: main.advmode
-						visible: main.advmode
+						enabled: main.advmode && !isEmpty
+						visible: main.advmode && !isEmpty
 
 						text: "Details"
 						itemLabel.style: "menu"
@@ -220,19 +276,32 @@ Component {
 						text: "Remove"
 						itemLabel.style: "menu"
 
-						visible: contact
-						enabled: contact
+						visible: model.is_contact && !isEmpty
+						enabled: model.is_contact && !isEmpty
 
 						onClicked: {
 							overflowMenu.close()
 
-							removeDialog.show("Do you want to remove contact?", function() {
-								var jsonData = {
-									gxs_id: model.gxs_id
-								}
+							if(!main.advmode && model.is_only && model.pgp_linked) {
+								confirmationDialog.show("Do you want to remove contact?
+(It will remove all connections.)", function() {
+	                                var jsonData = {
+		                                gxs_id: model.gxs_id
+	                                }
 
-								rsApi.request("/identity/remove_contact", JSON.stringify(jsonData), function(){})
-							})
+	                                rsApi.request("/peers/"+model.pgp_id+"/delete", "", function(){})
+	                                rsApi.request("/identity/remove_contact", JSON.stringify(jsonData), function(){})
+                                })
+							}
+							else {
+								confirmationDialog.show("Do you want to remove contact?", function() {
+									var jsonData = {
+										gxs_id: model.gxs_id
+									}
+
+									rsApi.request("/identity/remove_contact", JSON.stringify(jsonData), function(){})
+								})
+							}
 						}
 					}
 				}
@@ -247,35 +316,37 @@ Component {
 				width: dp(32)
 				height: dp(32)
 
-				Component.onCompleted:loadImage("avatar.png")
+				Component.onCompleted: loadImage(friendroot.avatar)
 				onPaint: {
 					var ctx = getContext("2d");
-					if (canvas.isImageLoaded("avatar.png")) {
+					if (canvas.isImageLoaded(friendroot.avatar)) {
 						var profile = Qt.createQmlObject('
                             import QtQuick 2.5
                             Image {
-                                source: "avatar.png"
+                                source: friendroot.avatar
                                 visible:false
                             }', canvas);
 						var centreX = width/2;
 						var centreY = height/2;
 
+						ctx.save()
 						ctx.beginPath();
 						ctx.moveTo(centreX, centreY);
 						ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
 						ctx.clip();
 						ctx.drawImage(profile, 0, 0, canvas.width, canvas.height);
+						ctx.restore()
 					}
 				}
 				onImageLoaded:requestPaint()
 
-				MouseArea {
+				/*MouseArea {
 					anchors.fill: parent
 					onClicked: {
 						pageStack.push({item: Qt.resolvedUrl("Content.qml"), immediate: true, replace: true})
 						main.content.activated = true;
 					}
-				}
+				}*/
 			}
 
 			Item {

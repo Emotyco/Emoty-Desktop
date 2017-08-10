@@ -21,10 +21,10 @@
  ****************************************************************/
 
 import QtQuick 2.5
+import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.1
 
 import Material 0.3
-import Material.Extras 0.1
 import Material.ListItems 0.1 as ListItem
 
 Rectangle
@@ -33,11 +33,9 @@ Rectangle
 
 	property bool borderless: false
 	property bool attemptLogin: false
+	property bool prev_is_bad: false
 
-	width: dp(400)
-	height: dp(470)
-
-	color: "#eeeeee"
+	anchors.fill: parent
 
 	state: "waiting_init"
 	states:[
@@ -67,8 +65,21 @@ Rectangle
 			name: "waiting_init"
 			PropertyChanges { target: mask; state: "visible"}
 			StateChangeScript {script: {runStateHelper.setRunState("waiting_init")}}
+		},
+		State {
+			name: "checking_pass"
+			PropertyChanges { target: mask; state: "visible"}
 		}
 	]
+
+	transitions: Transition {
+		from: "checking_pass"
+		to: "waiting_account_select"
+
+		ScriptAction {
+			script: {passwordLogin.incorrect = main.prev_is_bad}
+		}
+	}
 
 	Component.onCompleted: {
 		getRunState()
@@ -109,8 +120,15 @@ Rectangle
 			if(jsonData) {
 				if(jsonData.data) {
 					if (jsonData.data.key_name) {
-						passwordLogin.incorrect = jsonData.data.prev_is_bad;
+						if(main.state == "checking_pass")
+							main.prev_is_bad = jsonData.data.prev_is_bad
+						else {
+							main.prev_is_bad = jsonData.data.prev_is_bad
+							passwordLogin.incorrect = main.prev_is_bad
+						}
+
 						if(jsonData.data.want_password) {
+							main.state = "checking_pass"
 							var jsonPass = { password: passwordLogin.text }
 							rsApi.request("/control/password/", JSON.stringify(jsonPass), function(){})
 						}
@@ -124,6 +142,8 @@ Rectangle
 		id: locationsModel
 		query: "$.data[*]"
 	}
+
+	CustomFontLoader {}
 
 	AppTheme {
 		primaryColor: Palette.colors["green"]["500"]
@@ -160,23 +180,10 @@ Rectangle
 
 		transitions: [
 			Transition {
-				from: "visible"; to: "invisible"
 				NumberAnimation {
-					properties: "opacity"
-					from: 1
-					to: 0
+					property: "opacity"
 					easing.type: Easing.InOutQuad
-					duration: MaterialAnimation.pageTransitionDuration*2
-				}
-			},
-			Transition {
-				from: "invisible"; to: "visible"
-				NumberAnimation {
-					properties: "opacity"
-					from: 0
-					to: 1
-					easing.type: Easing.InOutQuad
-					duration: MaterialAnimation.pageTransitionDuration*2
+					duration: 250*2
 				}
 			}
 		]
@@ -185,695 +192,1122 @@ Rectangle
 			anchors.fill: parent
 
 			hoverEnabled: true
-			onClicked: {}
-			onPressed: {}
+
+			onClicked: {
+				if(mouse.button == Qt.LeftButton)
+					qMainPanel.mouseLPressed()
+			}
+			onPressed: {
+				if(mouse.button == Qt.LeftButton)
+					qMainPanel.mouseLPressed()
+			}
 		}
 
-		View {
-			anchors.centerIn: parent
+		Rectangle {
+			anchors.fill: parent
 
-			height: parent.height*0.3
-			width: parent.width
+			color: Qt.rgba(1,1,1,0.85)
 
-			elevation: 2
+			Image {
+				id: logoMask
 
-			Text {
-				anchors {
-					horizontalCenter: parent.horizontalCenter
-					bottom: parent.verticalCenter
-					bottomMargin: dp(3)
-				}
+				anchors.centerIn: parent
+				height: parent.height*0.3
+				width: parent.width*0.3
 
-				font {
-					family: "Roboto"
-					pixelSize: 18
-				}
-
-				text: "PLEASE WAIT"
-				color: Qt.rgba(0,0,0,0.85)
+				source: "/logo.png"
+				fillMode: Image.PreserveAspectFit
+				mipmap: true
 			}
 
 			ProgressCircle {
 				anchors {
+					top: logoMask.bottom
 					horizontalCenter: parent.horizontalCenter
-					top: parent.verticalCenter
-					topMargin: dp(3)
 				}
 
-				width: dp(27)
-				height: dp(27)
-				dashThickness: dp(4)
+				width: dp(35)
+				height: dp(35)
+				dashThickness: dp(5)
 
-				color: Theme.accentColor
+				color: Theme.primaryColor
 			}
 		}
 	}
 
-	Image{
-		id: bgImage
+	Image {
+		anchors {
+			top: parent.top
+			right: parent.right
+			left: parent.horizontalCenter
+			bottom: parent.bottom
+		}
 
-		anchors.fill: parent
-
-		source: "/colorful.jpg"
+		source: "/robin.jpg"
 		fillMode: Image.PreserveAspectCrop
+		clip: true
 
-		Component.onCompleted: {
-			if(borderless)
-			{
-				Qt.createQmlObject('
-                import QtQuick 2.5
-                import QtQuick.Layouts 1.1
+		mipmap: true
+		smooth: true
 
-                import Material 0.3
-                import Material.Extras 0.1
+		Image {
+			anchors.fill: parent
 
-                Row {
-                    anchors {
-                        top: parent.top
-                        right: parent.right
-                        rightMargin: dp(parent.width*0.05)
-                    }
+			source: "/colorful.png"
+			fillMode: Image.PreserveAspectCrop
+			opacity: 0.5
+		}
 
-                    spacing: 5 * Units.dp
+		Item {
+			anchors {
+				left: parent.left
+				right: parent.right
+				bottom: parent.bottom
+				bottomMargin: parent.height*0.65*0.25
+			}
 
-                    MouseArea {
+			Text {
+				anchors {
+					bottom: secondText.top
+					left: parent.left
+					right: parent.right
+
+					leftMargin: parent.width*0.15
+					rightMargin: parent.width*0.15
+				}
+
+				verticalAlignment: Text.AlignBottom
+				height: dp(40)
+
+				color: "white"
+				text: "Welcome to Emoty"
+				font.family: "Roboto"
+				font.weight: Font.Black
+				font.pixelSize: dp(34)
+
+				wrapMode: Text.WordWrap
+			}
+
+			Text {
+				id: secondText
+				anchors {
+					bottom: parent.bottom
+					left: parent.left
+					right: parent.right
+
+					leftMargin: parent.width*0.15
+					rightMargin: parent.width*0.15
+				}
+
+				verticalAlignment: Text.AlignTop
+				height: dp(27)
+
+				color: "white"
+				text: "Sign in or simply get your free account"
+				font.family: "Roboto"
+				font.pixelSize: dp(14)
+
+				wrapMode: Text.WordWrap
+			}
+		}
+	}
+
+	Rectangle {
+		id: loginBody
+
+		anchors {
+			top: parent.top
+			left: parent.left
+			right: parent.horizontalCenter
+			bottom: parent.bottom
+		}
+
+		Image {
+			id: logo
+
+			anchors {
+				top: parent.top
+				left: parent.left
+				right: parent.right
+				topMargin: parent.width*0.05
+				leftMargin: parent.width*0.3
+				rightMargin: parent.width*0.3
+			}
+
+			height: parent.height*0.35
+
+			source: "/logo.png"
+			fillMode: Image.PreserveAspectFit
+			mipmap: true
+
+			Component.onCompleted: {
+				if(borderless)
+				{
+					Qt.createQmlObject('
+                    import QtQuick 2.5
+                    import QtQuick.Layouts 1.1
+
+                    import Material 0.3
+                    import Material.Extras 0.1
+
+                    Row {
                         anchors {
                             top: parent.top
-                            topMargin: dp(10)
+                            right: parent.right
+                            rightMargin: dp(17)
+                            topMargin: dp(12)
                         }
 
-                        width: dp(24)
-                        height: closeButton.height - dp(7)
+                        z: 100
+                        spacing: 7 * Units.dp
 
-                        hoverEnabled: true
-                        z:1
+                        MouseArea {
+                            anchors.top: parent.top
 
-                        onEntered: mini.color = Theme.accentColor
-                        onExited: mini.color = "white"
-                        onClicked: qMainPanel.pushButtonMinimizeClicked()
+                            width: dp(24)
+                            height: closeButton.height - dp(7)
 
-                        Rectangle {
-                            id: mini
+                            hoverEnabled: true
+                            z:1
 
-                            anchors.bottom: parent.bottom
+                            onEntered: mini.color = Theme.accentColor
+                            onExited: mini.color = "white"
+                            onClicked: qMainPanel.pushButtonMinimizeClicked()
 
-                            width: parent.width
-                            height: dp(3)
+                            Rectangle {
+                                id: mini
 
+                                anchors.bottom: parent.bottom
+
+                                width: parent.width
+                                height: dp(3)
+
+                                color: "white"
+                            }
+                        }
+
+                        IconButton {
+                            id: closeButton
+
+                            anchors.top: parent.top
+
+                            iconSource: "/navigation_close.png"
+                            inkHeight: closeButton.height
+                            inkWidth: closeButton.width
+                            size: dp(35)
                             color: "white"
+
+                            onEntered: closeButton.color = Theme.accentColor
+                            onExited: closeButton.color = "white"
+                            onClicked: Qt.quit()
                         }
-                    }
-
-                    IconButton {
-                        id: closeButton
-
-                        anchors {
-                            top: parent.top
-                            topMargin: dp(10)
-                        }
-
-                        iconSource: "/navigation_close.png"
-                        inkHeight: closeButton.height
-                        inkWidth: closeButton.width
-                        size: dp(35)
-                        color: "white"
-
-                        onEntered: closeButton.color = Theme.accentColor
-                        onExited: closeButton.color = "white"
-                        onClicked: Qt.quit()
-                    }
-                }', main);
+                    }', main);
+				}
 			}
 		}
 
-		View {
-			id: mainview
+		IconButton {
+			id: advButton
 
-			anchors.horizontalCenter: parent.horizontalCenter
+			anchors {
+				top: parent.top
+				topMargin: parent.width*0.05
+				right: parent.right
+				rightMargin: parent.width*0.05
+			}
 
-			y: parent.height*0.4
-			width: parent.width*0.88
-			height: parent.height*0.52
+			iconName: "awesome/cog"
+			hoverAnimation: true
+			size: dp(30)
+			color: Theme.light.disabledColor
 
-			elevation: 4
+			opacity: loginContent.state == "signUp" ? 1 : 0
 
-			Column {
-				id: column
-
-				anchors {
-					fill: parent
-					topMargin: dp(parent.height*0.08)
-					leftMargin: parent.width*0.05
-					rightMargin: parent.width*0.07
-					bottomMargin: dp(parent.height*0.28)
-				}
-
-				ListItem.Standard {
-					margins: 0
-					spacing: dp(5)
-					action: Icon {
-						anchors.centerIn: parent
-						name: "awesome/user"
-					}
-
-					content: TextField {
-						id: usernameLogin
-
-						property alias selectedIndex: listView.currentIndex
-
-						anchors.centerIn: parent
-						width: parent.width
-
-						color: Theme.primaryColor
-						readOnly: true
-						text: locationsModel.count > 0 ? listView.currentItem.text : ""
-						placeholderText: "Username"
-
-						IconButton {
-							id: overflowButton2
-
-							anchors {
-								right: parent.right
-								rightMargin: dp(8)
-							}
-
-							width: parent.height
-							height: parent.height
-
-							iconName: "awesome/caret_down"
-							color: Theme.light.textColor
-
-							onClicked: overflowMenu2.open(overflowButton2, dp(7), 25 * Units.dp)
-							onEntered: color = Theme.primaryColor
-							onExited: color = Theme.light.textColor
-						}
-
-						Dropdown {
-							id: overflowMenu2
-
-							objectName: "overflowMenu2"
-							overlayLayer: "dialogOverlayLayer"
-
-							width: 200 * Units.dp
-							height: Math.min(8 * 48 * Units.dp + 16 * Units.dp, locationsModel.count * 40 * Units.dp)
-
-							enabled: true
-
-							ListView {
-								id: listView
-
-								anchors.fill: parent
-
-								model: locationsModel.model
-								delegate: ListItem.Standard {
-									height: dp(40)
-									text: model.name
-									onClicked: {
-										listView.currentIndex = index
-										overflowMenu2.close()
-									}
-								}
-							}
-
-							Scrollbar {
-								flickableItem: listView
+			Behavior on opacity {
+				SequentialAnimation {
+					ScriptAction {
+						script: {
+							if(loginContent.state == "signUp") {
+								advButton.visible = true
+								advButton.enabled = true
 							}
 						}
 					}
-				}
-
-				ListItem.Standard {
-					height: dp(58)
-					margins: 0
-					spacing: dp(5)
-					action: Icon {
-						anchors.centerIn: parent
-						name: "awesome/unlock_alt"
+					NumberAnimation {
+						easing.type: Easing.InOutQuad
+						duration: 250
 					}
-
-					content: TextField {
-						id: passwordLogin
-						property bool incorrect: false
-
-						anchors.centerIn: parent
-						width: parent.width
-
-						color: Theme.primaryColor
-
-						echoMode: TextInput.Password
-						placeholderText: "Password"
-
-						helperText: incorrect ?  "Incorrect password" : ""
-						hasError: incorrect
-
-						onAccepted: {
-							if(passwordLogin.text.length >= 3) {
-								var jsonData = {
-									id: locationsModel.model.get(usernameLogin.selectedIndex).id
-								}
-
-								rsApi.request("/control/login/", JSON.stringify(jsonData), function(){})
-								main.attemptLogin = true
+					ScriptAction {
+						script: {
+							if(loginContent.state != "signUp") {
+								advButton.visible = false
+								advButton.enabled = false
 							}
-							else
-								passwordLogin.incorrect = true
-						}
-					}
-				}
-
-				Item {
-					height: dp(1)
-					width: parent.width
-
-					RowLayout {
-						anchors {
-							left: parent.left
-							leftMargin: dp(29)
-						}
-
-						y: passwordLogin.incorrect ? -dp(15) : -dp(25)
-						spacing: -dp(10)
-
-						CheckBox {
-							id: checkBox
-
-							darkBackground: false
-							enabled: false
-						}
-
-						Label {
-							text: "Remember me"
-							color: checkBox.enabled ? Theme.light.textColor : Theme.light.hintColor
-
-							MouseArea{
-								anchors.fill: parent
-								enabled: false
-
-								onClicked: {
-								  checkBox.checked = !checkBox.checked
-								  checkBox.clicked()
-								}
-							}
-						}
-					}
-				}
-
-				Item {
-					height: dp(65)
-					width: parent.width
-
-					Button {
-						anchors {
-							bottom: parent.bottom
-							horizontalCenter: parent.horizontalCenter
-						}
-
-						text: "Login"
-						textColor: Theme.primaryColor
-						size: dp(23)
-
-						onClicked: {
-							if(passwordLogin.text.length >= 3) {
-								var jsonData = {
-									id: locationsModel.model.get(usernameLogin.selectedIndex).id
-								}
-
-								rsApi.request("/control/login/", JSON.stringify(jsonData), function(){})
-								main.attemptLogin = true
-							}
-							else
-								passwordLogin.incorrect = true
 						}
 					}
 				}
 			}
 
-			Rectangle {
-				id: buttonCreate
+			onClicked: overflowMenu.open(advButton, -25 * Units.dp, 25 * Units.dp)
+		}
 
-				anchors {
-					bottom: parent.bottom
-					horizontalCenter: parent.horizontalCenter
+		Dropdown {
+			id: overflowMenu
+
+			objectName: "overflowMenu"
+			overlayLayer: "dialogOverlayLayer"
+
+			width: dp(300)
+			height: columnView.height + columnView2.height
+
+			enabled: true
+
+			Behavior on height {
+				NumberAnimation { duration: 200 }
+			}
+
+			Rectangle {
+				anchors.top: parent.top
+
+				width: parent.width
+				height: columnView.height
+
+				z: 1
+
+				Column {
+					id: columnView
+
+					anchors.top: parent.top
+					width: parent.width
+
+					spacing: 0
+
+					Item {
+						width: parent.width
+						height: dp(10)
+					}
+
+					Item {
+						width: parent.width
+						height: dp(38)
+
+						TextField {
+							id: node
+
+							anchors.centerIn: parent
+							width: parent.width-dp(32)
+
+							placeholderText: "Node name"
+							floatingLabel: true
+							text: "Desktop"
+							font.family: "Roboto"
+							font.pixelSize: dp(16)
+						}
+					}
+
+					ListItem.Subtitled {
+						text: "TOR/I2P Hidden node"
+
+						height: dp(43)
+
+						secondaryItem: Switch {
+							id: hiddenNode
+							anchors.verticalCenter: parent.verticalCenter
+							enabled: true
+						}
+
+						onClicked: {
+							hiddenNode.checked = !hiddenNode.checked
+						}
+					}
+				}
+			}
+
+
+
+			Column {
+				id: columnView2
+
+				anchors.bottom: parent.bottom
+				width: parent.width
+
+				spacing: 0
+
+				Item {
+					width: parent.width
+					height: hiddenNode.checked ? dp(10) : 0
 				}
 
-				color: Theme.primaryColor
+				Item {
+					width: parent.width
+					height: hiddenNode.checked ? dp(38) : 0
 
-				state: "button"
+					enabled: hiddenNode.checked
+					visible: hiddenNode.checked
+
+					TextField {
+						id: hiddenAddress
+
+						anchors.centerIn: parent
+						width: parent.width-dp(32)
+
+						placeholderText: "TOR/I2P address"
+						floatingLabel: true
+						text: "xa76giaf6ifda7ri63i263.onion"
+					}
+				}
+
+				Item {
+					width: parent.width
+					height: hiddenNode.checked ? dp(10) : 0
+				}
+
+				Item {
+					width: parent.width
+					height: hiddenNode.checked ? dp(38) : 0
+
+					enabled: hiddenNode.checked
+					visible: hiddenNode.checked
+
+					TextField {
+						id: port
+
+						anchors.centerIn: parent
+						width: parent.width-dp(32)
+
+						placeholderText: "Port"
+						floatingLabel: true
+						text: "7812"
+
+						validator: IntValidator {bottom: 0; top: 65535;}
+					}
+				}
+			}
+		}
+
+		Item {
+			anchors {
+				top: logo.bottom
+				left: parent.left
+				right: parent.right
+				bottom: parent.bottom
+
+				leftMargin: parent.width*0.2
+				rightMargin: parent.width*0.2
+			}
+
+			Item {
+				id: loginContent
+				anchors {
+					top: parent.top
+					left: parent.left
+					right: parent.right
+					bottom: buttonsRow.top
+				}
+
+				clip: true
+
+				state: "signIn"
+
 				states: [
 					State {
-						name: "button";
-						PropertyChanges {
-							target: buttonCreate
-							width: mainview.width
-							height: parent.height*0.18
-						}
-						PropertyChanges { target: text; visible: true}
-						PropertyChanges { target: switchButton; visible: false}
-						PropertyChanges { target: overflowButton; visible: false}
-						PropertyChanges { target: column2; visible: false}
-						PropertyChanges { target: buttonCreate2; visible: false}
+						name: "signIn";
+						PropertyChanges { target: signInContent; x: 0}
+						PropertyChanges { target: signInContent; opacity: 1}
+
+						PropertyChanges { target: signUpContent; x: width}
+						PropertyChanges { target: signUpContent; opacity: 0}
 					},
 					State {
-						name: "reg";
-						PropertyChanges {
-							target: buttonCreate
-							anchors.bottomMargin: 0
-							height: mainview.height
-							width: mainview.width
-						}
-						PropertyChanges { target: text; visible: false}
-						PropertyChanges { target: switchButton; visible: true}
-						PropertyChanges { target: overflowButton; visible: true}
-						PropertyChanges { target: column2; visible: true}
-						PropertyChanges { target: buttonCreate2; visible: true}
+						name: "signUp";
+						PropertyChanges { target: signInContent; x: -width}
+						PropertyChanges { target: signInContent; opacity: 0}
+
+						PropertyChanges { target: signUpContent; x: 0}
+						PropertyChanges { target: signUpContent; opacity: 1}
 					}
 				]
 
 				transitions: [
 					Transition {
+						from: "signIn"; to: "signUp"
+
 						ParallelAnimation {
 							NumberAnimation {
-								target: buttonCreate
-								property: "anchors.bottomMargin"
-								duration: 120
+								target: signInContent
+								property: "x"
+								easing.type: Easing.InOutQuad
+								duration: 250
 							}
 							NumberAnimation {
-								target: buttonCreate
-								property: "height"
-								duration: 120
+								target: signInContent
+								property: "opacity"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+
+							NumberAnimation {
+								target: signUpContent
+								property: "x"
+								easing.type: Easing.InOutQuad
+								duration: 250
 							}
 							NumberAnimation {
-								target: buttonCreate
-								property: "width"
-								duration: 120
+								target: signUpContent
+								property: "opacity"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+						}
+					},
+					Transition {
+						from: "signUp"; to: "signIn"
+
+						ParallelAnimation {
+							NumberAnimation {
+								target: signInContent
+								property: "x"
+								easing.type: Easing.InOutQuad
+								duration: 250
 							}
 							NumberAnimation {
-								target: text
-								property: "visible"
-								duration: 50
+								target: signInContent
+								property: "opacity"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+
+							NumberAnimation {
+								target: signUpContent
+								property: "x"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							NumberAnimation {
+								target: signUpContent
+								property: "opacity"
+								easing.type: Easing.InOutQuad
+								duration: 250
 							}
 						}
 					}
 				]
 
-				Text {
-					id: text
+				Item {
+					id: signInContent
 
-					anchors {
-						verticalCenter: parent.verticalCenter
-						horizontalCenter: parent.horizontalCenter
-					}
-
-					font {
-						pixelSize: dp(20)
-						family: "Roboto"
-					}
-
-					text: "Create an account"
-					color: "white"
-				}
-
-				MouseArea {
-					anchors.fill: parent
-					onClicked: buttonCreate.state = "reg"
-				}
-
-				IconButton {
-					id: overflowButton
-
-					anchors {
-						top: parent.top
-						topMargin: dp(10)
-						right: parent.right
-						rightMargin: dp(parent.width*0.05)
-					}
-
-					iconName: "awesome/cog"
-					hoverAnimation: true
-					size: dp(25)
-					color: "white"
-
-					onClicked: overflowMenu.open(overflowButton, -25 * Units.dp, 25 * Units.dp)
-				}
-
-				IconButton {
-					id: switchButton
-
-					anchors {
-						top: parent.top
-						topMargin: dp(10)
-						left: parent.left
-						leftMargin: dp(parent.width*0.05)
-					}
-
-					iconName: "awesome/chevron_left"
-					size: dp(25)
-					color: "white"
-
-					onClicked: buttonCreate.state = "button"
-				}
-
-				Dropdown {
-					id: overflowMenu
-
-					objectName: "overflowMenu"
-					overlayLayer: "dialogOverlayLayer"
-
-					width: 250 * Units.dp
-					height: columnView.height + columnView2.height
-
-					enabled: true
-
-					Behavior on height {
-						NumberAnimation { duration: 200 }
-					}
-
-					Rectangle {
-						anchors.top: parent.top
-
-						width: parent.width
-						height: columnView.height
-
-						z: 1
-
-						Column {
-							id: columnView
-
-							anchors.top: parent.top
-							width: parent.width
-
-							spacing: 0
-
-							Item {
-								width: parent.width
-								height: dp(10)
-							}
-
-							Item {
-								width: parent.width
-								height: dp(38)
-
-								TextField {
-									id: node
-
-									anchors.centerIn: parent
-									width: parent.width-dp(32)
-
-									placeholderText: "Node name"
-									floatingLabel: true
-									text: "Desktop"
-								}
-							}
-
-							ListItem.Subtitled {
-								text: "TOR/I2P Hidden node"
-
-								height: dp(43)
-
-								secondaryItem: Switch {
-									id: hiddenNode
-									anchors.verticalCenter: parent.verticalCenter
-									enabled: true
-								}
-
-								onClicked: {
-									hiddenNode.checked = !hiddenNode.checked
-								}
-							}
-						}
-					}
-
-
+					width: parent.width
+					height: parent.height
 
 					Column {
-						id: columnView2
-
-						anchors.bottom: parent.bottom
-						width: parent.width
-
-						spacing: 0
-
-						Item {
-							width: parent.width
-							height: hiddenNode.checked ? dp(10) : 0
+						anchors {
+							fill: parent
+							leftMargin: -dp(8)
 						}
 
-						Item {
-							width: parent.width
-							height: hiddenNode.checked ? dp(38) : 0
+						ListItem.Standard {
+							margins: 0
+							spacing: dp(5)
+							action: Icon {
+								anchors.centerIn: parent
+								name: "awesome/user"
+							}
 
-							enabled: hiddenNode.checked
-							visible: hiddenNode.checked
+							content: TextField {
+								id: usernameLogin
 
-							TextField {
-								id: hiddenAddress
+								property alias selectedIndex: listView.currentIndex
 
 								anchors.centerIn: parent
-								width: parent.width-dp(32)
+								width: parent.width
 
-								placeholderText: "TOR/I2P address"
-								floatingLabel: true
-								text: "xa76giaf6ifda7ri63i263.onion"
+								color: Theme.primaryColor
+								readOnly: true
+								text: locationsModel.count > 0 ? listView.currentItem.text : ""
+								placeholderText: "Username"
+
+								IconButton {
+									id: overflowButton2
+
+									anchors {
+										right: parent.right
+										rightMargin: dp(8)
+									}
+
+									width: parent.height
+									height: parent.height
+
+									iconName: "awesome/caret_down"
+									color: Theme.light.iconColor
+
+									onClicked: overflowMenu2.open(overflowButton2, dp(7), 25 * Units.dp)
+									onEntered: color = Theme.primaryColor
+									onExited: color = Theme.light.iconColor
+								}
+
+								Dropdown {
+									id: overflowMenu2
+
+									objectName: "overflowMenu2"
+									overlayLayer: "dialogOverlayLayer"
+
+									width: 200 * Units.dp
+									height: Math.min(8 * 48 * Units.dp + 16 * Units.dp, locationsModel.count * 40 * Units.dp)
+
+									enabled: true
+
+									ListView {
+										id: listView
+
+										anchors.fill: parent
+
+										model: locationsModel.model
+										delegate: ListItem.Standard {
+											height: dp(40)
+											text: model.name
+											onClicked: {
+												listView.currentIndex = index
+												overflowMenu2.close()
+											}
+										}
+									}
+
+									Scrollbar {
+										flickableItem: listView
+									}
+								}
+							}
+						}
+
+						ListItem.Standard {
+							height: dp(58)
+							margins: 0
+							spacing: dp(5)
+							action: Icon {
+								anchors.centerIn: parent
+								name: "awesome/unlock_alt"
+							}
+
+							content: TextField {
+								id: passwordLogin
+								property bool incorrect: false
+
+								anchors.centerIn: parent
+								width: parent.width
+
+								color: Theme.primaryColor
+
+								echoMode: TextInput.Password
+								placeholderText: "Password"
+
+								helperText: incorrect ?  "Incorrect password" : ""
+								hasError: incorrect
+
+								onAccepted: {
+									if(passwordLogin.text.length >= 3) {
+										passwordLogin.incorrect = false
+										main.attemptLogin = true
+										var jsonData = {
+											id: locationsModel.model.get(usernameLogin.selectedIndex).id
+										}
+
+										rsApi.request("/control/login/", JSON.stringify(jsonData), function(){})
+									}
+									else
+										passwordLogin.incorrect = true
+								}
 							}
 						}
 
 						Item {
+							height: dp(1)
 							width: parent.width
-							height: hiddenNode.checked ? dp(10) : 0
-						}
 
-						Item {
-							width: parent.width
-							height: hiddenNode.checked ? dp(38) : 0
+							RowLayout {
+								anchors {
+									left: parent.left
+									leftMargin: dp(29)
+								}
 
-							enabled: hiddenNode.checked
-							visible: hiddenNode.checked
+								y: passwordLogin.incorrect ? -dp(10) : -dp(25)
+								spacing: -dp(10)
 
-							TextField {
-								id: port
+								CheckBox {
+									id: checkBox
 
-								anchors.centerIn: parent
-								width: parent.width-dp(32)
+									darkBackground: false
+									enabled: false
+								}
 
-								placeholderText: "Port"
-								floatingLabel: true
-								text: "7812"
+								Label {
+									text: "Remember me"
+									color: checkBox.enabled ? Theme.light.iconColor : Theme.light.disabledColor
 
-								validator: IntValidator {bottom: 0; top: 65535;}
+									MouseArea{
+										anchors.fill: parent
+										enabled: false
+
+										onClicked: {
+										  checkBox.checked = !checkBox.checked
+										  checkBox.clicked()
+										}
+									}
+								}
 							}
 						}
 					}
 				}
 
-				Column {
-					id: column2
+				Item {
+					id: signUpContent
+
+					width: parent.width
+					height: parent.height
+
+					Column {
+						anchors {
+							fill: parent
+							leftMargin: -dp(8)
+						}
+
+						ListItem.Standard {
+							margins: 0
+							spacing: dp(5)
+							action: Icon {
+								anchors.centerIn: parent
+								name: "awesome/user"
+							}
+
+							content: TextField {
+								id: username
+								property bool emptyName: false
+
+								anchors.centerIn: parent
+								anchors.verticalCenterOffset: emptyName ? -dp(5) : 0
+								width: parent.width
+
+								color: Theme.primaryColor
+								placeholderText: "Username"
+								focus: true
+
+								helperText: emptyName ?  "Name is too short" : ""
+								hasError: emptyName
+							}
+						}
+
+						ListItem.Standard {
+							margins: 0
+							spacing: dp(5)
+							action: Icon {
+								anchors.centerIn: parent
+								name: "awesome/unlock_alt"
+							}
+
+							content: TextField {
+								id: password
+
+								anchors.centerIn: parent
+								width: parent.width
+
+								color: Theme.primaryColor
+								echoMode: TextInput.Password
+								placeholderText: "Password"
+
+								hasError: password2.different
+							}
+						}
+
+						ListItem.Standard {
+							margins: 0
+							spacing: dp(5)
+							action: Icon {
+								anchors.centerIn: parent
+								name: "awesome/unlock_alt"
+							}
+
+							content: TextField {
+								id: password2
+
+								property bool different: false
+								anchors.centerIn: parent
+								anchors.verticalCenterOffset: -dp(5)
+								width: parent.width
+
+								color: Theme.primaryColor
+								placeholderText: "Repeat password"
+
+								echoMode: TextInput.Password
+
+								helperText: "Password cannot be recovered"
+								hasError: different
+
+								onAccepted: {
+									username.emptyName = false
+									password2.different = false
+									password2.helperText = ""
+
+									if(username.text.length >= 3 && password.text.length >= 3 && password.text === password2.text) {
+										var jsonData = {
+											pgp_name: username.text,
+											ssl_name: node.text,
+											pgp_password: password.text,
+											hidden_adress: hiddenNode.checked ? hiddenAddress.text : "",
+											hidden_port: hiddenNode.checked ? port.text : ""
+										}
+
+										rsApi.request("/control/create_location/", JSON.stringify(jsonData), function(){})
+									}
+									else {
+										if(username.text.length < 3)
+											username.emptyName = true
+
+										if(password.text.length < 3) {
+											password2.different = true
+											password2.helperText = "Password is too short"
+										}
+										else if(password.text !== password2.text) {
+											password2.different = true
+											password2.helperText = "Passwords do not match"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			Item {
+				id: buttonsRow
+				anchors {
+					left: parent.left
+					right: parent.right
+					bottom: parent.bottom
+
+					bottomMargin: parent.height*0.25
+				}
+
+				height: 40
+				state: "signIn"
+
+				states: [
+					State {
+						name: "signIn";
+						PropertyChanges { target: signIn; width: parent.width*0.75}
+						PropertyChanges { target: signIn; opacityColor: 0.8}
+						PropertyChanges { target: signIn; textColor: Qt.rgba(1,1,1,1)}
+						PropertyChanges { target: signIn; letterSpacing: 2}
+						PropertyChanges { target: signIn; backgroundColor: "white"}
+
+						PropertyChanges { target: signUp; width: parent.width*0.25}
+						PropertyChanges { target: signUp; opacityColor: 0}
+						PropertyChanges { target: signUp; textColor: Theme.light.iconColor}
+						PropertyChanges { target: signUp; letterSpacing: 0}
+						PropertyChanges { target: signUp; backgroundColor: "transparent"}
+					},
+					State {
+						name: "signUp";
+						PropertyChanges { target: signIn; width: parent.width*0.25}
+						PropertyChanges { target: signIn; opacityColor: 0}
+						PropertyChanges { target: signIn; textColor: Theme.light.iconColor}
+						PropertyChanges { target: signIn; letterSpacing: 0}
+						PropertyChanges { target: signIn; backgroundColor: "transparent"}
+
+						PropertyChanges { target: signUp; width: parent.width*0.75}
+						PropertyChanges { target: signUp; opacityColor: 0.8}
+						PropertyChanges { target: signUp; textColor: Qt.rgba(1,1,1,1)}
+						PropertyChanges { target: signUp; letterSpacing: 2}
+						PropertyChanges { target: signUp; backgroundColor: "white"}
+					}
+				]
+
+				transitions: [
+					Transition {
+						from: "signIn"; to: "signUp"
+
+						ParallelAnimation {
+							NumberAnimation {
+								target: signIn
+								property: "width"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							NumberAnimation {
+								target: signIn
+								property: "opacityColor"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							ColorAnimation {
+								target: signIn
+								property: "textColor"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							NumberAnimation {
+								target: signIn
+								property: "letterSpacing"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+
+							NumberAnimation {
+								target: signUp
+								property: "width"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							NumberAnimation {
+								target: signUp
+								property: "opacityColor"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							ColorAnimation {
+								target: signUp
+								property: "textColor"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							NumberAnimation {
+								target: signUp
+								property: "letterSpacing"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+						}
+					},
+					Transition {
+						from: "signUp"; to: "signIn"
+
+						ParallelAnimation {
+							NumberAnimation {
+								target: signIn
+								property: "width"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							NumberAnimation {
+								target: signIn
+								property: "opacityColor"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							ColorAnimation {
+								target: signIn
+								property: "textColor"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							NumberAnimation {
+								target: signIn
+								property: "letterSpacing"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+
+							NumberAnimation {
+								target: signUp
+								property: "width"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							NumberAnimation {
+								target: signUp
+								property: "opacityColor"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							ColorAnimation {
+								target: signUp
+								property: "textColor"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+							NumberAnimation {
+								target: signUp
+								property: "letterSpacing"
+								easing.type: Easing.InOutQuad
+								duration: 250
+							}
+						}
+					}
+				]
+
+				View {
+					id: signIn
+
+					property real opacityColor: 0.8
+					property real letterSpacing: 0
+					property color textColor: Qt.rgba(0,0,0,0)
 
 					anchors {
-						fill: parent
-						topMargin: dp(parent.height*0.08)
-						leftMargin: parent.width*0.05
-						rightMargin: parent.width*0.05
-						bottomMargin: dp(parent.height*0.28)
+						top: parent.top
+						left: parent.left
+						bottom: parent.bottom
 					}
 
+					radius: height/2
 
-					Item {
-						width: dp(1)
-						height: parent.height*0.15
+					Rectangle {
+						id: circleMask
+						anchors.fill: parent
+
+						smooth: true
+						visible: false
+
+						radius: height/2
 					}
 
-					ListItem.Standard {
-						margins: 0
-						spacing: dp(5)
-						action: Icon {
-							anchors.centerIn: parent
+					OpacityMask {
+						anchors.fill: parent
+						maskSource: circleMask
+						source: colorfulSignIn
 
-							name: "awesome/user"
-							color: "white"
-						}
-
-						content: TextField {
-							id: username
-							property bool emptyName: false
-
-							anchors.centerIn: parent
-							anchors.verticalCenterOffset: emptyName ? -dp(5) : 0
-							width: parent.width
-
-							color: "white"
-							textColor: "white"
-
-							placeholderTextColor: Qt.rgba(255,255,255,0.65)
-							placeholderText: "Username"
-
-							focus: true
-							borderColor: Qt.rgba(255,255,255,0.5)
-
-							helperText: emptyName ?  "Name is too short" : ""
-							hasError: emptyName
-						}
+						opacity: signIn.opacityColor
 					}
 
-					ListItem.Standard {
-						margins: 0
-						spacing: dp(5)
-						action: Icon {
-							anchors.centerIn: parent
+					Image {
+						id: colorfulSignIn
+						anchors.fill: parent
 
-							name: "awesome/unlock_alt"
-							color: "white"
-						}
-
-						content: TextField {
-							id: password
-
-							anchors.centerIn: parent
-							width: parent.width
-
-							color: "white"
-							textColor: "white"
-							echoMode: TextInput.Password
-
-							placeholderTextColor: Qt.rgba(255,255,255,0.65)
-							placeholderText: "Password"
-
-							borderColor: Qt.rgba(255,255,255,0.5)
-
-							hasError: password2.different
-						}
+						source: "/colorful.png"
+						fillMode: Image.PreserveAspectCrop
+						mipmap: true
+						smooth: true
+						visible: false
 					}
 
-					ListItem.Standard {
-						margins: 0
-						spacing: dp(5)
-						action: Icon {
-							anchors.centerIn: parent
+					Text {
+						anchors.fill: parent
 
-							name: "awesome/unlock_alt"
-							color: "white"
+						horizontalAlignment: Text.AlignHCenter
+						verticalAlignment: Text.AlignVCenter
+
+						color: signIn.textColor
+						text: "Sign in"
+						font.family: "Roboto"
+						font.weight: signIn.letterSpacing == 0 ? Font.Normal : Font.Black
+						font.pixelSize: 12 + signIn.letterSpacing
+						font.letterSpacing: signIn.letterSpacing
+						font.capitalization: Font.AllUppercase
+
+						wrapMode: Text.WordWrap
+					}
+
+					MouseArea {
+						anchors.fill: parent
+						hoverEnabled: true
+
+						onClicked: {
+							if(buttonsRow.state == "signUp") {
+								buttonsRow.state = "signIn"
+								loginContent.state = "signIn"
+							}
+							else if(buttonsRow.state == "signIn") {
+								if(passwordLogin.text.length >= 3) {
+									passwordLogin.incorrect = false
+									main.attemptLogin = true
+									var jsonData = {
+										id: locationsModel.model.get(usernameLogin.selectedIndex).id
+									}
+
+									rsApi.request("/control/login/", JSON.stringify(jsonData), function(){})
+								}
+								else
+									passwordLogin.incorrect = true
+							}
 						}
 
-						content: TextField {
-							id: password2
+						onEntered: {
+							if(buttonsRow.state != "signIn")
+								signIn.textColor = "#4CAF50"
+							else if(buttonsRow.state != "signUp")
+								signIn.elevation = 1
+						}
+						onExited: {
+							if(buttonsRow.state != "signIn")
+								signIn.textColor = Theme.light.iconColor
+							else if(buttonsRow.state != "signUp")
+								signIn.elevation = 0
+						}
+					}
+				}
 
-							property bool different: false
-							anchors.centerIn: parent
-							anchors.verticalCenterOffset: -dp(5)
-							width: parent.width
+				View {
+					id: signUp
 
-							color: "white"
-							textColor: "white"
+					property real opacityColor: 0
+					property real letterSpacing: 0
+					property color textColor: Theme.light.iconColor
 
-							placeholderTextColor: Qt.rgba(255,255,255,0.65)
-							placeholderText: "Repeat password"
+					anchors {
+						top: parent.top
+						right: parent.right
+						bottom: parent.bottom
+					}
 
-							echoMode: TextInput.Password
-							borderColor: Qt.rgba(255,255,255,0.5)
+					radius: height/2
 
-							helperText: "Password can not be recovered!!!"
-							hasError: different
+					Rectangle {
+						id: circleMask2
+						anchors.fill: parent
 
-							onAccepted: {
+						smooth: true
+						visible: false
+
+						radius: height/2
+					}
+
+					OpacityMask {
+						anchors.fill: parent
+						maskSource: circleMask2
+						source: colorfulSignUp
+
+						opacity: signUp.opacityColor
+					}
+
+					Image {
+						id: colorfulSignUp
+						anchors.fill: parent
+
+						source: "/colorful.png"
+						fillMode: Image.PreserveAspectCrop
+						mipmap: true
+						smooth: true
+						visible: false
+					}
+
+					Text {
+						anchors.fill: parent
+
+						horizontalAlignment: Text.AlignHCenter
+						verticalAlignment: Text.AlignVCenter
+
+						color: signUp.textColor
+						text: "Sign up"
+						font.family: "Roboto"
+						font.weight: signUp.letterSpacing == 0 ? Font.Normal : Font.Black
+						font.pixelSize: 12 + signUp.letterSpacing
+						font.letterSpacing: signUp.letterSpacing
+						font.capitalization: Font.AllUppercase
+
+						wrapMode: Text.WordWrap
+					}
+
+					MouseArea {
+						anchors.fill: parent
+						hoverEnabled: true
+						onClicked: {
+							if(buttonsRow.state == "signIn") {
+								buttonsRow.state = "signUp"
+								loginContent.state = "signUp"
+							}
+							else if(buttonsRow.state == "signUp") {
+								username.emptyName = false
+								password2.different = false
+								password2.helperText = ""
+
 								if(username.text.length >= 3 && password.text.length >= 3 && password.text === password2.text) {
 									var jsonData = {
 										pgp_name: username.text,
@@ -900,51 +1334,18 @@ Rectangle
 								}
 							}
 						}
-					}
-				}
 
-				Button {
-					id: buttonCreate2
-
-					anchors {
-						bottom: parent.bottom
-						horizontalCenter: parent.horizontalCenter
-						bottomMargin: mainview.height*0.08
-					}
-
-					width: mainview.width*0.9
-					height: parent.height*0.12
-
-					text: "Create"
-					textColor: "white"
-					size: dp(17)
-
-					backgroundColor: Theme.primaryColor
-
-					onClicked: {
-						if(username.text.length >= 3 && password.text.length >= 3 && password.text === password2.text) {
-							var jsonData = {
-								pgp_name: username.text,
-								ssl_name: node.text,
-								pgp_password: password.text,
-								hidden_adress: hiddenNode.checked ? hiddenAddress.text : "",
-								hidden_port: hiddenNode.checked ? port.text : ""
-							}
-
-							rsApi.request("/control/create_location/", JSON.stringify(jsonData), function(){})
+						onEntered: {
+							if(buttonsRow.state != "signUp")
+								signUp.textColor = "#4CAF50"
+							else if(buttonsRow.state != "signIn")
+								signUp.elevation = 1
 						}
-						else {
-							if(username.text.length < 3)
-								username.emptyName = true
-
-							if(password.text.length < 3) {
-								password2.different = true
-								password2.helperText = "Password is too short"
-							}
-							else if(password.text !== password2.text) {
-								password2.different = true
-								password2.helperText = "Passwords do not match"
-							}
+						onExited: {
+							if(buttonsRow.state != "signUp")
+								signUp.textColor = Theme.light.iconColor
+							else if(buttonsRow.state != "signIn")
+								signUp.elevation = 0
 						}
 					}
 				}

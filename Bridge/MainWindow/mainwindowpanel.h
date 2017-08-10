@@ -27,6 +27,10 @@
 //Emoty-GUI
 #include "Bridge/Windows/qwinview.h"
 #include "libresapilocalclient.h"
+#include "Util/base64.h"
+
+#include "Bridge/Models/contactssortmodel.h"
+#include "Bridge/Models/identitiessortmodel.h"
 
 class MainWindowPanel : public QWinView
 {
@@ -34,6 +38,7 @@ class MainWindowPanel : public QWinView
 
 public:
 	MainWindowPanel(HWND hWnd);
+	~MainWindowPanel();
 
 public slots:
 	void pushButtonMinimizeClicked();
@@ -51,6 +56,10 @@ public slots:
 private:
 	HWND windowHandle;
 	LibresapiLocalClient *rsApi;
+	Base64 *base64;
+
+	ContactsSortModel *contactsModel;
+	IdentitiesSortModel *identitiesModel;
 };
 
 #endif // MainWindowPanel_H

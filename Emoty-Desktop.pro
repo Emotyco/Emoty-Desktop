@@ -17,6 +17,8 @@ INCLUDEPATH *= Emoty-Desktop
 
 win32 {
     DEFINES += WINDOWS_SYS
+    RC_ICONS = Images/favicon.ico
+
     #if you want to compile borderless login window
     #just define these variables
     {
@@ -49,16 +51,33 @@ HEADERS += libresapilocalclient.h \
     Bridge/LoginWindow/loginwindow_main.h \
     Util/screensize.h \
     notifier.h \
-    soundnotifier.h
+    soundnotifier.h \
+    Util/base64.h \
+    Bridge/Models/contactsmodel.h \
+    Bridge/Models/contactssortmodel.h \
+    Bridge/Models/identitiessortmodel.h \
+    Bridge/Models/roomparticipantsmodel.h \
+    Bridge/Models/roomparticipantssortmodel.h \
+    Bridge/Models/roominvitationmodel.h \
+    Bridge/Models/roominvitationsortmodel.h
 
 SOURCES += main.cpp \
     libresapilocalclient.cpp \
     Util/runstatehelper.cpp \
     Bridge/LoginWindow/loginwindow_main.cpp \
     notifier.cpp \
-    soundnotifier.cpp
+    soundnotifier.cpp \
+    Util/base64.cpp \
+    Bridge/Models/contactsmodel.cpp \
+    Bridge/Models/contactssortmodel.cpp \
+    Bridge/Models/identitiessortmodel.cpp \
+    Bridge/Models/roomparticipantsmodel.cpp \
+    Bridge/Models/roomparticipantssortmodel.cpp \
+    Bridge/Models/roominvitationmodel.cpp \
+    Bridge/Models/roominvitationsortmodel.cpp
 
 RESOURCES += \
     GUI/MainWindow/mainwindow.qrc \
     GUI/LoginWindow/login.qrc \
-    Images/images.qrc
+    Images/images.qrc \
+    Fonts/fonts.qrc

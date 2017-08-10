@@ -80,29 +80,39 @@ DragTile {
 				property: "opacity"
 				from: 0
 				to: 1
+				easing.type: Easing.InOutQuad;
 				duration: MaterialAnimation.pageTransitionDuration/2
 			}
 		}
 	}
 
-	JSONListModel {
-		id: msgModel
-		query: "$.data[*]"
-	}
-
 	function getChatMessages() {
 		function callbackFn(par) {
-			msgModel.json = par.response
-			contentm.positionViewAtEnd()
-
 			stateToken = JSON.parse(par.response).statetoken
 			main.registerToken(stateToken, getChatMessages)
+
+			msgWorker.sendMessage({
+				'action' : 'refreshMessages',
+				'response' : par.response,
+				'query' : '$.data[*]',
+				'model' : msgModel
+			})
 		}
 
 		rsApi.request("/chat/messages/"+drag.chatId, "", callbackFn)
 	}
 
 	Component.onCompleted: drag.getChatMessages()
+
+	WorkerScript {
+		id: msgWorker
+		source: "qrc:/MessagesUpdater.js"
+		onMessage: contentm.positionViewAtEnd()
+	}
+
+	ListModel {
+		id: msgModel
+	}
 
 	View {
 		id: chat
@@ -341,7 +351,7 @@ DragTile {
 					snapMode: ListView.NoSnap
 					flickableDirection: Flickable.AutoFlickDirection
 
-					model: msgModel.model
+					model: msgModel
 					delegate: ChatMsgDelegate{}
 				}
 

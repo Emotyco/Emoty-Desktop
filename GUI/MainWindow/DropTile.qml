@@ -66,13 +66,16 @@ DropArea {
 				PropertyAnimation {
 					target: dropRectangle
 					properties: "opacity"
+					easing.type: Easing.InOutQuad;
 					duration: MaterialAnimation.pageTransitionDuration
 				}
 			},
 			Transition {
 				from: "visible"; to: "hidden"
-				PropertyAnimation { target: dropRectangle
+				PropertyAnimation {
+					target: dropRectangle
 					properties: "opacity"
+					easing.type: Easing.InOutQuad;
 					duration: MaterialAnimation.pageTransitionDuration
 				}
 			}

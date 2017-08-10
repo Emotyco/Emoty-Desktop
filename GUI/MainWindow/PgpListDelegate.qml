@@ -38,6 +38,7 @@ Component {
 															      "#9E9E9E"	 // grey
 		property string pgp
 
+		property var locations: model.locations
 		width: parent.width
 		height: dp(50)
 
@@ -56,7 +57,7 @@ Component {
 				name: "show_loc";
 				PropertyChanges {
 					target: pgpBaseItem
-					height: dp(50)+dp(locationsModel.count*50)
+					height: dp(50)+dp(model.locations.count*50)
 				}
 			}
 		]
@@ -88,13 +89,6 @@ Component {
 
 		Component.onCompleted: pgp = model.pgp_id
 
-		JSONListModel {
-			id: locationsModel
-
-			json: pgpIdModel.json
-			query: "$.data[?(@.pgp_id=='"+pgp+"')].locations[*]"
-		}
-
 		MouseArea {
 			anchors.fill: parent
 
@@ -116,13 +110,9 @@ Component {
 			property int unread_msgs: {
 				var msgs = 0
 
-				var jsonResp = JSON.parse(pgpIdModel.json)
-				for (var i = 0; i<jsonResp.data.length; i++) {
-					if(jsonResp.data[i].pgp_id==pgp)
-						for (var ii = 0; ii<jsonResp.data[i].locations.length; ii++) {
-							if(jsonResp.data[i].locations[ii].unread_msgs != 0)
-								msgs += jsonResp.data[i].locations[ii].unread_msgs
-						}
+				for (var i = 0; i<locations.count; i++) {
+					if(locations.get(i).unread_msgs != 0)
+						msgs += locations.get(i).unread_msgs
 				}
 
 				return msgs
@@ -212,7 +202,7 @@ Component {
 							onClicked: {
 								overflowMenu.close()
 
-								removeDialog.show("Do you want to remove your friend?", function() {
+								confirmationDialog.show("Do you want to remove your friend?", function() {
 									rsApi.request("/peers/"+pgp+"/delete", "", function(){})
 								})
 							}
@@ -314,6 +304,10 @@ Component {
 					radius: width/2
 					color: statuscolor
 
+					Behavior on color {
+						ColorAnimation { duration: 200 }
+					}
+
 					Text {
 						anchors.fill: parent
 
@@ -340,7 +334,7 @@ Component {
 
 			clip: true
 
-			model: locationsModel.model
+			model: locations
 			delegate: PeerListDelegate{}
 		}
 	}

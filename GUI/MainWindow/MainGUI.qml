@@ -38,8 +38,11 @@ Rectangle {
 	property bool advmode
 	property bool flickablemode
 
+	property bool loadMask: true
+
 	property string defaultGxsName
 	property string defaultGxsId
+	property string defaultAvatar: "avatar.png"
 
 	property int unreadMsgsLobbies: 0
 	property Item controls: controlView
@@ -115,11 +118,15 @@ Rectangle {
 		getRunState()
 		getAdvancedMode()
 		getFlickableGridMode()
+		getRoomInvitations()
 	}
+
+	onDefaultGxsIdChanged: main.getDefaultAvatar()
 
 	// For handling tokens
 	property int stateToken_ownGxs: 0
 	property int stateToken_unreadMsgs: 0
+	property int stateToken_invitations: 0
 
 	function getOwnIdentities() {
 		var jsonData = {
@@ -205,10 +212,70 @@ Rectangle {
 		}
 	}
 
+	function getDefaultAvatar() {
+		var jsonData = {
+			gxs_id: defaultGxsId
+		}
+
+		function callbackFn(par) {
+			var json = JSON.parse(par.response)
+			if(json.data.avatar.length > 0)
+				defaultAvatar = "data:image/png;base64," + json.data.avatar
+			else
+				defaultAvatar = "avatar.png"
+
+			if(json.returncode == "fail")
+				getDefaultAvatar()
+		}
+
+		rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+	}
+
+	function getRoomInvitations() {
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
+			stateToken_invitations = jsonResp.statetoken
+			main.registerToken(stateToken_invitations, getRoomInvitations)
+
+			if(jsonResp.data.length > 0)
+				for(var i = 0; i < jsonResp.data.length; i++)
+				{
+					var lobbyId = jsonResp.data[i].lobby_id
+					confirmationDialog.show("You has been invited to room '"+ jsonResp.data[i].lobby_name + "'. Do you want to join?",
+						function() {
+							var jsonData = {
+								lobby_id: lobbyId,
+								join: true,
+								gxs_id: defaultGxsId
+							}
+
+							rsApi.request("/chat/answer_to_invitation", JSON.stringify(jsonData), function(){})
+						},function() {
+							var jsonData = {
+								lobby_id: lobbyId,
+								join: false,
+								gxs_id: defaultGxsId
+							}
+
+							rsApi.request("/chat/answer_to_invitation", JSON.stringify(jsonData), function(){})
+						},
+						"Join", "Ignore", false
+					)
+				}
+		}
+
+		rsApi.request("/chat/get_invitations_to_lobby", "", callbackFn)
+	}
+
 	Connections {
 		target: view
 		onHeightChanged: gridLayout.reorder()
 		onWidthChanged: gridLayout.reorder()
+	}
+
+	Connections {
+		target: gxsModel
+		onChooseIdentities: identitiesSelectionDialog.showDialog(identities)
 	}
 
 	JSONListModel {
@@ -219,6 +286,7 @@ Rectangle {
 		model.onCountChanged: {
 			defaultGxsName = ownGxsIdModel.model.get(0).name
 			defaultGxsId = ownGxsIdModel.model.get(0).own_gxs_id
+			getDefaultAvatar()
 		}
 	}
 
@@ -226,6 +294,92 @@ Rectangle {
 		primaryColor: Palette.colors["green"]["500"]
 		accentColor: Palette.colors["deepOrange"]["500"]
 		tabHighlightColor: "white"
+	}
+
+	Rectangle {
+		id: loadingMask
+
+		anchors.fill: parent
+
+		color: Qt.rgba(0,0,0,0.4)
+		z: 20
+
+		state: main.loadMask ? "visible" : "invisible"
+
+		states:[
+			State {
+				name: "visible"
+				PropertyChanges {
+					target: loadingMask
+					enabled: true
+					opacity: 1
+				}
+			},
+			State {
+				name: "invisible"
+				PropertyChanges {
+					target: loadingMask
+					enabled: false
+					opacity: 0
+				}
+			}
+		]
+
+		transitions: [
+			Transition {
+				NumberAnimation {
+					property: "opacity"
+					easing.type: Easing.InOutQuad
+					duration: 250*2
+				}
+			}
+		]
+
+		MouseArea {
+			anchors.fill: parent
+
+			hoverEnabled: true
+
+			onClicked: {
+				if(mouse.button == Qt.LeftButton)
+					qMainPanel.mouseLPressed()
+			}
+			onPressed: {
+				if(mouse.button == Qt.LeftButton)
+					qMainPanel.mouseLPressed()
+			}
+		}
+
+		Rectangle {
+			anchors.fill: parent
+
+			color: Qt.rgba(1,1,1,0.85)
+
+			Image {
+				id: logoMask
+
+				anchors.centerIn: parent
+				height: parent.height*0.3
+				width: parent.width*0.3
+
+				source: "/logo.png"
+				fillMode: Image.PreserveAspectFit
+				mipmap: true
+			}
+
+			ProgressCircle {
+				anchors {
+					top: logoMask.bottom
+					horizontalCenter: parent.horizontalCenter
+				}
+
+				width: dp(35)
+				height: dp(35)
+				dashThickness: dp(5)
+
+				color: Theme.primaryColor
+			}
+		}
 	}
 
 	MouseArea {
@@ -254,6 +408,7 @@ Rectangle {
 
 		onPressed: {
 			mouse.accepted = false
+			focus = true
 		}
 
 		onWheel: {
@@ -396,7 +551,7 @@ Rectangle {
 		enabled: borderless
 
 		backgroundColor: "white"
-		elevation: 3
+		elevation: 2
 		z: 1
 
 		ParallelAnimation {
@@ -406,6 +561,7 @@ Rectangle {
 				property: "anchors.rightMargin";
 				from: -dp(50);
 				to: 0;
+				easing.type: Easing.InOutQuad;
 				duration: MaterialAnimation.pageTransitionDuration
 			}
 			NumberAnimation {
@@ -413,6 +569,7 @@ Rectangle {
 				property: "opacity";
 				from: 0;
 				to: 1;
+				easing.type: Easing.InOutQuad;
 				duration: MaterialAnimation.pageTransitionDuration
 			}
 		}
@@ -428,15 +585,16 @@ Rectangle {
                     anchors {
                         top: parent.top
                         right: parent.right
-                        rightMargin: dp(10)
-                        topMargin: dp(12)
+                        rightMargin: dp(11)
+                        topMargin: dp(13)
                     }
 
                     spacing: dp(5)
+                    z: 30
 
                     Item {
-                        width: dp(26)
-                        height: dp(26)
+                        width: dp(24)
+                        height: dp(24)
 
                         Rectangle {
                             id: minimizeButton
@@ -446,7 +604,7 @@ Rectangle {
                                 margins: dp(4)
                             }
 
-                            width: parent.width-dp(8)
+                            width: parent.width-dp(6)
                             height: dp(2)
 
                             color: Palette.colors["grey"]["500"]
@@ -464,8 +622,8 @@ Rectangle {
                     }
 
                     Item {
-                        width: dp(26)
-                        height: dp(26)
+                        width: dp(24)
+                        height: dp(24)
 
                         Rectangle {
                             id: maximizeButton
@@ -499,15 +657,15 @@ Rectangle {
                     }
 
                     Item {
-                        width: dp(26)
-                        height: dp(26)
+                        width: dp(24)
+                        height: dp(24)
 
                         Rectangle {
                             id: closeButton
 
                             anchors.centerIn: parent
 
-                            width: dp(24)
+                            width: dp(22)
                             height: dp(2.5)
 
                             rotation: 45
@@ -519,7 +677,7 @@ Rectangle {
 
                             anchors.centerIn: parent
 
-                            width: dp(24)
+                            width: dp(22)
                             height: dp(2.5)
 
                             rotation: -45
@@ -687,8 +845,12 @@ Rectangle {
 		}
 	}
 
-	RemoveDialog {
-		id: removeDialog
+	ConfirmationDialog {
+		id: confirmationDialog
+	}
+
+	SizeConfirmationDialog {
+		id: sizeConfirmationDialog
 	}
 
 	PGPFriendDetailsDialog {
@@ -709,6 +871,10 @@ Rectangle {
 
 	UserAddDialog {
 		id: userAddDialog
+	}
+
+	IdentitiesSelectionDialog {
+		id: identitiesSelectionDialog
 	}
 
 	function updateVisibleRows() {

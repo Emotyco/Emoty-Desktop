@@ -1,0 +1,21 @@
+language: cpp
+
+os: linux
+dist: trusty
+sudo: required
+compiler: gcc
+
+before_install:
+ - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
+ - sudo add-apt-repository --yes ppa:beineri/opt-qt58-trusty
+ - sudo apt-get -qq update
+
+install:
+ - sudo apt-get -y install build-essential libgl1-mesa-dev
+ - sudo apt-get -y install libpulse-mainloop-glib0 libpulse0 libpulse-dev
+ - sudo apt-get -y install qt58base qt58graphicaleffects qt58quickcontrols qt58quickcontrols2 qt58svg qt58tools qt58multimedia
+
+script:
+ - source /opt/qt58/bin/qt58-env.sh
+ - /opt/qt58/bin/qmake
+ - make

@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import QtQuick.Dialogs 1.0
 import QtGraphicalEffects 1.0
 
 import Material 0.3
@@ -8,6 +9,34 @@ import Material.ListItems 0.1 as ListItem
 
 Rectangle {
 	color: "#f2f2f2"
+
+	property string avatar
+
+	FileDialog {
+		id: fileDialog
+		title: "Please choose an avatar"
+		folder: shortcuts.pictures
+		selectMultiple: false
+		onAccepted: {
+			avatar = base64.encode_avatar(fileDialog.fileUrl)
+			setIdentityAvatar()
+		}
+	}
+
+	function setIdentityAvatar() {
+		var jsonData = {
+			gxs_id: main.defaultGxsId,
+			avatar: avatar
+		}
+
+		function callbackFn(par) {
+			var json = JSON.parse(par.response)
+			if(json.data.avatar.length > 0)
+				main.defaultAvatar = "data:image/png;base64," + json.data.avatar
+		}
+
+		rsApi.request("/identity/set_avatar", JSON.stringify(jsonData), callbackFn)
+	}
 
 	ListView {
 		anchors.fill: parent
@@ -31,30 +60,39 @@ Rectangle {
 
 				radius: width/2
 
+				Connections {
+					target: main
+					onDefaultAvatarChanged: {canvas.loadImage(main.defaultAvatar); canvas.requestPaint()}
+
+				}
+
 				Canvas {
 					id: canvas
 
 					anchors.fill: parent
 
-					Component.onCompleted:loadImage("avatar.png")
+					Component.onCompleted:loadImage(main.defaultAvatar)
 					onPaint: {
 						var ctx = getContext("2d");
-						if (canvas.isImageLoaded("avatar.png")) {
+						if (canvas.isImageLoaded(main.defaultAvatar)) {
 							var profile = Qt.createQmlObject('
                                 import QtQuick 2.5;
                                 Image{
-                                    source: "avatar.png"
+                                    source: main.defaultAvatar
                                     visible:false
+                                    fillMode: Image.PreserveAspectCrop
                                 }', canvas);
 
 							var centreX = width/2;
 							var centreY = height/2;
 
+							ctx.save()
 							ctx.beginPath();
 							ctx.moveTo(centreX, centreY);
 							ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
 							ctx.clip();
 							ctx.drawImage(profile, 0, 0, canvas.width, canvas.height)
+							ctx.restore()
 						}
 					}
 					onImageLoaded:requestPaint()
@@ -74,7 +112,24 @@ Rectangle {
 							radius: width/2
 						}
 
-						onClicked: overlayView.open(canvas)
+						onClicked: {
+							if(main.defaultAvatar != "avatar.png")
+								overlayView.open(canvas)
+							else
+								fileDialog.open()
+						}
+
+						Icon {
+							anchors.centerIn: parent
+							height: dp(60)
+
+							opacity: circleInk.containsMouse ? 1 : 0
+							visible: main.defaultAvatar == "avatar.png"
+
+							name: "awesome/edit"
+							color: Theme.dark.iconColor
+							size: dp(40)
+						}
 					}
 				}
 			}
@@ -141,6 +196,7 @@ Rectangle {
 			onClicked: {
 				main.defaultGxsName = model.name
 				main.defaultGxsId = model.own_gxs_id
+				main.getDefaultAvatar()
 			}
 
 			MouseArea {
@@ -186,7 +242,7 @@ Rectangle {
 						onClicked: {
 							overflowMenu.close()
 
-							removeDialog.show("Do you want to delete your identity?", function() {
+							confirmationDialog.show("Do you want to delete your identity?", function() {
 								var jsonData = {
 									gxs_id: model.own_gxs_id
 								}
@@ -242,7 +298,7 @@ Rectangle {
 
 			anchors.fill: parent
 
-			source: Qt.resolvedUrl("avatar.png")
+			source: Qt.resolvedUrl(main.defaultAvatar)
 			fillMode: Image.PreserveAspectCrop
 
 			Behavior on radius {
@@ -253,9 +309,11 @@ Rectangle {
 			}
 
 			IconButton {
+				id: updateIcon
+
 				anchors {
 					top: parent.top
-					right: parent.right
+					right: removeIcon.left
 					rightMargin: dp(16)
 				}
 
@@ -266,6 +324,34 @@ Rectangle {
 
 				color: Theme.dark.iconColor
 				size: dp(40)
+
+				onClicked: fileDialog.open()
+			}
+
+			IconButton {
+				id: removeIcon
+
+				anchors {
+					top: parent.top
+					right: parent.right
+					rightMargin: dp(16)
+				}
+
+				height: dp(60)
+				opacity: overlayView.transitionOpacity
+
+				iconName: "awesome/trash"
+
+				color: Theme.dark.iconColor
+				size: dp(40)
+
+				onClicked: {
+					overlayView.close()
+					confirmationDialog.show("Do you want to remove your avatar?", function() {
+						avatar = ""
+						setIdentityAvatar()
+					})
+				}
 			}
 		}
 	}

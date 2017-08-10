@@ -40,7 +40,7 @@ View {
 	width: dp(50)
 
 	backgroundColor: "transparent"
-	elevation: 3
+	elevation: 2
 
 	clipContent: true
 
@@ -63,7 +63,7 @@ View {
 			PropertyChanges {
 				target: leftBar
 				width: dp(50)
-				elevation: 3
+				elevation: 2
 			}
 		}
 	]
@@ -172,26 +172,41 @@ View {
 			width: parent.width
 			height: parent.height*0.7
 
-			SideImg {
-				margins: 0
+			Item {
+				width: dp(48)
+				height: dp(48)
+
+				Image {
+					id: image
+
+					anchors.fill: parent
+					anchors.margins: dp(10)
+					source: "favicon-194x194.png"
+					smooth: true
+					mipmap: true
+				}
+			}
+
+			Connections {
+				target: main
+				onDefaultAvatarChanged: sideModel.setProperty(0, "src", main.defaultAvatar)
 			}
 
 			ListModel {
 				id: sideModel
 
-				ListElement {
-					src: "avatar.png"
-					icon: false
-					page: "Content.qml"
-					pageTitle: "profilePage"
-					helperName: "Profile"
-				}
-
-				ListElement {
-					src: "awesome/comments"
-					icon: true
-					pageTitle: "roomPage"
-					helperName: "Rooms"
+				Component.onCompleted: {
+					append({"src": main.defaultAvatar,
+							   "icon": false,
+							   "page": "Content.qml",
+							   "pageTitle": "profilePage",
+							   "helperName": "Profile"
+						   });
+					append({"src": "awesome/comments",
+							   "icon": true,
+							   "pageTitle": "roomPage",
+							   "helperName": "Rooms"
+						   });
 				}
 			}
 
@@ -204,7 +219,7 @@ View {
 					isIcon: icon
 
 					margins: 0
-					selected: selectedPage === pageTitle
+					selected: false //selectedPage === pageTitle
 
 					onClicked: {
 						if(helperName === "Rooms") {
@@ -216,12 +231,12 @@ View {
 								leftBar.state = "narrow"
 							else if(leftBar.state !== "narrow" && tabView.currentIndex !== model.index+1)
 								tabView.currentIndex = model.index+1
-						}
+						}/*
 						else {
 							main.content.activated = true;
 							pageStack.push({item: Qt.resolvedUrl(page), immediate: true, replace: true})
 							main.content.refresh()
-						}
+						}*/
 					}
 					onPressAndHold: {
 						if(leftBar.state === "narrow") {

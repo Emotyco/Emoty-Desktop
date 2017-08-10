@@ -22,14 +22,15 @@
 
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
-//import QtQuick.Dialogs 1.0
+import QtQuick.Dialogs 1.0
 
 import Material 0.3
 
 PopupBase {
 	id: dialog
 
-	property string src: "avatar.png";
+	property string avatar
+	property string src: "avatar.png"
 	property bool enableHiding: false
 
 	anchors {
@@ -37,7 +38,7 @@ PopupBase {
 		verticalCenterOffset: showing ? 0 : -(dialog.height/3)
 
 		Behavior on verticalCenterOffset {
-			NumberAnimation { duration: 200 }
+			NumberAnimation { easing.type: Easing.InOutQuad; duration: 200 }
 		}
 	}
 
@@ -53,16 +54,7 @@ PopupBase {
 	globalMouseAreaEnabled: mask.visible ? false : enableHiding
 
 	Behavior on opacity {
-		NumberAnimation { duration: 200 }
-	}
-
-	Behavior on src {
-		ScriptAction {
-			script: {
-				canvas.loadImage(dialog.src)
-				canvas.requestPaint()
-			}
-		}
+		NumberAnimation { easing.type: Easing.InOutQuad; duration: 200 }
 	}
 
 	function show() {
@@ -74,7 +66,8 @@ PopupBase {
 
 		var jsonData = {
 			name: name,
-			pgp_linked: isNotAnonymous
+			pgp_linked: isNotAnonymous,
+			avatar: avatar
 		}
 
 		function callbackFn(par) {
@@ -130,6 +123,7 @@ PopupBase {
 					property: "opacity"
 					from: 0
 					to: 1
+					easing.type: Easing.InOutQuad
 					duration: MaterialAnimation.pageTransitionDuration
 				}
 			}
@@ -175,18 +169,25 @@ PopupBase {
 			onPaint: {
 				var ctx = getContext("2d");
 				if (canvas.isImageLoaded(dialog.src)) {
-					var profile = Qt.createQmlObject('import QtQuick 2.5; Image{source: dialog.src;  visible:false}', canvas);
+					var profile = Qt.createQmlObject('
+                        import QtQuick 2.5;
+                        Image{
+                            source: dialog.src
+                            visible:false
+                            fillMode: Image.PreserveAspectCrop
+                        }', canvas);
+
 					var centreX = width/2;
 					var centreY = height/2;
 
 					ctx.save();
 					    ctx.beginPath();
+					        ctx.moveTo(centreX, centreY);
 					        ctx.arc(centreX, centreY, width / 2, 0, Math.PI*2, true);
 					    ctx.closePath();
 					    ctx.clip();
 					    ctx.drawImage(profile, 0, 0, canvas.width, canvas.height);
 					ctx.restore();
-
 				}
 			}
 
@@ -215,18 +216,21 @@ PopupBase {
 					size: parent.width/3
 					opacity: circleInk.containsMouse ? 0.9 : 0
 				}
-/*
+
 				FileDialog {
 					id: fileDialog
 					title: "Please choose an avatar"
 					folder: shortcuts.pictures
 					selectMultiple: false
 					onAccepted: {
-						dialog.src = fileDialog.fileUrl
+						avatar = base64.encode_avatar(fileDialog.fileUrl)
+						if(avatar.length > 0)
+							dialog.src = "data:image/png;base64," + avatar
 						canvas.loadImage(dialog.src)
+						canvas.requestPaint()
 					}
 				}
-				onClicked: fileDialog.open()*/
+				onClicked: fileDialog.open()
 			}
 		}
 
@@ -262,7 +266,7 @@ PopupBase {
 			hasError: emptyName
 
 			onAccepted: {
-				if(name.text.length > 3) {
+				if(name.text.length >= 3) {
 					mask.enabled = true
 					mask.visible = true
 					createIdentity(name.text)
@@ -277,6 +281,7 @@ PopupBase {
 				top: name.bottom
 				topMargin: name.emptyName ? dp(5) : 0
 				horizontalCenter: parent.horizontalCenter
+				horizontalCenterOffset: -dp(15)
 			}
 
 			height: dp(50)
@@ -291,7 +296,6 @@ PopupBase {
 				anchors {
 					left: parent.left
 					verticalCenter: parent.verticalCenter
-					leftMargin: -dp(15)
 				}
 
 				darkBackground: false
@@ -333,7 +337,7 @@ PopupBase {
 			}
 
 			onClicked: {
-				if(name.text.length > 3) {
+				if(name.text.length >= 3) {
 					mask.enabled = true
 					mask.visible = true
 					createIdentity(name.text)

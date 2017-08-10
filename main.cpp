@@ -35,6 +35,7 @@
 #include "notifier.h"
 #include "soundnotifier.h"
 #include "Bridge/LoginWindow/loginwindow_main.h"
+#include "Bridge/Models/contactsmodel.h"
 #include "Util/runstatehelper.h"
 #include "Util/screensize.h"
 
@@ -43,10 +44,20 @@
 
     #include "Util/cursorshape.h"
     #include "Util/qquickviewhelper.h"
+    #include "Util/base64.h"
+
+    #include "Bridge/Models/contactssortmodel.h"
+    #include "Bridge/Models/identitiessortmodel.h"
 #endif
 #ifdef BORDERLESS_MAINWINDOW
     #include "Bridge/MainWindow/mainwindow.h"
 #endif
+
+#include "Bridge/Models/roomparticipantssortmodel.h"
+#include "Bridge/Models/roominvitationsortmodel.h"
+
+Q_COREAPP_STARTUP_FUNCTION(registerRoomParticipantsSortModelTypes)
+Q_COREAPP_STARTUP_FUNCTION(registerRoomInvitationSortModelTypes)
 
 int main(int argc, char *argv[])
 {
@@ -55,6 +66,7 @@ int main(int argc, char *argv[])
 	RunStateHelper::Create();
 	Notifier::Create();
 	SoundNotifier::Create();
+	ContactsModel::Create();
 
 #ifndef QT_DEBUG
 	QProcess process;
@@ -80,9 +92,7 @@ int main(int argc, char *argv[])
 
 	QApplication::setQuitOnLastWindowClosed(false);
 
-	QPixmap pixmap(32, 32);
-	pixmap.fill(QColor("#4caf50"));
-	QIcon icon(pixmap);
+	QIcon icon(":/favicon-32x32.png");
 
 	/** Tray Icon Menu **/
 	QMenu *trayMenu = new QMenu();
@@ -117,6 +127,7 @@ int main(int argc, char *argv[])
 	QString sockPath = QDir::homePath() + "/.retroshare";
 	sockPath.append("/libresapi.sock");
 
+	Base64 *base64 = new Base64();
 	LibresapiLocalClient rsApi;
 	rsApi.openConnection(sockPath);
 
@@ -124,6 +135,17 @@ int main(int argc, char *argv[])
 	ctxt->setContextProperty("soundNotifier", SoundNotifier::getInstance());
 	ctxt->setContextProperty("rsApi", &rsApi);
 	ctxt->setContextProperty("runStateHelper", RunStateHelper::getInstance());
+	ctxt->setContextProperty("base64", base64);
+
+	ctxt->setContextProperty("gxsModel", ContactsModel::getInstance());
+
+	ContactsSortModel *contactsModel = new ContactsSortModel();
+	contactsModel->setSourceModel(ContactsModel::getInstance());
+	ctxt->setContextProperty("contactsModel", contactsModel);
+
+	IdentitiesSortModel *identitiesModel = new IdentitiesSortModel();
+	identitiesModel->setSourceModel(ContactsModel::getInstance());
+	ctxt->setContextProperty("identitiesModel", identitiesModel);
 
 	view->setSource(QUrl("qrc:/MainGUI.qml"));
 	// Create window

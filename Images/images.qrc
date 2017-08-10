@@ -2,7 +2,11 @@
     <qresource prefix="/">
         <file>navigation_close.png</file>
         <file>wallpaper_grey.jpg</file>
-        <file>colorful.jpg</file>
         <file>avatar.png</file>
+        <file>colorful.png</file>
+        <file>logo.png</file>
+        <file>favicon-32x32.png</file>
+        <file>favicon-194x194.png</file>
+        <file>robin.jpg</file>
     </qresource>
 </RCC>
