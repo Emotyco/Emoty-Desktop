@@ -17,6 +17,8 @@ INCLUDEPATH *= Emoty-Desktop
 
 win32 {
     DEFINES += WINDOWS_SYS
+    RC_ICONS = Images/favicon.ico
+
     #if you want to compile borderless login window
     #just define these variables
     {
