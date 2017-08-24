@@ -360,7 +360,7 @@ void ContactsModel::loadJSONAvatar(QString gxs_id, QString json)
 	}
 }
 
-int ContactsModel::rowCount(const QModelIndex & parent) const
+int ContactsModel::rowCount(const QModelIndex &) const
 {
 	return contactsData.size();
 }
@@ -399,6 +399,8 @@ QVariant ContactsModel::data(const QModelIndex & index, int role) const
 		return (*vit).avatar;
 	else if(role == IsOnlyOneRole)
 		return (*vit).is_only;
+
+	return QVariant();
 }
 
 QHash<int, QByteArray> ContactsModel::roleNames() const

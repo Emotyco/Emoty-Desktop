@@ -169,7 +169,7 @@ void RoomParticipantsModel::loadJSONAvatar(QString gxs_id, QString json)
 	}
 }
 
-int RoomParticipantsModel::rowCount(const QModelIndex & parent) const
+int RoomParticipantsModel::rowCount(const QModelIndex &) const
 {
 	return identitiesData.size();
 }
@@ -200,6 +200,8 @@ QVariant RoomParticipantsModel::data(const QModelIndex & index, int role) const
 		return (*vit).is_own;
 	else if(role == AvatarRole)
 		return (*vit).avatar;
+
+	return QVariant();
 }
 
 QHash<int, QByteArray> RoomParticipantsModel::roleNames() const

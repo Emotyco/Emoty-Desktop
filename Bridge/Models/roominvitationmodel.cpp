@@ -189,7 +189,7 @@ void RoomInvitationModel::loadJSONAvatar(QString gxs_id, QString json)
 	}
 }
 
-int RoomInvitationModel::rowCount(const QModelIndex & parent) const
+int RoomInvitationModel::rowCount(const QModelIndex &) const
 {
 	return invitationData.size();
 }
@@ -220,6 +220,8 @@ QVariant RoomInvitationModel::data(const QModelIndex & index, int role) const
 		return (*vit).pgp_linked;
 	else if(role == AvatarRole)
 		return (*vit).avatar;
+
+	return QVariant();
 }
 
 QHash<int, QByteArray> RoomInvitationModel::roleNames() const
