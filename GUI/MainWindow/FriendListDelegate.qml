@@ -496,6 +496,7 @@ Component {
 					color: "white"
 
 					font.family: "Roboto"
+					font.pixelSize: dp(12)
 					visible: model.unread_count > 0 ? true : false
 
 					verticalAlignment: Text.AlignVCenter
