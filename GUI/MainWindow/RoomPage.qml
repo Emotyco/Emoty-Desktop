@@ -21,19 +21,14 @@
  ****************************************************************/
 
 import QtQuick 2.5
-import QtGraphicalEffects 1.0
 
-import Material 0.3
+import Material 0.3 as Material
 import Material.ListItems 0.1 as ListItem
 
 import RoomParticipantsSortModel 0.2
 import RoomInvitationSortModel 0.2
 
-Item{
-	id: page
-	property string title: "roomPage"
-
-	property string roomName
+Card {
 	property var chatId
 
 	// For handling tokens
@@ -50,14 +45,6 @@ Item{
 	}
 
 	property bool firstTime_msg: true
-
-	// Just for "restore" option
-	property int tmpCol: 0
-	property int tmpRow: 0
-	property int tmpGridX: 0   // Numbering starts from 0
-	property int tmpGridY: 0   // Numbering starts from 0
-	property bool maximized: false
-	//
 
 	function getLobbyParticipants() {
 		function callbackFn(par) {
@@ -108,24 +95,6 @@ Item{
 		getContacts()
 	}
 
-	Connections {
-		target: main.content
-		onRefresh: {
-			updateVisibleRows()
-			if(
-					main.content.col === (parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
-										  ? 14
-										  : parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))) &&
-					main.content.row === main.visibleRows &&
-					main.content.gridX === Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-main.content.col)/2) &&
-					main.content.gridY === 0
-					)
-				maximized = true
-			else
-				maximized = false
-		}
-	}
-
 	RoomParticipantsSortModel {
 		id: roomParticipantsSortModel
 	}
@@ -144,13 +113,9 @@ Item{
 		id: messagesModel
 	}
 
-	View {
+	Item {
 		id: chat
-
 		anchors.fill: parent
-
-		elevation: 2
-		backgroundColor: Palette.colors["grey"]["50"]
 
 		LoadingMask {
 			id: loadingMask
@@ -159,211 +124,9 @@ Item{
 			state: firstTime_msg ? "visible" : "non-visible"
 		}
 
-		Rectangle {
-			id: chatHeader
-
-			anchors {
-				top: parent.top
-				left: parent.left
-				right: parent.right
-			}
-
-			height: dp(35)
-			color: Palette.colors["grey"]["50"]
-			z: 2
-
-			MouseArea {
-				anchors.fill: parent
-
-				acceptedButtons: Qt.RightButton
-				onClicked: overflowMenu.open(pageStack, mouse.x, mouse.y);
-
-				Item {
-					anchors {
-						bottom: parent.bottom
-						top: parent.top
-						left: parent.left
-						right: parent.right
-						leftMargin: dp(15)
-						rightMargin: dp(15)
-					}
-
-					Rectangle {
-						anchors {
-							left: parent.left
-							right: parent.right
-							bottom: parent.bottom
-						}
-
-						height: dp(1)
-						color: Palette.colors["grey"]["200"]
-					}
-
-					Text {
-						id: headertext
-
-						anchors {
-							verticalCenter: parent.verticalCenter
-							leftMargin: dp(20)
-							left: parent.left
-						}
-
-						text: roomName
-
-						font.pixelSize: dp(17)
-						font.family: "Roboto"
-
-						color: Theme.primaryColor
-					}
-
-					Item {
-						anchors {
-							verticalCenter: parent.verticalCenter
-							right: parent.right
-							rightMargin: dp(18)
-						}
-
-						width: dp(23)
-						height: dp(23)
-
-						Rectangle {
-							id: closeButton
-
-							anchors.centerIn: parent
-
-							width: dp(20)
-							height: dp(2.5)
-
-							rotation: 45
-							color: Palette.colors["grey"]["500"]
-						}
-
-						Rectangle {
-							id: closeButton2
-
-							anchors.centerIn: parent
-
-							width: dp(20)
-							height: dp(2.5)
-
-							rotation: -45
-							color: Palette.colors["grey"]["500"]
-						}
-
-						MouseArea {
-							anchors.fill: parent
-
-							hoverEnabled: true
-
-							onEntered: {
-								closeButton.color = Theme.accentColor
-								closeButton2.color = Theme.accentColor
-							}
-							onExited: {
-								closeButton.color = Palette.colors["grey"]["500"]
-								closeButton2.color = Palette.colors["grey"]["500"]
-							}
-							onClicked: main.content.activated = false
-						}
-					}
-				}
-
-				Dropdown {
-					id: overflowMenu
-					objectName: "overflowMenu"
-					overlayLayer: "dialogOverlayLayer"
-
-					anchor: Item.TopLeft
-
-					width: dp(200)
-					height: dp(2*30)
-
-					enabled: true
-
-					durationSlow: 300
-					durationFast: 150
-
-					Column{
-						anchors.fill: parent
-
-						ListItem.Standard {
-							height: dp(30)
-
-							text: maximized ? "Restore" : "Maximize"
-							itemLabel.style: "menu"
-
-							onClicked: {
-								overflowMenu.close()
-								updateVisibleRows()
-
-								if(!maximized) {
-									page.tmpGridX = main.content.gridX
-									page.tmpGridY = main.content.gridY
-									page.tmpCol = main.content.col
-									page.tmpRow = main.content.row
-
-									main.content.col = Qt.binding(function() {
-										return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
-												? 14
-												: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))
-									});
-
-									main.content.row = Qt.binding(function() {
-										updateVisibleRows()
-										return main.visibleRows
-									});
-
-									main.content.gridX = Qt.binding(function() {
-										return Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-main.content.col)/2)
-									});
-
-									main.content.gridY = 0
-
-									maximized = true
-								}
-								else if(maximized) {
-									main.content.gridX = page.tmpGridX
-									main.content.gridY = page.tmpGridY
-									main.content.col = page.tmpCol
-									main.content.row = page.tmpRow
-									maximized = false
-								}
-
-								main.content.refresh()
-							}
-						}
-
-						ListItem.Standard {
-							height: dp(30)
-
-							text: "Hide"
-							itemLabel.style: "menu"
-
-							onClicked: {
-								overflowMenu.close()
-								main.content.activated = false
-							}
-						}
-					}
-				}
-			}
-		}
-
-		DropShadow {
-			anchors.fill: chatHeader
-
-			verticalOffset: dp(5)
-			radius: 30
-			samples: 61
-
-			color: Palette.colors["grey"]["50"]
-			source: chatHeader
-			z: 1
-		}
-
 		Item {
 			anchors {
-				top: chatHeader.bottom
+				top: parent.top
 				bottom: parent.bottom
 				left: parent.left
 				right: parent.right
@@ -380,33 +143,31 @@ Item{
 					rightMargin: dp(15)
 				}
 
-				Item {
+				ListView {
+					id: contentm
+
 					anchors {
 						fill: parent
-						margins: dp(2)
+						leftMargin: dp(5)
+						rightMargin: dp(5)
 					}
 
-					ListView {
-						id: contentm
+					clip: true
+					snapMode: ListView.NoSnap
+					flickableDirection: Flickable.AutoFlickDirection
 
-						anchors {
-							fill: parent
-							leftMargin: dp(5)
-							rightMargin: dp(5)
-						}
+					model: messagesModel
+					delegate: RoomMsgDelegate{}
 
-						clip: true
-						snapMode: ListView.NoSnap
-						flickableDirection: Flickable.AutoFlickDirection
-
-						model: messagesModel
-						delegate: RoomMsgDelegate{}
+					header: Item{
+						width: 1
+						height: dp(5)
 					}
+				}
 
-					Scrollbar {
-						anchors.margins: 0
-						flickableItem: contentm
-					}
+				Material.Scrollbar {
+					anchors.margins: 0
+					flickableItem: contentm
 				}
 			}
 
@@ -427,7 +188,7 @@ Item{
 					ScriptAction{script: contentm.positionViewAtEnd()}
 				}
 
-				View {
+				Material.View {
 					id: footerView
 
 					anchors {
@@ -503,7 +264,7 @@ Item{
 
 		Item {
 			anchors {
-				top: chatHeader.bottom
+				top: parent.top
 				bottom: parent.bottom
 				left: parent.left
 				right: parent.right
@@ -525,7 +286,7 @@ Item{
 				width: parent.width
 				z: 1
 
-				View {
+				Material.View {
 					id: friendFilter
 
 					anchors {
@@ -540,7 +301,7 @@ Item{
 					elevation: 1
 					backgroundColor: "white"
 
-					TextField {
+					Material.TextField {
 						id: msgBox2
 
 						anchors {
@@ -609,7 +370,7 @@ Item{
 					width: parent.width
 
 					text: model.name
-					textColor: Theme.light.textColor
+					textColor: Material.Theme.light.textColor
 					itemLabel.style: "body1"
 
 					imageSource: avatar
@@ -654,7 +415,7 @@ Item{
 						}
 					}
 
-					Dropdown {
+					Material.Dropdown {
 						id: overflowMenu2
 						objectName: "overflowMenu"
 						overlayLayer: "dialogOverlayLayer"
@@ -671,7 +432,7 @@ Item{
 						durationSlow: 300
 						durationFast: 150
 
-						Column{
+						Column {
 							anchors.fill: parent
 
 							ListItem.Standard {
@@ -728,11 +489,11 @@ Item{
 					width: parent.width
 
 					text: "Invite to room"
-					textColor: Theme.light.hintColor
+					textColor: Material.Theme.light.hintColor
 					itemLabel.style: "body1"
 
 					iconName: "awesome/plus"
-					iconColor: Theme.light.hintColor
+					iconColor: Material.Theme.light.hintColor
 
 					onClicked: {
 						addFriendRoom.show()
@@ -740,13 +501,13 @@ Item{
 				}
 			}
 
-			Scrollbar {
+			Material.Scrollbar {
 				anchors.margins: 0
 				flickableItem: roomFriendsList
 			}
 		}
 
-		Dialog {
+		Material.Dialog {
 			id: addFriendRoom
 
 			positiveButtonText: "Cancel"
@@ -774,7 +535,7 @@ Item{
 				rsApi.request("/chat/invite_to_lobby/", JSON.stringify(jsonData), function(){})
 			}
 
-			Label {
+			Material.Label {
 				anchors.left: parent.left
 
 				height: dp(50)
@@ -783,14 +544,14 @@ Item{
 				wrapMode: Text.Wrap
 				text: "Invite Friend"
 				style: "title"
-				color: Theme.accentColor
+				color: Material.Theme.accentColor
 			}
 
 			Item {
 				width: dp(300)
 				height: dp(320)
 
-				View {
+				Material.View {
 					id: addFriendFilter
 
 					anchors {
@@ -806,7 +567,7 @@ Item{
 					elevation: 1
 					backgroundColor: "white"
 
-					TextField {
+					Material.TextField {
 						anchors {
 							fill: parent
 							verticalCenter: parent.verticalCenter
@@ -918,22 +679,10 @@ Item{
 					}
 				}
 
-				Scrollbar {
+				Material.Scrollbar {
 					anchors.margins: 0
 					flickableItem: addRoomFriendsList
 				}
-			}
-		}
-
-		ParallelAnimation {
-			running: true
-			NumberAnimation {
-				target: content
-				property: "opacity"
-				from: 0
-				to: 1
-				easing.type: Easing.InOutQuad
-				duration: MaterialAnimation.pageTransitionDuration
 			}
 		}
 	}

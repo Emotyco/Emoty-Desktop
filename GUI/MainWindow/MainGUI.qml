@@ -895,29 +895,24 @@ Rectangle {
 	  (We couldn't e.g. click on mousearea in new created objects)
 	  */
 
+	function createRoomCard(roomName, chatId) {
+		var component = Qt.createComponent("RoomPage.qml", gridLayout);
+		if (component.status === Component.Ready) {
+			var roomCard = component.createObject(gridLayout,
+											  {"headerName": roomName,
+												"chatId": chatId});
+			updateVisibleRows()
+			gridLayout.reorder()
+		}
+	}
+
 	function createChatGxsCard(friendname, gxsid, objectName) {
 		var component = Qt.createComponent(objectName, gridLayout);
 		if (component.status === Component.Ready) {
 			var chat = component.createObject(gridLayout,
-											  {"name": friendname,
+											  {"headerName": friendname,
 												"gxsId": gxsid});
 			updateVisibleRows()
-
-			chat.col = Qt.binding(function() {
-				return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 11
-						? 11
-						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)) || 1
-			})
-			chat.row = Qt.binding(function() {
-				return main.visibleRows
-			})
-			chat.gridY = 0
-			chat.gridX = Qt.binding(function() {
-				return Math.floor(
-							((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-chat.col)/2
-						)
-			})
-
 			gridLayout.reorder()
 		}
 	}
@@ -926,27 +921,10 @@ Rectangle {
 		var component = Qt.createComponent(objectName, gridLayout);
 		if (component.status === Component.Ready) {
 			var chat = component.createObject(gridLayout,
-											  {"name": friendname,
-											   "location": location,
+											  {"headerName": friendname + "@" + location,
 											   "chatId": chat_id,
 											   "rsPeerId": rspeerid});
 			updateVisibleRows()
-
-			chat.col = Qt.binding(function() {
-				return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 11
-						? 11
-						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)) || 1
-			})
-			chat.row = Qt.binding(function() {
-				return main.visibleRows
-			})
-			chat.gridY = 0
-			chat.gridX = Qt.binding(function() {
-				return Math.floor(
-							((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-chat.col)/2
-						)
-			})
-
 			gridLayout.reorder()
 		}
 	}

@@ -21,19 +21,15 @@
  ****************************************************************/
 
 import QtQuick 2.5
-import QtQuick.Layouts 1.3
-import QtGraphicalEffects 1.0
 
-import Material 0.3
+import Material 0.3 as Material
 import Material.ListItems 0.1 as ListItem
 
-DragTile {
+Card {
 	id: drag
 
 	property string rsPeerId
 	property string chatId
-	property string name
-	property string location
 	property alias contentm: contentm
 
 	// For handling tokens
@@ -41,49 +37,8 @@ DragTile {
 
 	Component.onDestruction: main.unregisterToken(stateToken)
 
-	// Just for "restore" option
-	property int tmpCol
-	property int tmpRow
-	property int tmpGridX: 0   // Numbering starts from 0
-	property int tmpGridY: 0   // Numbering starts from 0
-	property bool maximized: false
-	//
-
-	Layout.alignment: Qt.AlignBottom
-	Layout.maximumWidth: 0
-	Layout.maximumHeight: 0
-
-	width: 0
-	height: 0
-
-	col: 5
-	row: 3
-
-	opacity: 0
-
-	Behavior on gridX {
-		ScriptAction { script: {drag.refresh()} }
-	}
-
-	Behavior on row {
+	Behavior on height {
 		ScriptAction { script: {contentm.positionViewAtEnd()} }
-	}
-
-	ParallelAnimation {
-		running: true
-		SequentialAnimation {
-			NumberAnimation {
-				duration: 50
-			}
-			NumberAnimation {
-				target: drag
-				property: "opacity"
-				from: 0
-				to: 1
-				easing.type: Easing.InOutQuad;
-				duration: MaterialAnimation.pageTransitionDuration/2
-			}
-		}
 	}
 
 	function getChatMessages() {
@@ -114,251 +69,44 @@ DragTile {
 		id: msgModel
 	}
 
-	View {
-		id: chat
-
+	Item {
 		anchors.fill: parent
-
-		elevation: 2
-		backgroundColor: Palette.colors["grey"]["50"]
-
-		Behavior on anchors.topMargin {
-			NumberAnimation { duration: MaterialAnimation.pageTransitionDuration }
-		}
-
-		Rectangle {
-			id: chatHeader
-
-			anchors {
-				top: parent.top
-				left: parent.left
-				right: parent.right
-			}
-
-			height: dp(35)
-
-			color: Palette.colors["grey"]["50"]
-			z: 2
-
-			MouseArea {
-				anchors.fill: parent
-
-				acceptedButtons: Qt.RightButton
-				onClicked: overflowMenu5.open(drag, mouse.x, mouse.y);
-
-				Item {
-					anchors {
-						bottom: parent.bottom
-						top: parent.top
-						horizontalCenter: parent.horizontalCenter
-					}
-
-					width: parent.width > dp(9*60+(30)) ? dp(9*60) : (parent.width-dp(30))
-
-					Rectangle {
-						anchors {
-							left: parent.left
-							right: parent.right
-							bottom: parent.bottom
-						}
-
-						height: dp(1)
-
-						color: Palette.colors["grey"]["200"]
-					}
-
-					Text {
-						id: headertext
-
-						anchors {
-							verticalCenter: parent.verticalCenter
-							left: parent.left
-							leftMargin: dp(20)
-						}
-
-						font {
-							family: "Roboto"
-							pixelSize: dp(17)
-						}
-
-						text: name + "@" + location
-
-						color: Theme.primaryColor
-					}
-
-					Item {
-						anchors {
-							verticalCenter: parent.verticalCenter
-							right: parent.right
-							rightMargin: dp(18)
-						}
-
-						width: dp(23)
-						height: dp(23)
-
-						Rectangle {
-							id: closeButton
-
-							anchors.centerIn: parent
-
-							width: dp(20)
-							height: dp(2.5)
-
-							rotation: 45
-							color: Palette.colors["grey"]["500"]
-						}
-
-						Rectangle {
-							id: closeButton2
-
-							anchors.centerIn: parent
-
-							width: dp(20)
-							height: dp(2.5)
-
-							rotation: -45
-							color: Palette.colors["grey"]["500"]
-						}
-
-						MouseArea {
-							anchors.fill: parent
-
-							hoverEnabled: true
-
-							onEntered: {
-								closeButton.color = Theme.accentColor
-								closeButton2.color = Theme.accentColor
-							}
-							onExited: {
-								closeButton.color = Palette.colors["grey"]["500"]
-								closeButton2.color = Palette.colors["grey"]["500"]
-							}
-							onClicked: drag.destroy()
-						}
-					}
-				}
-
-				Dropdown {
-					id: overflowMenu5
-					objectName: "overflowMenu5"
-					overlayLayer: "dialogOverlayLayer"
-
-					anchor: Item.TopLeft
-
-					width: dp(200)
-					height: dp(2*30)
-
-					enabled: true
-
-					durationSlow: 300
-					durationFast: 150
-
-					Column {
-						anchors.fill: parent
-
-						ListItem.Standard {
-							height: dp(30)
-
-							text: maximized ? "Restore" : "Maximize"
-							itemLabel.style: "menu"
-
-							onClicked: {
-								overflowMenu5.close()
-
-								if(!maximized) {
-									drag.tmpGridX = drag.gridX
-									drag.tmpGridY = drag.gridY
-									drag.tmpCol = drag.col
-									drag.tmpRow = drag.row
-									drag.gridX = 0
-									drag.gridY = 0
-									drag.col = Qt.binding(function() {
-										return parseInt(gridLayout.width / dp(60))>= 11
-												? 11
-												: parseInt(gridLayout.width / dp(60)) || 1
-									})
-									drag.row = Qt.binding(function() {
-										return main.visibleRows
-									})
-									maximized = true
-								}
-								else if(maximized) {
-									drag.gridX = drag.tmpGridX
-									drag.gridY = drag.tmpGridY
-									drag.col = drag.tmpCol
-									drag.row = drag.tmpRow
-									maximized = false
-								}
-
-								drag.refresh()
-							}
-						}
-
-						ListItem.Standard {
-							height: dp(30)
-
-							text: "Close"
-
-							itemLabel.style: "menu"
-
-							onClicked: {
-								overflowMenu5.close()
-								drag.destroy()
-							}
-						}
-					}
-				}
-			}
-		}
-
-		DropShadow {
-			anchors.fill: chatHeader
-
-			verticalOffset: dp(5)
-			radius: 30
-			samples: 61
-
-			color: Palette.colors["grey"]["50"]
-			source: chatHeader
-			z: 1
-		}
 
 		Item {
 			anchors {
-				top: chatHeader.bottom
+				top: parent.top
 				bottom: chatFooter.top
-				horizontalCenter: parent.horizontalCenter
+				left: parent.left
+				right: parent.right
+				leftMargin: dp(15)
+				rightMargin: dp(15)
 			}
 
-			width: parent.width > dp(9*60+(30)) ? dp(9*60) : (parent.width-dp(30))
+			ListView {
+				id: contentm
 
-			Item {
 				anchors {
 					fill: parent
-					margins: dp(2)
+					leftMargin: dp(5)
+					rightMargin: dp(5)
 				}
 
-				ListView {
-					id: contentm
+				clip: true
+				snapMode: ListView.NoSnap
+				flickableDirection: Flickable.AutoFlickDirection
 
-					anchors {
-						fill: parent
-						leftMargin: dp(5)
-						rightMargin: dp(5)
-					}
+				model: msgModel
+				delegate: ChatMsgDelegate{}
 
-					clip: true
-					snapMode: ListView.NoSnap
-					flickableDirection: Flickable.AutoFlickDirection
-
-					model: msgModel
-					delegate: ChatMsgDelegate{}
+				header: Item {
+					width: 1
+					height: dp(5)
 				}
+			}
 
-				Scrollbar {
-					anchors.margins: 0
-					flickableItem: contentm
-				}
+			Material.Scrollbar {
+				anchors.margins: 0
+				flickableItem: contentm
 			}
 		}
 
@@ -381,17 +129,15 @@ DragTile {
 				ScriptAction {script: contentm.positionViewAtEnd()}
 			}
 
-			View {
+			Material.View {
 				id: footerView
 
 				anchors {
-					bottom: parent.bottom
-					top: parent.top
-					horizontalCenter: parent.horizontalCenter
+					fill: parent
+					leftMargin: dp(15)
+					rightMargin: dp(15)
 					bottomMargin: dp(10)
 				}
-
-				width: parent.width > dp(9*60+(30)) ? dp(9*60) : (parent.width-dp(30))
 
 				radius: 10
 				elevation: 1

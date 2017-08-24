@@ -29,8 +29,6 @@ import Material.ListItems 0.1 as ListItem
 View {
 	id: leftBar
 
-	property string selectedPage: pageStack.currentItem.title
-
 	anchors {
 		top: parent.top
 		left: parent.left
@@ -219,7 +217,7 @@ View {
 					isIcon: icon
 
 					margins: 0
-					selected: false //selectedPage === pageTitle
+					selected: false
 
 					onClicked: {
 						if(helperName === "Rooms") {
