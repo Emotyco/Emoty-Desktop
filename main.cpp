@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 	QObject::connect(qApp, SIGNAL(aboutToQuit()), &process, SLOT(kill()));
 #endif
 
-	loginwindow_main(argc, argv);
+	loginwindow_main();
 
 	if(RunStateHelper::getInstance()->getRunState() != "running_ok" && RunStateHelper::getInstance()->getRunState() != "waiting_startup")
 	{
