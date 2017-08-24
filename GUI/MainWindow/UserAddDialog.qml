@@ -153,6 +153,8 @@ Dialog {
 				textFormat: Text.PlainText
 				wrapMode: Text.WrapAnywhere
 				font.pixelSize: dp(12)
+
+				onTextChanged: friendCert.text = friendCert.text.replace(/(\r\n|\n|\r)/gm,"")
 			}
 		}
 	}
