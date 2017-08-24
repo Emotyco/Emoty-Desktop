@@ -499,13 +499,12 @@ Rectangle {
 			anchors.fill: parent
 
 			hoverEnabled: true
-
 			onClicked: {
-				if(mouse.button == Qt.LeftButton)
+				if(mouse.button == Qt.LeftButton && borderless)
 					qMainPanel.mouseLPressed()
 			}
 			onPressed: {
-				if(mouse.button == Qt.LeftButton)
+				if(mouse.button == Qt.LeftButton && borderless)
 					qMainPanel.mouseLPressed()
 			}
 		}
