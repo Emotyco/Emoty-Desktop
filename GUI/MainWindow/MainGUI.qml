@@ -48,10 +48,7 @@ Rectangle {
 	property Item controls: controlView
 
 	property int visibleRows: Math.round((main.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
-
-	property alias pageStack: __pageStack
 	property alias gridLayout: gridLayout
-	property alias content: content
 
 	signal gridChanged
 
@@ -760,47 +757,6 @@ Rectangle {
 				delegate: DropTile {}
 
 				Layout.alignment: Qt.AlignTop
-			}
-
-			DragTile {
-				id: content
-
-				Layout.alignment: Qt.AlignBottom
-				Layout.maximumWidth: 0
-				Layout.maximumHeight: 0
-
-				width: 0
-				height: 0
-
-				col: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
-					    ? 14
-						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))
-
-				row: main.visibleRows
-
-				gridX: Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-content.col)/2)
-
-				Behavior on col {
-					ScriptAction {
-						script: {
-							content.refresh()
-							gridLayout.reorder()
-						}
-					}
-				}
-
-				Behavior on row {
-					ScriptAction { script: {content.refresh()} }
-				}
-
-				Controls.StackView {
-					id: __pageStack
-					anchors.fill: parent
-
-					initialItem:	Content{}
-				}
-
-				Component.onCompleted: {main.content.activated = false}
 			}
 		}
 	}
