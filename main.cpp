@@ -150,10 +150,10 @@ int main(int argc, char *argv[])
 	view->setSource(QUrl("qrc:/MainGUI.qml"));
 	// Create window
 	ScreenSize screenSize;
-	view->setWidth(screenSize.width()/2);
-	view->setHeight(screenSize.height()/2);
+	view->setWidth(screenSize.width()*0.75);
+	view->setHeight(screenSize.height()*0.75);
 	view->setMinimumWidth(600);
-	view->setMinimumHeight(300);
+	view->setMinimumHeight(350);
 	view->show();
 
 	QObject::connect(&trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), &helper, SLOT(showViaSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
@@ -164,8 +164,8 @@ int main(int argc, char *argv[])
 
 	// Create window
 	ScreenSize screenSize;
-	MainWindow window( windowBackground, screenSize.width()/4, screenSize.height()/4, screenSize.width()/2, screenSize.height()/2 );
-	window.setMinimumSize(600, 300);
+	MainWindow window( windowBackground, screenSize.width()*0.125, screenSize.height()*0.125, screenSize.width()*0.75, screenSize.height()*0.75);
+	window.setMinimumSize(600, 350);
 
 	QObject::connect(&trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), &window, SLOT(showViaSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
 #endif
