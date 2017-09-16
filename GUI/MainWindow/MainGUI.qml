@@ -900,6 +900,16 @@ Rectangle {
 		}
 	}
 
+	function createFileSharingCard() {
+		var component = Qt.createComponent("FileSharingCard.qml", gridLayout);
+		if (component.status === Component.Ready) {
+			var roomCard = component.createObject(gridLayout,
+											  {"headerName": "File Sharing"});
+			updateVisibleRows()
+			gridLayout.reorder()
+		}
+	}
+
 	function createChatGxsCard(friendname, gxsid, objectName) {
 		var component = Qt.createComponent(objectName, gridLayout);
 		if (component.status === Component.Ready) {

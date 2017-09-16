@@ -59,7 +59,11 @@ HEADERS += libresapilocalclient.h \
     Bridge/Models/roomparticipantsmodel.h \
     Bridge/Models/roomparticipantssortmodel.h \
     Bridge/Models/roominvitationmodel.h \
-    Bridge/Models/roominvitationsortmodel.h
+    Bridge/Models/roominvitationsortmodel.h \
+    Bridge/Models/transferfilesmodel.h \
+    Bridge/Models/transferfilessortmodel.h \
+    Bridge/Models/sharedfilesmodel.h \
+    Bridge/Models/searchfilemodel.h
 
 SOURCES += main.cpp \
     libresapilocalclient.cpp \
@@ -74,7 +78,11 @@ SOURCES += main.cpp \
     Bridge/Models/roomparticipantsmodel.cpp \
     Bridge/Models/roomparticipantssortmodel.cpp \
     Bridge/Models/roominvitationmodel.cpp \
-    Bridge/Models/roominvitationsortmodel.cpp
+    Bridge/Models/roominvitationsortmodel.cpp \
+    Bridge/Models/transferfilesmodel.cpp \
+    Bridge/Models/transferfilessortmodel.cpp \
+    Bridge/Models/sharedfilesmodel.cpp \
+    Bridge/Models/searchfilemodel.cpp
 
 RESOURCES += \
     GUI/MainWindow/mainwindow.qrc \

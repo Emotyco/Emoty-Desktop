@@ -37,6 +37,9 @@
         <file>MessagesUpdater.js</file>
         <file>PgpListUpdater.js</file>
         <file>IdentitiesSelectionDialog.qml</file>
+        <file>FileSharingCard.qml</file>
         <file>Card.qml</file>
+        <file>TransferDelegate.qml</file>
+        <file>FileDelegate.qml</file>
     </qresource>
 </RCC>
