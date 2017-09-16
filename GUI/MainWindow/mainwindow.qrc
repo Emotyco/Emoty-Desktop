@@ -19,10 +19,10 @@
         <file>DropTile.qml</file>
         <file>ChatMsgDelegate.qml</file>
         <file>PeerListDelegate.qml</file>
-        <file>ChatCardPeer.qml</file>
+        <file>ChatPeerCard.qml</file>
         <file>LeftBar_Identites.qml</file>
         <file>ListItem_Button.qml</file>
-        <file>RoomPage.qml</file>
+        <file>RoomCard.qml</file>
         <file>LeftBar_Rooms.qml</file>
         <file>RoomFriend.qml</file>
         <file>RoomMsgDelegate.qml</file>

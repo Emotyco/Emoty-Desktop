@@ -890,7 +890,7 @@ Rectangle {
 	  */
 
 	function createRoomCard(roomName, chatId) {
-		var component = Qt.createComponent("RoomPage.qml", gridLayout);
+		var component = Qt.createComponent("RoomCard.qml", gridLayout);
 		if (component.status === Component.Ready) {
 			var roomCard = component.createObject(gridLayout,
 											  {"headerName": roomName,
@@ -921,7 +921,7 @@ Rectangle {
 		}
 	}
 
-	function createChatCardPeer(friendname, location, rspeerid, chat_id, objectName) {
+	function createChatPeerCard(friendname, location, rspeerid, chat_id, objectName) {
 		var component = Qt.createComponent(objectName, gridLayout);
 		if (component.status === Component.Ready) {
 			var chat = component.createObject(gridLayout,
