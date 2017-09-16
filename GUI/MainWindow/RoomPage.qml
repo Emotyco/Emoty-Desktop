@@ -629,7 +629,7 @@ Card {
 						width: parent.width
 
 						text: model.name
-						textColor: selected ? Theme.primaryColor : Theme.light.textColor
+						textColor: selected ? Material.Theme.primaryColor : Material.Theme.light.textColor
 						itemLabel.style: "body1"
 
 						imageSource: avatar
