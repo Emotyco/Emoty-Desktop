@@ -128,14 +128,13 @@ Rectangle {
                 anchors {
                     top: parent.top
                     right: parent.right
+                    bottom: rightBar.top
                 }
 
-                height: dp(50)
                 width: dp(210)
 
                 backgroundColor: "white"
                 elevation: 2
-                z: 1
 
                 ParallelAnimation {
                     running: true
@@ -278,7 +277,7 @@ Rectangle {
                     }
                 }
             }
-            ', controlView);
+            ', main);
 	}
 
 	onDefaultGxsIdChanged: main.getDefaultAvatar()
