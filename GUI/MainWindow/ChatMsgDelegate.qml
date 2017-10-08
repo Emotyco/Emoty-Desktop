@@ -39,8 +39,9 @@ Component {
 			}
 
 			height: textMsg.implicitHeight + dp(14)
-			width: (model.msg.length>45) ? (parent.width*0.8)
-										 :  textMsg.implicitWidth + dp(20)
+			width: (textMsg.implicitWidth + dp(20)) > (parent.width*0.8)
+				    ? (parent.width*0.8)
+					: textMsg.implicitWidth + dp(20)
 
 			backgroundColor: model.incoming === false ? Theme.primaryColor : "white"
 			elevation: 1
