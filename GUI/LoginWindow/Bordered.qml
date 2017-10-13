@@ -470,7 +470,7 @@ Rectangle
 				anchors.top: parent.top
 
 				width: parent.width
-				height: columnView.height
+				height: columnView.height + columnView2.height
 
 				z: 1
 
@@ -521,65 +521,63 @@ Rectangle
 						}
 					}
 				}
-			}
 
+				Column {
+					id: columnView2
 
-
-			Column {
-				id: columnView2
-
-				anchors.bottom: parent.bottom
-				width: parent.width
-
-				spacing: 0
-
-				Item {
+					anchors.bottom: parent.bottom
 					width: parent.width
-					height: hiddenNode.checked ? dp(10) : 0
-				}
 
-				Item {
-					width: parent.width
-					height: hiddenNode.checked ? dp(38) : 0
+					spacing: 0
 
-					enabled: hiddenNode.checked
-					visible: hiddenNode.checked
-
-					TextField {
-						id: hiddenAddress
-
-						anchors.centerIn: parent
-						width: parent.width-dp(32)
-
-						placeholderText: "TOR/I2P address"
-						floatingLabel: true
-						text: "xa76giaf6ifda7ri63i263.onion"
+					Item {
+						width: parent.width
+						height: hiddenNode.checked ? dp(10) : 0
 					}
-				}
 
-				Item {
-					width: parent.width
-					height: hiddenNode.checked ? dp(10) : 0
-				}
+					Item {
+						width: parent.width
+						height: hiddenNode.checked ? dp(38) : 0
 
-				Item {
-					width: parent.width
-					height: hiddenNode.checked ? dp(38) : 0
+						enabled: hiddenNode.checked
+						visible: hiddenNode.checked
 
-					enabled: hiddenNode.checked
-					visible: hiddenNode.checked
+						TextField {
+							id: hiddenAddress
 
-					TextField {
-						id: port
+							anchors.centerIn: parent
+							width: parent.width-dp(32)
 
-						anchors.centerIn: parent
-						width: parent.width-dp(32)
+							placeholderText: "TOR/I2P address"
+							floatingLabel: true
+							text: "xa76giaf6ifda7ri63i263.onion"
+						}
+					}
 
-						placeholderText: "Port"
-						floatingLabel: true
-						text: "7812"
+					Item {
+						width: parent.width
+						height: hiddenNode.checked ? dp(10) : 0
+					}
 
-						validator: IntValidator {bottom: 0; top: 65535;}
+					Item {
+						width: parent.width
+						height: hiddenNode.checked ? dp(38) : 0
+
+						enabled: hiddenNode.checked
+						visible: hiddenNode.checked
+
+						TextField {
+							id: port
+
+							anchors.centerIn: parent
+							width: parent.width-dp(32)
+
+							placeholderText: "Port"
+							floatingLabel: true
+							text: "7812"
+
+							validator: IntValidator {bottom: 0; top: 65535;}
+						}
 					}
 				}
 			}
