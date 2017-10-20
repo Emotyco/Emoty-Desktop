@@ -191,7 +191,7 @@ Component {
 						onClicked: {
 							overflowMenu.close()
 
-							main.createChatCardPeer(model.name, model.location, model.peer_id, model.chat_id, "ChatCardPeer.qml")
+							main.createChatPeerCard(model.name, model.location, model.peer_id, model.chat_id, "ChatPeerCard.qml")
 							rsApi.request("/chat/mark_chat_as_read/"+model.chat_id, "", function(){})
 						}
 					}
@@ -336,7 +336,7 @@ Component {
 						anchors.fill: parent
 
 						onClicked: {
-							main.createChatCardPeer(model.name, model.location, model.peer_id, model.chat_id, "ChatCardPeer.qml")
+							main.createChatPeerCard(model.name, model.location, model.peer_id, model.chat_id, "ChatPeerCard.qml")
 							rsApi.request("/chat/mark_chat_as_read/"+model.chat_id, "", function(){})
 						}
 					}

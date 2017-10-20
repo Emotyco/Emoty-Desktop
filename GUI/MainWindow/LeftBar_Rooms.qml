@@ -171,6 +171,7 @@ Rectangle {
 							text: model.unread_msg_count
 							color: "white"
 							font.family: "Roboto"
+							font.pixelSize: dp(13)
 							verticalAlignment: Text.AlignVCenter
 							horizontalAlignment: Text.AlignHCenter
 						}
@@ -290,6 +291,7 @@ Rectangle {
 							text: model.unread_msg_count
 							color: "white"
 							font.family: "Roboto"
+							font.pixelSize: dp(13)
 							verticalAlignment: Text.AlignVCenter
 							horizontalAlignment: Text.AlignHCenter
 						}
@@ -386,11 +388,8 @@ Rectangle {
 					function openUnsubscribedPublicLobby() {
 						subscribeLobby(model.id)
 						setAutosubsribeLobby(model.id, true)
-						main.content.activated = true;
-						pageStack.push({item: Qt.resolvedUrl("RoomPage.qml"), immediate: true, replace: true,
-										   properties: {roomName: model.name, chatId: model.chat_id}})
 
-						main.content.refresh()
+						main.createRoomCard(model.name, model.chat_id)
 						leftBar.state = "narrow"
 					}
 
@@ -417,6 +416,7 @@ Rectangle {
 							text: model.unread_msg_count
 							color: "white"
 							font.family: "Roboto"
+							font.pixelSize: dp(13)
 							verticalAlignment: Text.AlignVCenter
 							horizontalAlignment: Text.AlignHCenter
 						}

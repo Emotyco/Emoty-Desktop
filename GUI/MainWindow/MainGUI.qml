@@ -128,14 +128,13 @@ Rectangle {
                 anchors {
                     top: parent.top
                     right: parent.right
+                    bottom: rightBar.top
                 }
 
-                height: dp(50)
                 width: dp(210)
 
                 backgroundColor: "white"
                 elevation: 2
-                z: 1
 
                 ParallelAnimation {
                     running: true
@@ -278,7 +277,7 @@ Rectangle {
                     }
                 }
             }
-            ', controlView);
+            ', main);
 	}
 
 	onDefaultGxsIdChanged: main.getDefaultAvatar()
@@ -890,11 +889,21 @@ Rectangle {
 	  */
 
 	function createRoomCard(roomName, chatId) {
-		var component = Qt.createComponent("RoomPage.qml", gridLayout);
+		var component = Qt.createComponent("RoomCard.qml", gridLayout);
 		if (component.status === Component.Ready) {
 			var roomCard = component.createObject(gridLayout,
 											  {"headerName": roomName,
 												"chatId": chatId});
+			updateVisibleRows()
+			gridLayout.reorder()
+		}
+	}
+
+	function createFileSharingCard() {
+		var component = Qt.createComponent("FileSharingCard.qml", gridLayout);
+		if (component.status === Component.Ready) {
+			var roomCard = component.createObject(gridLayout,
+											  {"headerName": "File Sharing"});
 			updateVisibleRows()
 			gridLayout.reorder()
 		}
@@ -911,7 +920,7 @@ Rectangle {
 		}
 	}
 
-	function createChatCardPeer(friendname, location, rspeerid, chat_id, objectName) {
+	function createChatPeerCard(friendname, location, rspeerid, chat_id, objectName) {
 		var component = Qt.createComponent(objectName, gridLayout);
 		if (component.status === Component.Ready) {
 			var chat = component.createObject(gridLayout,

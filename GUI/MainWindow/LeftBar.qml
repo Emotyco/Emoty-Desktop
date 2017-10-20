@@ -149,6 +149,13 @@ View {
 						anchors.fill: parent
 					}
 				}
+				Tab {
+					title: "File Sharing"
+
+					Item {
+						anchors.fill: parent
+					}
+				}
 			}
 		}
 	}
@@ -196,14 +203,18 @@ View {
 				Component.onCompleted: {
 					append({"src": main.defaultAvatar,
 							   "icon": false,
-							   "page": "Content.qml",
-							   "pageTitle": "profilePage",
-							   "helperName": "Profile"
+							   "helperName": "Profile",
+							   "protruding": true
 						   });
 					append({"src": "awesome/comments",
 							   "icon": true,
-							   "pageTitle": "roomPage",
-							   "helperName": "Rooms"
+							   "helperName": "Rooms",
+							   "protruding": true
+						   });
+					append({"src": "awesome/share_alt",
+							   "icon": true,
+							   "helperName": "Files Sharing",
+							   "protruding": false
 						   });
 				}
 			}
@@ -229,21 +240,18 @@ View {
 								leftBar.state = "narrow"
 							else if(leftBar.state !== "narrow" && tabView.currentIndex !== model.index+1)
 								tabView.currentIndex = model.index+1
-						}/*
-						else {
-							main.content.activated = true;
-							pageStack.push({item: Qt.resolvedUrl(page), immediate: true, replace: true})
-							main.content.refresh()
-						}*/
+						}
+						if(helperName === "Files Sharing")
+							main.createFileSharingCard()
 					}
 					onPressAndHold: {
-						if(leftBar.state === "narrow") {
+						if(leftBar.state === "narrow" && protruding) {
 							tabView.currentIndex = model.index+1
 							leftBar.state = "wide"
 						}
 						else if(leftBar.state !== "narrow" && tabView.currentIndex === model.index+1)
 							leftBar.state = "narrow"
-						else if(leftBar.state !== "narrow" && tabView.currentIndex !== model.index+1)
+						else if(leftBar.state !== "narrow" && tabView.currentIndex !== model.index+1 && protruding)
 							tabView.currentIndex = model.index+1
 					}
 
@@ -271,6 +279,7 @@ View {
 							text: helperName == "Rooms" ? main.unreadMsgsLobbies : ""
 							color: "white"
 							font.family: "Roboto"
+							font.pixelSize: dp(11)
 							verticalAlignment: Text.AlignVCenter
 							horizontalAlignment: Text.AlignHCenter
 						}

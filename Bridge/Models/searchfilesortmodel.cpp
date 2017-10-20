@@ -19,37 +19,25 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor,
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
-#include "qwinview.h"
+#include "searchfilesortmodel.h"
 
-//Qt
-#include <qevent.h>
-#include <QApplication>
-#include <qpa/qplatformnativeinterface.h>
+void SearchFileSortModel::setBaseModel(QAbstractListModel* baseModel) {
+	setSourceModel(baseModel);
+	setDynamicSortFilter(true);
+	sort(0);
 
-QWinView::QWinView(HWND hParentWnd, QObject *parent)
-:	QQuickView(),
-    hParent(hParentWnd)
-{
-	if (parent)
-		QObject::setParent(parent);
-
-	Q_ASSERT(hParent);
-
-	if(hParent)
-	{
-		SetWindowLong((HWND)winId(), GWL_STYLE, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-
-		HWND h = static_cast<HWND>(QGuiApplication::platformNativeInterface()->
-		                        nativeResourceForWindow("handle", this));
-		SetParent(h, hParent);
-		this->setFlags(Qt::FramelessWindowHint);
-
-		QEvent e(QEvent::EmbeddingControl);
-		QApplication::sendEvent(this, &e);
-	}
+	QObject::connect(reinterpret_cast<SearchFileModel*>(baseModel), SIGNAL(dataCountChanged()),
+	                 this, SIGNAL(countChanged()));
 }
 
-HWND QWinView::parentWindow() const
+bool SearchFileSortModel::filterAcceptsRow(int sourceRow,
+        const QModelIndex &sourceParent) const
 {
-	return hParent;
+	QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+
+	if(is_own == sourceModel()->data(index, 7).toBool()
+	        && is_friends == sourceModel()->data(index, 6).toBool())
+		return true;
+	else
+		return false;
 }

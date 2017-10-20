@@ -19,37 +19,42 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor,
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
-#include "qwinview.h"
+#ifndef TRANSFERFILESSORTMODEL_H
+#define TRANSFERFILESSORTMODEL_H
 
 //Qt
-#include <qevent.h>
-#include <QApplication>
-#include <qpa/qplatformnativeinterface.h>
+#include <QSortFilterProxyModel>
+#include <QQmlEngine>
 
-QWinView::QWinView(HWND hParentWnd, QObject *parent)
-:	QQuickView(),
-    hParent(hParentWnd)
+//Emoty-Desktop
+#include "Bridge/Models/transferfilesmodel.h"
+
+class TransferFilesSortModel : public QSortFilterProxyModel
 {
-	if (parent)
-		QObject::setParent(parent);
+	Q_OBJECT
+public:
+	enum Filter {
+		All,
+		Downloads,
+		Uploads
+	};
 
-	Q_ASSERT(hParent);
+	TransferFilesSortModel(QObject *parent = 0);
+	    ~TransferFilesSortModel();
 
-	if(hParent)
-	{
-		SetWindowLong((HWND)winId(), GWL_STYLE, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+public slots:
+	void setFilter(int filterTransfer);
 
-		HWND h = static_cast<HWND>(QGuiApplication::platformNativeInterface()->
-		                        nativeResourceForWindow("handle", this));
-		SetParent(h, hParent);
-		this->setFlags(Qt::FramelessWindowHint);
+protected:
+	bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
 
-		QEvent e(QEvent::EmbeddingControl);
-		QApplication::sendEvent(this, &e);
-	}
+private:
+	TransferFilesModel *transferFilesModel;
+	Filter filter;
+};
+
+static void registerTransferFilesSortModelTypes() {
+	qmlRegisterType<TransferFilesSortModel>("TransferFilesSortModel", 0, 2, "TransferFilesSortModel");
 }
 
-HWND QWinView::parentWindow() const
-{
-	return hParent;
-}
+#endif // TRANSFERFILESSORTMODEL_H
