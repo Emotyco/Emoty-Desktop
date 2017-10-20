@@ -724,6 +724,8 @@ Card {
 				z:1
 				opacity: 0
 
+				color: Material.Palette.colors["grey"]["50"]
+
 				SequentialAnimation {
 					id: sequentialAnimation
 					NumberAnimation {
