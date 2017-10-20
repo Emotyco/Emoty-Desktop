@@ -20,11 +20,14 @@
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
 import QtQuick 2.5
+import QtQuick.Layouts 1.3
 
 import Material 0.3 as Material
+import Material.ListItems 0.1 as ListItem
 
 Component {
 	Item {
+		id: fileItem
 		property string modelName: GridView.view.model.objectName
 		property var modelObject: GridView.view.model
 
@@ -38,9 +41,10 @@ Component {
 
 			clip: true
 
-			Material.Ink {
+			MouseArea {
 				anchors.fill: parent
-				circular: true
+				acceptedButtons: Qt.LeftButton | Qt.RightButton
+				hoverEnabled: true
 
 				onEntered: {
 					fileIcon.color = Material.Theme.primaryColor
@@ -55,33 +59,141 @@ Component {
 				}
 
 				onClicked: {
-					if(model.type == "folder" || model.type == "person") {
-						var jsonData = {
-							reference: model.reference,
-							remote: false,
-							local:	true
-						}
+					if(mouse.button == Qt.LeftButton) {
+						if(model.type == "folder" || model.type == "person") {
+							var jsonData = {
+								reference: model.reference,
+								remote: false,
+								local:	true
+							}
 
-						if(modelName == "friendsFiles") {
-							jsonData.remote = true
-							jsonData.local = false
-						}
+							if(modelName == "friendsFiles") {
+								jsonData.remote = true
+								jsonData.local = false
+							}
 
-						function callbackFn(par) {
-							modelObject.loadJSONSharedFolders(par.response)
-						}
+							function callbackFn(par) {
+								modelObject.loadJSONSharedFolders(par.response)
+							}
 
-						rsApi.request("/filesharing/get_dir_childs/", JSON.stringify(jsonData), callbackFn)
+							rsApi.request("/filesharing/get_dir_childs/", JSON.stringify(jsonData), callbackFn)
+						}
+						else if(model.type == "file" && (modelName == "friendsFiles" || modelName == "friendsSearchResult" || modelName == "distantSearchResult")) {
+							var downloadData = {
+								action: "begin",
+								hash: model.hash,
+								name: model.name,
+								size: model.count
+							}
+
+							rsApi.request("/transfers/control_download/", JSON.stringify(downloadData), function(){})
+						}
 					}
-					else if(model.type == "file" && (modelName == "friendsFiles" || modelName == "friendsSearchResult" || modelName == "distantSearchResult")) {
-						var downloadData = {
-							action: "begin",
-							hash: model.hash,
-							name: model.name,
-							size: model.count
+					else if(mouse.button == Qt.RightButton && modelName == "ownFiles" && model.type != "person"){
+						overflowMenu.open(fileItem, mouse.x, mouse.y)
+					}
+				}
+			}
+
+			Material.Dropdown {
+				id: overflowMenu
+				objectName: "overflowMenu"
+				overlayLayer: "dialogOverlayLayer"
+				width: dp(270)
+				height: dp(3*30)
+				enabled: true
+				anchor: Item.TopLeft
+				durationSlow: 300
+				durationFast: 150
+
+				Column {
+					anchors.fill: parent
+
+					ListItem.Standard {
+						height: dp(30)
+						text: "Browsable"
+						itemLabel.style: "body1"
+
+						secondaryItem: Material.CheckBox {
+							id: browsableCB
+							anchors.verticalCenter: parent.verticalCenter
+							enabled: model.name.startsWith(":/", 1) || model.name.startsWith("/") ? true : false
+							checked: model.browsable
 						}
 
-						rsApi.request("/transfers/control_download/", JSON.stringify(downloadData), function(){})
+						onClicked: {
+							if(browsableCB.enabled){
+								browsableCB.checked = !browsableCB.checked
+
+								var jsonData = {
+									directory: model.name,
+									virtualname: model.virtual_name,
+									browsable: browsableCB.checked,
+									anon_dl: downloadableCB.checked,
+									anon_search: searchableCB.checked
+								}
+
+								rsApi.request("/filesharing/update_shared_dir/", JSON.stringify(jsonData), function(){})
+							}
+						}
+					}
+
+					ListItem.Standard {
+						height: dp(30)
+						text: "Anonymously downloadable"
+						itemLabel.style: "body1"
+
+						secondaryItem: Material.CheckBox {
+							id: downloadableCB
+							anchors.verticalCenter: parent.verticalCenter
+							enabled: model.name.startsWith(":/", 1) || model.name.startsWith("/") ? true : false
+							checked: model.anonymous_download
+						}
+
+						onClicked: {
+							if(downloadableCB.enabled){
+								downloadableCB.checked = !downloadableCB.checked
+
+								var jsonData = {
+									directory: model.name,
+									virtualname: model.virtual_name,
+									browsable: browsableCB.checked,
+									anon_dl: downloadableCB.checked,
+									anon_search: searchableCB.checked
+								}
+
+								rsApi.request("/filesharing/update_shared_dir/", JSON.stringify(jsonData), function(){})
+							}
+						}
+					}
+
+					ListItem.Standard {
+						height: dp(30)
+						text: "Anonymously searchable"
+						itemLabel.style: "body1"
+
+						secondaryItem: Material.CheckBox {
+							id: searchableCB
+							anchors.verticalCenter: parent.verticalCenter
+							enabled: model.name.startsWith(":/", 1) || model.name.startsWith("/") ? true : false
+							checked: model.anonymous_search
+						}
+
+						onClicked: {
+							if(searchableCB.enabled){
+								searchableCB.checked = !searchableCB.checked
+
+								var jsonData = {
+									directory: model.name,
+									virtualname: model.virtual_name,
+									browsable: browsableCB.checked,
+									anon_dl: downloadableCB.checked,
+									anon_search: searchableCB.checked
+								}
+
+								rsApi.request("/filesharing/update_shared_dir/", JSON.stringify(jsonData), function(){})
+							}
+						}
 					}
 				}
 			}
