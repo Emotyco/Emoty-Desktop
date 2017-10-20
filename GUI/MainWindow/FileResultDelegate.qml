@@ -80,13 +80,6 @@ Component {
 
 				name: "awesome/file_o"
 				size: parent.height*0.45
-
-				Behavior on color {
-					ColorAnimation {
-						easing.type: Easing.InOutQuad;
-						duration: Material.MaterialAnimation.pageTransitionDuration/2
-					}
-				}
 			}
 
 			Text {
