@@ -246,7 +246,7 @@ Component {
 					if(model.download_status == "paused") {
 						var startData = {
 							action: "start",
-							id: model.hash
+							hash: model.hash
 						}
 
 						rsApi.request("/transfers/control_download/", JSON.stringify(startData), function(){})
@@ -254,7 +254,7 @@ Component {
 					else {
 						var pauseData = {
 							action: "pause",
-							id: model.hash
+							hash: model.hash
 						}
 
 						rsApi.request("/transfers/control_download/", JSON.stringify(pauseData), function(){})
@@ -287,14 +287,10 @@ Component {
 					cancelMask.state = "visible"
 					var jsonData = {
 						action: "cancel",
-						id: model.hash
+						hash: model.hash
 					}
 
-					function callbackFn(par) {
-						console.log(par.response)
-					}
-
-					rsApi.request("/transfers/control_download/", JSON.stringify(jsonData), callbackFn)
+					rsApi.request("/transfers/control_download/", JSON.stringify(jsonData), function(){})
 				}
 
 				onEntered: cancelTransfer.color = Material.Theme.primaryColor
