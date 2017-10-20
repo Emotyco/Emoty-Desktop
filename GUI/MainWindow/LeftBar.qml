@@ -279,6 +279,7 @@ View {
 							text: helperName == "Rooms" ? main.unreadMsgsLobbies : ""
 							color: "white"
 							font.family: "Roboto"
+							font.pixelSize: dp(11)
 							verticalAlignment: Text.AlignVCenter
 							horizontalAlignment: Text.AlignHCenter
 						}

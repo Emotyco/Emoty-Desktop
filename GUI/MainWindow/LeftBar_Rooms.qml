@@ -171,6 +171,7 @@ Rectangle {
 							text: model.unread_msg_count
 							color: "white"
 							font.family: "Roboto"
+							font.pixelSize: dp(13)
 							verticalAlignment: Text.AlignVCenter
 							horizontalAlignment: Text.AlignHCenter
 						}
@@ -290,6 +291,7 @@ Rectangle {
 							text: model.unread_msg_count
 							color: "white"
 							font.family: "Roboto"
+							font.pixelSize: dp(13)
 							verticalAlignment: Text.AlignVCenter
 							horizontalAlignment: Text.AlignHCenter
 						}
@@ -414,6 +416,7 @@ Rectangle {
 							text: model.unread_msg_count
 							color: "white"
 							font.family: "Roboto"
+							font.pixelSize: dp(13)
 							verticalAlignment: Text.AlignVCenter
 							horizontalAlignment: Text.AlignHCenter
 						}
