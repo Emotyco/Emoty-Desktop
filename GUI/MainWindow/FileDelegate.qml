@@ -73,7 +73,7 @@ Component {
 
 						rsApi.request("/filesharing/get_dir_childs/", JSON.stringify(jsonData), callbackFn)
 					}
-					else if(model.type == "file" && (modelName == "friendsFiles" || modelName == "searchFiles")) {
+					else if(model.type == "file" && (modelName == "friendsFiles" || modelName == "friendsSearchResult" || modelName == "distantSearchResult")) {
 						var downloadData = {
 							action: "begin",
 							hash: model.hash,
@@ -109,7 +109,7 @@ Component {
 				size: parent.height*0.45
 			}
 
-			TextEdit {
+			Text {
 				id: fileName
 				anchors {
 					top: fileIcon.bottom
@@ -120,9 +120,15 @@ Component {
 
 				clip: true
 				color: Material.Theme.light.iconColor
-				text: model.virtual_name
+				text: {
+					if(model.virtual_name.length > 48)
+						return model.virtual_name.slice(0, 41) + "(...)"
+					else
+						return model.virtual_name
+				}
 
 				font.weight: Font.DemiBold
+				font.family: "Roboto"
 				font.pixelSize: dp(14)*parent.height/170
 
 				wrapMode: TextEdit.WrapAnywhere
@@ -136,7 +142,7 @@ Component {
 				}
 			}
 
-			Material.Label {
+			Text {
 				id: fileSize
 				anchors {
 					top: fileName.bottom
@@ -181,6 +187,7 @@ Component {
 				}
 
 				font.weight: Font.DemiBold
+				font.family: "Roboto"
 				font.pixelSize: dp(12)*parent.height/170
 
 				horizontalAlignment: Text.AlignHCenter
