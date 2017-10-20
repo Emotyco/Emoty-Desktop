@@ -63,7 +63,8 @@ HEADERS += libresapilocalclient.h \
     Bridge/Models/transferfilesmodel.h \
     Bridge/Models/transferfilessortmodel.h \
     Bridge/Models/sharedfilesmodel.h \
-    Bridge/Models/searchfilemodel.h
+    Bridge/Models/searchfilemodel.h \
+    Bridge/Models/searchfilesortmodel.h
 
 SOURCES += main.cpp \
     libresapilocalclient.cpp \
@@ -82,7 +83,8 @@ SOURCES += main.cpp \
     Bridge/Models/transferfilesmodel.cpp \
     Bridge/Models/transferfilessortmodel.cpp \
     Bridge/Models/sharedfilesmodel.cpp \
-    Bridge/Models/searchfilemodel.cpp
+    Bridge/Models/searchfilemodel.cpp \
+    Bridge/Models/searchfilesortmodel.cpp
 
 RESOURCES += \
     GUI/MainWindow/mainwindow.qrc \

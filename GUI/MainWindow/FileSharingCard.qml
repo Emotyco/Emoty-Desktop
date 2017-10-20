@@ -22,6 +22,7 @@
 import QtQuick 2.7
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.0
+import QtQuick.Layouts 1.3
 
 import Material 0.3 as Material
 import Material.ListItems 0.1 as ListItem
@@ -29,6 +30,7 @@ import Material.ListItems 0.1 as ListItem
 import TransferFilesSortModel 0.2
 import SharedFilesModel 0.2
 import SearchFileModel 0.2
+import SearchFileSortModel 0.2
 
 Card {
 	// For handling tokens
@@ -97,7 +99,7 @@ Card {
 			searchStateToken = JSON.parse(par.response).statetoken
 			main.registerToken(searchStateToken, getSearchResult)
 
-			searchFileModel.loadJSONSearchFiles(par.response)
+			resultModel.loadJSONSearchFiles(par.response)
 		}
 
 		rsApi.request("/filesearch/get_search_result/", JSON.stringify(jsonData), callbackFn)
@@ -126,8 +128,31 @@ Card {
 	}
 
 	SearchFileModel {
-		id: searchFileModel
-		objectName: "searchFiles"
+		id: resultModel
+	}
+
+	SearchFileSortModel {
+		id: ownResultModel
+		objectName: "ownSearchResult"
+		baseModel: resultModel
+		isOwn: true
+		isFriends: false
+	}
+
+	SearchFileSortModel {
+		id: friendsResultModel
+		objectName: "friendsSearchResult"
+		baseModel: resultModel
+		isOwn: false
+		isFriends: true
+	}
+
+	SearchFileSortModel {
+		id: distantResultModel
+		objectName: "distantSearchResult"
+		baseModel: resultModel
+		isOwn: false
+		isFriends: false
 	}
 
 	Item {
@@ -498,8 +523,25 @@ Card {
 				onExited: {}
 			}
 
-			GridView {
-				id: searcherFilesGridView
+			ListModel {
+				id: gridModel
+
+				ListElement {
+					index: 0
+					titleString: "Your files"
+				}
+				ListElement {
+					index: 1
+					titleString: "Friends' files"
+				}
+				ListElement {
+					index: 2
+					titleString: "Global"
+				}
+			}
+
+			ListView {
+				id: searcherFilesListView
 				anchors {
 					top: searcherLayout.bottom
 					left: parent.left
@@ -509,23 +551,73 @@ Card {
 					rightMargin: dp(23)
 				}
 
-				property int idealCellHeight: dp(150)*slider.value/100
-				property int idealCellWidth: dp(150)*slider.value/100
-
-				cellHeight: idealCellHeight
-				cellWidth: width / Math.floor(width / idealCellWidth)
-
 				visible: searcher.state == "small" ? 0 : 1
 				enabled: searcher.state == "small" ? 0 : 1
 
 				clip: true
 
-				model: searchFileModel
-				delegate: FileDelegate {}
+				model: gridModel
+				delegate: Component {
+					Item {
+						height: Math.ceil(gridView.model.count/
+										  Math.floor(gridView.width / (gridView.width / Math.floor(gridView.width / gridView.idealCellWidth)))
+										  )*gridView.cellHeight
+						width: parent.width
+
+						GridView {
+							id: gridView
+							anchors.fill: parent
+
+							interactive: false
+							property int idealCellHeight: dp(150)*slider.value/100
+							property int idealCellWidth: dp(150)*slider.value/100
+
+							cellHeight: idealCellHeight
+							cellWidth: width / Math.floor(width / idealCellWidth)
+
+							visible: searcher.state == "small" ? 0 : 1
+							enabled: searcher.state == "small" ? 0 : 1
+
+							clip: true
+
+							model: {
+								if(index == 0)
+									return ownResultModel
+								else if(index == 1)
+									return friendsResultModel
+								else if(index == 2)
+									return distantResultModel
+							}
+							delegate: FileDelegate {}
+						}
+					}
+				}
+
+				section.property: "titleString"
+				section.criteria: ViewSection.FullString
+				section.delegate: Item {
+					width: dp(100)
+					height: dp(25)
+
+					Material.Label {
+						anchors {
+							left: parent.left
+							leftMargin: dp(10)
+							right: parent.right
+							rightMargin: dp(10)
+							verticalCenter: parent.verticalCenter
+						}
+
+						clip: true
+						text: section
+						color: Material.Theme.light.iconColor
+						verticalAlignment: Text.AlignVCenter
+					}
+				}
 			}
 
 			Material.Scrollbar {
-				flickableItem: searcherFilesGridView
+				flickableItem: searcherFilesListView
 				opacity: searcher.state == "small" ? 0 : 1
 			}
 		}

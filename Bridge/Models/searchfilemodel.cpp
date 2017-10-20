@@ -49,12 +49,15 @@ void SearchFileModel::loadJSONSearchFiles(QString json)
 				                                "file",
 				                                jsonSearchFile.value("hash").toString(),
 				                                jsonSearchFile.value("peer_id").toString(),
+				                                jsonSearchFile.value("is_friends").toBool(),
+				                                jsonSearchFile.value("is_own").toBool(),
 				                                jsonSearchFile.value("size").toInt(),
 				                                jsonSearchFile.value("rank").toInt(),
 				                                jsonSearchFile.value("age").toInt()
 				                              ));
 			}
 			endInsertRows();
+			emit dataCountChanged();
 		}
 		else
 		{
@@ -82,6 +85,7 @@ void SearchFileModel::loadJSONSearchFiles(QString json)
 					beginRemoveRows(qModelIndex, i, i);
 					vit = searchFilesData.erase(vit);
 					endRemoveRows();
+					emit dataCountChanged();
 				}
 				else
 				{
@@ -111,11 +115,14 @@ void SearchFileModel::loadJSONSearchFiles(QString json)
 					                               "file",
 					                               jsonSearchFile.value("hash").toString(),
 					                               jsonSearchFile.value("peer_id").toString(),
+					                               jsonSearchFile.value("is_friends").toBool(),
+					                               jsonSearchFile.value("is_own").toBool(),
 					                               jsonSearchFile.value("size").toInt(),
 					                               jsonSearchFile.value("rank").toInt(),
 					                               jsonSearchFile.value("age").toInt()
 					                              ));
 					endInsertRows();
+					emit dataCountChanged();
 				}
 			}
 		}
@@ -125,6 +132,7 @@ void SearchFileModel::loadJSONSearchFiles(QString json)
 		beginResetModel();
 		searchFilesData.clear();
 		endResetModel();
+		emit dataCountChanged();
 	}
 }
 
@@ -161,6 +169,10 @@ QVariant SearchFileModel::data(const QModelIndex & index, int role) const
 		return (*vit).hash;
 	else if(role == PeerIdRole)
 		return (*vit).peer_id;
+	else if(role == FriendRole)
+		return (*vit).is_friend;
+	else if(role == OwnRole)
+		return (*vit).is_own;
 	else if(role == SizeRole)
 		return (*vit).size;
 	else if(role == RankRole)
@@ -181,6 +193,8 @@ QHash<int, QByteArray> SearchFileModel::roleNames() const
 	roles[TypeRole] = "type";
 	roles[HashRole] = "hash";
 	roles[PeerIdRole] = "peer_id";
+	roles[FriendRole] = "is_friend";
+	roles[OwnRole] = "is_own";
 	roles[SizeRole] = "count";
 	roles[RankRole] = "rank";
 	roles[AgeRole] = "age";

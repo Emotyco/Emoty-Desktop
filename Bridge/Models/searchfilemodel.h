@@ -29,6 +29,7 @@
 class SearchFileModel : public QAbstractListModel
 {
 	Q_OBJECT
+	Q_PROPERTY(int dataCount READ rowCount NOTIFY dataCountChanged)
 public:
 	enum SearchFileRoles {
 		NameRole,
@@ -37,6 +38,8 @@ public:
 		TypeRole,
 		HashRole,
 		PeerIdRole,
+		FriendRole,
+		OwnRole,
 		SizeRole,
 		RankRole,
 		AgeRole
@@ -52,19 +55,24 @@ public:
 public slots:
 	void loadJSONSearchFiles(QString json);
 
+signals:
+	void dataCountChanged();
+
 protected:
 	virtual QHash<int, QByteArray> roleNames() const;
 
 private:
 	struct SearchFile {
 		SearchFile(QString name, QString path,
-		            QString type, QString hash,
-		            QString peer_id, int size,
-		            int rank, int age)
+		           QString type, QString hash,
+		           QString peer_id, bool is_friend,
+		           bool is_own, int size, int rank,
+		           int age)
 		    : name(name), path(path),
 		      type(type), hash(hash),
-		      peer_id(peer_id), size(size),
-		      rank(rank), age(age)
+		      peer_id(peer_id), is_friend(is_friend),
+		      is_own(is_own), size(size), rank(rank),
+		      age(age)
 		{}
 
 		QString name;
@@ -72,6 +80,8 @@ private:
 		QString type;
 		QString hash;
 		QString peer_id;
+		bool is_friend;
+		bool is_own;
 		int size;
 		int rank;
 		int age;
@@ -83,5 +93,6 @@ private:
 static void registerSearchFileModelTypes() {
 	qmlRegisterType<SearchFileModel>("SearchFileModel", 0, 2, "SearchFileModel");
 }
+
 
 #endif // SEARCHFILEMODEL_H
