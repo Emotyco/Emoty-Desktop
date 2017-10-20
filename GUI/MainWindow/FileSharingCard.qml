@@ -588,7 +588,7 @@ Card {
 								else if(index == 2)
 									return distantResultModel
 							}
-							delegate: FileDelegate {}
+							delegate: FileResultDelegate {}
 						}
 					}
 				}
@@ -1090,7 +1090,6 @@ Card {
 								anchors {
 									fill: parent
 									rightMargin: dp(23)
-									topMargin: dp(10)
 								}
 
 								property int idealCellHeight: dp(170)

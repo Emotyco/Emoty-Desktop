@@ -41,5 +41,6 @@
         <file>Card.qml</file>
         <file>TransferDelegate.qml</file>
         <file>FileDelegate.qml</file>
+        <file>FileResultDelegate.qml</file>
     </qresource>
 </RCC>
