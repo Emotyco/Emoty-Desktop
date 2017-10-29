@@ -40,7 +40,7 @@ void TransferFilesModel::loadJSONDownloadList(QString json)
 	{
 		QJsonArray jsDataArray = jsData.toArray();
 
-		if(transferData.empty())
+		if(transferData.empty() && jsDataArray.count() != 0)
 		{
 			QModelIndex qModelIndex;
 			beginInsertRows(qModelIndex, 0, jsDataArray.size()-1);
@@ -143,7 +143,7 @@ void TransferFilesModel::loadJSONUploadList(QString json)
 	{
 		QJsonArray jsDataArray = jsData.toArray();
 
-		if(transferData.empty())
+		if(transferData.empty()  && jsDataArray.count() != 0)
 		{
 			QModelIndex qModelIndex;
 			beginInsertRows(qModelIndex, 0, jsDataArray.size()-1);
