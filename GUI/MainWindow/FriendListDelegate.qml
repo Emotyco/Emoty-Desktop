@@ -52,94 +52,6 @@ Component {
 
 		clip: true
 
-		transitions: [
-			Transition {
-				from: "hidden"; to: "entered"
-
-				SequentialAnimation {
-					NumberAnimation {
-						duration: 100
-					}
-
-					ParallelAnimation {
-						NumberAnimation {
-							target: icons
-							property: "y"
-							from: dp(40)
-							to: 0
-							easing.type: Easing.InOutQuad;
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-						NumberAnimation {
-							target: icons
-							property: "opacity"
-							from: 0
-							to: 1
-							easing.type: Easing.InOutQuad;
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-
-						NumberAnimation {
-							target: text
-							property: "y"
-							from: 0
-							to: -dp(40)
-							easing.type: Easing.InOutQuad;
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-						NumberAnimation {
-							target: text
-							property: "opacity"
-							from: 1
-							to: 0
-							easing.type: Easing.InOutQuad;
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-					}
-				}
-			},
-			Transition {
-				from: "entered"; to: "hidden"
-
-
-				ParallelAnimation {
-					NumberAnimation {
-						target: text
-						property: "y"
-						from: -dp(40)
-						to: 0
-						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-					NumberAnimation {
-						target: text
-						property: "opacity"
-						from: 0
-						to: 1
-						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-
-					NumberAnimation {
-						target: icons
-						property: "y"
-						from: 0
-						to: dp(40)
-						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-					NumberAnimation {
-						target: icons
-						property: "opacity"
-						from: 1
-						to: 0
-						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-				}
-			}
-		]
-
 		states: [
 			State {
 				name: "hidden"; when: entered === false
@@ -147,7 +59,7 @@ Component {
 			},
 			State {
 				name: "entered"; when: entered === true
-				PropertyChanges { target: friendroot; color: Qt.rgba(0,0,0,0.03) }
+				PropertyChanges { target: friendroot; color: Qt.rgba(0,0,0,0.04) }
 			}
 		]
 
@@ -176,20 +88,21 @@ Component {
 		MouseArea {
 			anchors.fill: parent
 
-			acceptedButtons: Qt.RightButton
+			acceptedButtons: Qt.RightButton | Qt.LeftButton
 			hoverEnabled: !isEmpty
+			enabled: !isEmpty
 
 			onEntered: {
-				if(!isEmpty)
-					friendroot.entered = true
+				friendroot.entered = true
 			}
 			onExited: {
-				if(!isEmpty)
-					friendroot.entered = false
+				friendroot.entered = false
 			}
 			onClicked: {
-				if(!isEmpty)
+				if(mouse.button == Qt.RightButton)
 					overflowMenu.open(friendroot, mouse.x, mouse.y)
+				else if(mouse.button == Qt.LeftButton)
+					main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
 			}
 
 			states: [
@@ -339,14 +252,6 @@ Component {
 					}
 				}
 				onImageLoaded:requestPaint()
-
-				/*MouseArea {
-					anchors.fill: parent
-					onClicked: {
-						pageStack.push({item: Qt.resolvedUrl("Content.qml"), immediate: true, replace: true})
-						main.content.activated = true;
-					}
-				}*/
 			}
 
 			Item {
@@ -383,92 +288,6 @@ Component {
 					verticalAlignment: Text.AlignTop
 					horizontalAlignment: Text.AlignLeft
 					font.pixelSize: dp(12)
-				}
-			}
-
-			Item {
-				id: icons
-
-				height: parent.height
-				x: dp(60)
-				y: dp(50)
-
-				Icon {
-					id: circle1
-
-					anchors.verticalCenter: parent.verticalCenter
-
-					height: parent.height
-
-					name: "awesome/comment"
-					visible: true
-					color: Theme.light.iconColor
-
-					size: dp(31)
-
-					MouseArea {
-						anchors.fill: parent
-
-						onClicked: {
-							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
-						}
-					}
-
-					View {
-						anchors {
-							top: circle1.top
-							right: circle1.right
-							topMargin: dp(10)
-						}
-
-						width: dp(14)
-						height: dp(14)
-						radius: width/2
-
-						elevation: 1
-						backgroundColor: statuscolor
-
-						visible: model.unread_count > 0 ? true : false
-
-						Text {
-							anchors.fill: parent
-							text: model.unread_count
-							color: "white"
-							font.family: "Roboto"
-							verticalAlignment: Text.AlignVCenter
-							horizontalAlignment: Text.AlignHCenter
-						}
-					}
-				}
-
-				Icon {
-					id: circle2
-
-					anchors.verticalCenter: parent.verticalCenter
-
-					x: dp(40)
-					height: parent.height
-
-					name: "awesome/phone"
-					visible: true
-					color: Theme.light.hintColor
-
-					size: dp(31)
-				}
-
-				Icon {
-					id: circle3
-
-					anchors.verticalCenter: parent.verticalCenter
-
-					x: dp(80)
-					height: parent.height
-
-					name: "awesome/video_camera"
-					visible: true
-					color: Theme.light.hintColor
-
-					size: dp(31)
 				}
 			}
 
