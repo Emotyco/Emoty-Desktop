@@ -50,8 +50,6 @@ Component {
 		width: parent.width
 		height: dp(50)
 
-		clip: true
-
 		states: [
 			State {
 				name: "hidden"; when: entered === false
