@@ -211,7 +211,7 @@ View {
 							   "helperName": "Rooms",
 							   "protruding": true
 						   });
-					append({"src": "awesome/share_alt",
+					append({"src": "awesome/folder",
 							   "icon": true,
 							   "helperName": "Files Sharing",
 							   "protruding": false
@@ -231,7 +231,9 @@ View {
 					selected: false
 
 					onClicked: {
-						if(helperName === "Rooms") {
+						if(helperName === "Files Sharing")
+							main.createFileSharingCard()
+						else {
 							if(leftBar.state === "narrow") {
 								tabView.currentIndex = model.index+1
 								leftBar.state = "wide"
@@ -241,8 +243,6 @@ View {
 							else if(leftBar.state !== "narrow" && tabView.currentIndex !== model.index+1)
 								tabView.currentIndex = model.index+1
 						}
-						if(helperName === "Files Sharing")
-							main.createFileSharingCard()
 					}
 					onPressAndHold: {
 						if(leftBar.state === "narrow" && protruding) {
