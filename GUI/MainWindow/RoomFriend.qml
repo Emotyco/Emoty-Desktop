@@ -1,191 +1,141 @@
 import QtQuick 2.5
-import QtGraphicalEffects 1.0
-import QtQuick.Layouts 1.1
 
 import Material 0.3
 import Material.Extras 0.1 as Circle
-import Material.ListItems 0.1 as ListItem
 
-ListItem.BaseListItem {
-	id: listItem
+Rectangle {
+	id: roomFriend
 
 	property alias text: label.text
-	property alias valueText: valueLabel.text
-
-	property alias action: actionItem.children
-	property alias iconName: icon.name
-	property alias iconSource: icon.source
-	property alias imageSource: image.source
-	property alias secondaryItem: secondaryItem.children
-	property alias content: contentItem.children
-
 	property alias itemLabel: label
-	property alias itemValueLabel: valueLabel
-
 	property alias textColor: label.color
-	property alias iconColor: icon.color
-	property alias spacing: row.spacing
 
 	property bool isIcon: true
+	property alias iconName: icon.name
+	property alias iconSource: icon.source
+	property alias iconSize: icon.size
+	property alias iconColor: icon.color
 
-	implicitHeight: 48 * Units.dp
-	height: 48 * Units.dp
+	property alias imageSource: image.source
 
-	dividerInset: actionItem.visible ? listItem.height : 0
+	property bool containMouse
+	property bool darkBackground
+	property bool selected
 
-	interactive: contentItem.children.length === 0
+	signal entered()
+	signal exited()
+	signal clicked()
 
-	implicitWidth: {
-		var width = listItem.margins * 2
+	height: dp(48)
+	color: containMouse ? Qt.rgba(0,0,0,0.03) : Qt.rgba(0,0,0,0)
 
-		if (actionItem.visible)
-			width += actionItem.width + row.spacing
+	MouseArea {
+		anchors.fill: parent
 
-		if (contentItem.visible)
-			width += contentItem.implicitWidth + row.spacing
-		else
-			width += label.implicitWidth + row.spacing
+		z: -1
+		hoverEnabled: true
 
-		if (valueLabel.visible)
-			width += valueLabel.width + row.spacing
-
-		if (secondaryItem.visible)
-			width += secondaryItem.width + row.spacing
-
-		return width
+		onClicked: roomFriend.clicked()
+		onEntered: {
+			containMouse = true
+			roomFriend.entered()
+		}
+		onExited: {
+			containMouse = false
+			roomFriend.exited()
+		}
 	}
 
-	RowLayout {
-		id: row
+	Item {
+		id: actionItem
 
 		anchors {
-			fill: parent
-			leftMargin: listItem.margins/2
-			rightMargin: listItem.margins/2
+			left: parent.left
+			top: parent.top
+			bottom: parent.bottom
+			leftMargin: dp(8)
 		}
 
-		spacing: 16 * Units.dp
+		width: dp(48)
 
-		Item {
-			id: actionItem
+		visible: children.length > 1 || icon.valid
 
-			Layout.preferredWidth: 32 * Units.dp
-			Layout.preferredHeight: width
-			Layout.alignment: Qt.AlignCenter
+		Icon {
+			id: icon
 
-			visible: children.length > 1 || icon.valid
+			anchors {
+				verticalCenter: parent.verticalCenter
+				horizontalCenter: parent.horizontalCenter
+			}
 
-			Icon {
-				id: icon
+			visible: isIcon
+			color: roomFriend.selected ? Theme.primaryColor
+									: darkBackground ? Theme.dark.iconColor
+													 : Theme.light.iconColor
 
-				anchors {
-					verticalCenter: parent.verticalCenter
-					left: parent.left
-					leftMargin: dp(6)
+			size: 24 * Units.dp
+		}
+
+		Canvas {
+			id: image
+
+			property string source
+
+			anchors {
+				verticalCenter: parent.verticalCenter
+				horizontalCenter: parent.horizontalCenter
+			}
+
+			width: dp(32)
+			height: dp(32)
+
+			visible: !isIcon
+
+			onSourceChanged: loadImage(source)
+			Component.onCompleted: loadImage(source)
+			onPaint: {
+				var ctx = getContext("2d");
+				if (image.isImageLoaded(source)) {
+					var profile = Qt.createQmlObject('
+                        import QtQuick 2.5;
+                        Image{
+                            source: "'+source+'";
+                            visible:false;
+                            /*fillMode: Image.PreserveAspectCrop*/
+                        }', image);
+
+					var centreX = width/2;
+					var centreY = height/2;
+
+					ctx.save()
+					ctx.beginPath();
+					ctx.moveTo(centreX, centreY);
+					ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
+					ctx.clip();
+					ctx.drawImage(profile, 0, 0, image.width, image.height);
+					ctx.restore()
 				}
-
-				visible: valid
-				color: listItem.selected ? Theme.primaryColor
-										: darkBackground ? Theme.dark.iconColor
-														 : Theme.light.iconColor
-
-				size: 24 * Units.dp
 			}
+			onImageLoaded:requestPaint()
+		}
+	}
 
-			Canvas {
-				id: image
+	Label {
+		id: label
 
-				property string source
-
-				anchors {
-					verticalCenter: parent.verticalCenter
-					horizontalCenter: parent.horizontalCenter
-				}
-
-				width: parent.height
-				height: parent.height
-
-				visible: !isIcon
-
-				onSourceChanged: loadImage(source)
-				Component.onCompleted: loadImage(source)
-				onPaint: {
-					var ctx = getContext("2d");
-					if (image.isImageLoaded(source)) {
-						var profile = Qt.createQmlObject('
-                            import QtQuick 2.5;
-                            Image{
-                                source: "'+source+'";
-                                visible:false;
-                                fillMode: Image.PreserveAspectCrop
-                            }', image);
-
-						var centreX = width/2;
-						var centreY = height/2;
-
-						ctx.save()
-						ctx.beginPath();
-						ctx.moveTo(centreX, centreY);
-						ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
-						ctx.clip();
-						ctx.drawImage(profile, 0, 0, image.width, image.height);
-						ctx.restore()
-					}
-				}
-				onImageLoaded:requestPaint()
-			}
+		anchors {
+			right: parent.right
+			left: actionItem.right
+			verticalCenter: parent.verticalCenter
+			rightMargin: dp(8)
+			leftMargin: dp(8)
 		}
 
-		ColumnLayout {
-			Layout.alignment: Qt.AlignVCenter
-			Layout.preferredHeight: parent.height
+		elide: Text.ElideRight
+		style: "subheading"
 
-			Item {
-				id: contentItem
-
-				Layout.fillWidth: true
-				Layout.preferredHeight: parent.height
-
-				visible: children.length > 0
-			}
-
-			Label {
-				id: label
-
-				Layout.alignment: Qt.AlignVCenter
-				Layout.fillWidth: true
-
-				elide: Text.ElideRight
-				style: "subheading"
-
-				color: listItem.selected ? Theme.primaryColor
-										: darkBackground ? Theme.dark.textColor
-														 : Theme.light.textColor
-
-				visible: !contentItem.visible
-			}
-		}
-
-		Label {
-			id: valueLabel
-
-			Layout.alignment: Qt.AlignVCenter
-
-			color: darkBackground ? Theme.dark.subTextColor : Theme.light.subTextColor
-			elide: Text.ElideRight
-			style: "body1"
-
-			visible: text != ""
-		}
-
-		Item {
-			id: secondaryItem
-
-			Layout.alignment: Qt.AlignCenter
-			Layout.preferredWidth: childrenRect.width
-			Layout.preferredHeight: parent.height
-
-			visible: children.length > 0
-		}
+		color: roomFriend.selected ? Theme.primaryColor
+								: darkBackground ? Theme.dark.textColor
+												 : Theme.light.textColor
 	}
 }
