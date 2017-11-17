@@ -363,9 +363,7 @@ Card {
 
 				delegate: RoomFriend {
 					id: roomFriend
-					property string avatar: model.avatar == ""
-											? "avatar.png"
-											: "data:image/png;base64," + model.avatar
+					property string avatar: "data:image/png;base64," + model.avatar
 
 					width: parent.width
 
@@ -374,7 +372,9 @@ Card {
 					itemLabel.style: "body1"
 
 					imageSource: avatar
-					isIcon: false
+					isIcon: model.avatar == ""
+					iconName: "awesome/user_o"
+					iconSize: dp(32)
 
 					Component.onCompleted: {
 						if(model.avatar == "")
@@ -622,9 +622,7 @@ Card {
 					model: roomInvitationSortModel
 
 					delegate: RoomFriend {
-						property string avatar: model.avatar == ""
-												? "avatar.png"
-												: "data:image/png;base64," + model.avatar
+						property string avatar: "data:image/png;base64," + model.avatar
 
 						width: parent.width
 
@@ -633,20 +631,22 @@ Card {
 						itemLabel.style: "body1"
 
 						imageSource: avatar
-						isIcon: false
+						isIcon: true//model.avatar == ""
+						iconName: "awesome/user_o"
+						iconSize: dp(32)
 
 						Connections {
 							target: addFriendRoom
-							onOpened: getIdentityAvatar()
+							onOpened: getFriendAvatar()
 							onClosed: selected = false
 						}
 
-						Component.onCompleted: {
+						/*Component.onCompleted: {
 							if(model.avatar == "")
-								getIdentityAvatar()
+								getFriendAvatar()
 						}
 
-						function getIdentityAvatar() {
+						function getFriendAvatar() {
 							var jsonData = {
 								gxs_id: model.gxs_id
 							}
@@ -657,11 +657,11 @@ Card {
 									roomInvitationSortModel.sourceModel.loadJSONAvatar(model.gxs_id, par.response)
 
 								if(json.returncode == "fail")
-									getIdentityAvatar()
+									getFriendAvatar()
 							}
 
 							rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
-						}
+						}*/
 
 						onClicked: {
 							if(selected)
