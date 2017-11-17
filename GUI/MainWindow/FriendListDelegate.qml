@@ -227,7 +227,9 @@ Component {
 				width: dp(32)
 				height: dp(32)
 
-				Component.onCompleted: loadImage(friendroot.avatar)
+				enabled: model.avatar != ""
+				visible: model.avatar != ""
+
 				onPaint: {
 					var ctx = getContext("2d");
 					if (canvas.isImageLoaded(friendroot.avatar)) {
@@ -250,6 +252,25 @@ Component {
 					}
 				}
 				onImageLoaded:requestPaint()
+			}
+
+			Icon {
+				id: icon
+
+				anchors.verticalCenter: parent.verticalCenter
+
+				enabled: model.avatar == ""
+				visible: model.avatar == ""
+
+				x: dp(14)
+				width: dp(32)
+				height: dp(32)
+
+				size: dp(32)
+
+				name: "awesome/user_o"
+				color: entered == false ? Theme.light.iconColor
+										: Theme.primaryColor
 			}
 
 			Item {
