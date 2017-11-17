@@ -30,9 +30,26 @@ Component {
 		id: fileItem
 		property string modelName: GridView.view.model.objectName
 		property var modelObject: GridView.view.model
+		property string location: model.virtual_name
 
 		width: GridView.view.cellWidth
 		height: GridView.view.cellHeight
+
+		Component.onCompleted: {
+			if(model.parent_reference == "") {
+				location = ""
+				var jsonData = {
+					peer_id: model.name
+				}
+
+				function callbackFn(par) {
+					var json = JSON.parse(par.response)
+					location = json.data.location
+				}
+
+				rsApi.request("/peers/get_node_name", JSON.stringify(jsonData), callbackFn)
+			}
+		}
 
 		Item {
 			anchors.centerIn: parent
@@ -42,6 +59,7 @@ Component {
 			clip: true
 
 			MouseArea {
+				id: mouseArea
 				anchors.fill: parent
 				acceptedButtons: Qt.LeftButton | Qt.RightButton
 				hoverEnabled: true
@@ -93,6 +111,12 @@ Component {
 						overflowMenu.open(fileItem, mouse.x, mouse.y)
 					}
 				}
+			}
+
+			Material.Tooltip {
+				text: "Name: " + model.virtual_name + "\n"
+					+ (model.type == "file" ? "Size: " : "Contain: ") + fileSize.text
+				mouseArea: mouseArea
 			}
 
 			Material.Dropdown {
@@ -233,10 +257,10 @@ Component {
 				clip: true
 				color: Material.Theme.light.iconColor
 				text: {
-					if(model.virtual_name.length > 48)
-						return model.virtual_name.slice(0, 41) + "(...)"
+					if(location.length > 48)
+						return location.slice(0, 41) + "(...)"
 					else
-						return model.virtual_name
+						return location
 				}
 
 				font.weight: Font.DemiBold
