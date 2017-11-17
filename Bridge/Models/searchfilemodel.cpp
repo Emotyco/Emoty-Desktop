@@ -31,7 +31,7 @@ void SearchFileModel::loadJSONSearchFiles(QString json)
 	QJsonObject qJsonObject = QJsonDocument::fromJson(json.toUtf8()).object();
 	QJsonValue jsData = qJsonObject.value("data");
 
-	if(!jsData.isNull() && jsData.isArray())
+	if(!jsData.isNull() && jsData.isArray() && !jsData.toArray().isEmpty())
 	{
 		QJsonArray jsDataArray = jsData.toArray();
 
@@ -127,7 +127,7 @@ void SearchFileModel::loadJSONSearchFiles(QString json)
 			}
 		}
 	}
-	else if(jsData.isNull())
+	else if(jsData.isNull() || jsData.toArray().isEmpty())
 	{
 		beginResetModel();
 		searchFilesData.clear();
