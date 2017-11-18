@@ -931,21 +931,12 @@ Rectangle {
 
 	function createFileSharingCard() {
 		var component = Qt.createComponent("FileSharingCard.qml", gridLayout);
-		var incubator = component.incubateObject(gridLayout, {"headerName": "File Sharing"});
+		if (component.status === Component.Ready) {
+			var fsCard = component.createObject(gridLayout,
+											  {"headerName": "File Sharing"});
 
-		if (incubator.status != Component.Ready) {
-			incubator.onStatusChanged = function(status) {
-				if (status == Component.Ready) {
-					incubator.object.cardIndex = cardsModel.storeCard(incubator.object, "File Sharing", true, "awesome/folder_o")
-					raiseCard(incubator.object.cardIndex)
-
-					updateVisibleRows()
-					gridLayout.reorder()
-				}
-			}
-		} else {
-			incubator.object.cardIndex = cardsModel.storeCard(incubator.object, "File Sharing", true, "awesome/folder_o")
-			raiseCard(incubator.object.cardIndex)
+			fsCard.cardIndex = cardsModel.storeCard(fsCard, "File Sharing", true, "awesome/folder_o")
+			raiseCard(fsCard.cardIndex)
 
 			updateVisibleRows()
 			gridLayout.reorder()
