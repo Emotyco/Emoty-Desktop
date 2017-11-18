@@ -48,7 +48,7 @@ View {
 			name: "wide"
 			PropertyChanges {
 				target: leftBar
-				width: dp(260)
+				width: dp(300)
 				elevation: 3
 			}
 			PropertyChanges {
@@ -103,7 +103,7 @@ View {
 			bottom: parent.bottom
 		}
 
-		width: dp(210)
+		width: dp(250)
 		z: 1
 
 		color: "#f2f2f2"
