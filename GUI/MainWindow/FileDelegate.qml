@@ -30,7 +30,9 @@ Component {
 		id: fileItem
 		property string modelName: GridView.view.model.objectName
 		property var modelObject: GridView.view.model
+
 		property string location: model.virtual_name
+		property string ext: location.substring(location.lastIndexOf('.'))
 
 		width: GridView.view.cellWidth
 		height: GridView.view.cellHeight
@@ -234,8 +236,32 @@ Component {
 				name: {
 					if(model.type == "folder")
 						return "awesome/folder_o"
-					else if(model.type == "file")
-						return "awesome/file_o"
+					else if(model.type == "file"){
+						if(ext == ".cpp" || ext == ".h" || ext == ".js" || ext == ".qml" || ext == ".css" || ext == ".html")
+							return "awesome/file_code_o"
+						else if(ext == ".avi" || ext == ".flv" || ext == ".wmv" || ext == ".mov" || ext == ".mp4")
+							return "awesome/file_video_o"
+						else if(ext == ".mp3" || ext == ".wma" || ext == ".wav" || ext == ".ogg")
+							return "awesome/file_audio_o"
+						else if(ext == ".7z" || ext == ".bz2" || ext == ".gz" || ext == ".rar" || ext == ".zip" || ext == ".zipx" || ext == ".tgz")
+							return "awesome/file_archive_o"
+						else if(ext == ".jpeg" || ext == ".gif" || ext == ".bmp" || ext == ".tiff" || ext == ".png")
+							return "awesome/file_image_o"
+						else if(ext == ".pptx" || ext == ".ppt")
+							return "awesome/file_powerpoint_o"
+						else if(ext == ".xlsx")
+							return "awesome/file_excel_o"
+						else if(ext == ".docx")
+							return "awesome/file_word_o"
+						else if(ext == ".pdf")
+							return "awesome/file_pdf_o"
+						else if(ext == ".txt")
+							return "awesome/file_text_o"
+						else if(ext == ".rscollection")
+							return "awesome/files_o"
+						else
+							return "awesome/file_o"
+					}
 					else if(model.type == "person")
 						return "awesome/user_o"
 					else
