@@ -172,10 +172,10 @@ View {
 		z: 2
 
 		Column {
-			anchors.left: parent.left
+			id: upperColumn
 
+			anchors.left: parent.left
 			width: parent.width
-			height: parent.height*0.7
 
 			Item {
 				width: dp(48)
@@ -288,7 +288,32 @@ View {
 			}
 		}
 
+		ListView {
+			anchors{
+				top: upperColumn.bottom
+				bottom: bottomColumn.top
+			}
+
+			width: parent.width
+
+			clip: true
+			model: cardsModel
+			delegate: SideImg {
+				name: model.name
+				srcIcon: model.source
+				isIcon: model.isIcon
+
+				margins: 0
+				selected: false
+
+				onClicked: {
+					raiseCard(model.cardIndex)
+				}
+			}
+		}
+
 		Column {
+			id: bottomColumn
 			anchors.bottom: parent.bottom
 
 			width: parent.width

@@ -30,6 +30,7 @@ DragTile {
 
 	default property alias data: content.data
 	property string headerName
+	property int cardIndex
 
 	// Just for "restore" option
 	property int tmpCol: 0
@@ -50,6 +51,10 @@ DragTile {
 	row: main.visibleRows
 
 	opacity: 0
+
+	Component.onDestruction: {
+		cardsModel.removeCard(cardIndex)
+	}
 
 	onRefresh: {
 		updateVisibleRows()

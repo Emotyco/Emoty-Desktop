@@ -28,6 +28,7 @@ import Material 0.3
 import Material.Extras 0.1
 
 import QtQuick.Controls 1.3 as Controls
+import CardsModel 0.2
 
 Rectangle {
 	id: main
@@ -888,12 +889,32 @@ Rectangle {
 	  (We couldn't e.g. click on mousearea in new created objects)
 	  */
 
+	CardsModel {
+		id: cardsModel
+	}
+
+	function raiseCard(index) {
+		for(var i = 0; i != cardsModel.rowCount(); i++)
+		{
+			var card = cardsModel.getCardByListIndex(i);
+			if(card.cardIndex == index)
+				card.z = 20
+			else{
+				card.z = card.z == 0 ? 0 : --card.z
+			}
+		}
+	}
+
 	function createRoomCard(roomName, chatId) {
 		var component = Qt.createComponent("RoomCard.qml", gridLayout);
 		if (component.status === Component.Ready) {
 			var roomCard = component.createObject(gridLayout,
 											  {"headerName": roomName,
 												"chatId": chatId});
+
+			roomCard.cardIndex = cardsModel.storeCard(roomCard, roomName, true, "awesome/comments_o")
+			raiseCard(roomCard.cardIndex)
+
 			updateVisibleRows()
 			gridLayout.reorder()
 		}
@@ -902,8 +923,12 @@ Rectangle {
 	function createFileSharingCard() {
 		var component = Qt.createComponent("FileSharingCard.qml", gridLayout);
 		if (component.status === Component.Ready) {
-			var roomCard = component.createObject(gridLayout,
+			var fsCard = component.createObject(gridLayout,
 											  {"headerName": "File Sharing"});
+
+			fsCard.cardIndex = cardsModel.storeCard(fsCard, "File Sharing", true, "awesome/folder_o")
+			raiseCard(fsCard.cardIndex)
+
 			updateVisibleRows()
 			gridLayout.reorder()
 		}
@@ -915,6 +940,10 @@ Rectangle {
 			var chat = component.createObject(gridLayout,
 											  {"headerName": friendname,
 												"gxsId": gxsid});
+
+			chat.cardIndex = cardsModel.storeCard(chat, friendname, true, "awesome/user_o")
+			raiseCard(chat.cardIndex)
+
 			updateVisibleRows()
 			gridLayout.reorder()
 		}
@@ -927,6 +956,10 @@ Rectangle {
 											  {"headerName": friendname + "@" + location,
 											   "chatId": chat_id,
 											   "rsPeerId": rspeerid});
+
+			chat.cardIndex = cardsModel.storeCard(chat, friendname + "@" + location, true, "awesome/user_o")
+			raiseCard(chat.cardIndex)
+
 			updateVisibleRows()
 			gridLayout.reorder()
 		}
