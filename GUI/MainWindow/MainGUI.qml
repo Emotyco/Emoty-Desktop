@@ -907,22 +907,13 @@ Rectangle {
 
 	function createRoomCard(roomName, chatId) {
 		var component = Qt.createComponent("RoomCard.qml", gridLayout);
-		var incubator = component.incubateObject(gridLayout, {"headerName": roomName,
-													             "chatId": chatId});
+		if (component.status === Component.Ready) {
+			var roomCard = component.createObject(gridLayout,
+											  {"headerName": roomName,
+												"chatId": chatId});
 
-		if (incubator.status != Component.Ready) {
-			incubator.onStatusChanged = function(status) {
-				if (status == Component.Ready) {
-					incubator.object.cardIndex = cardsModel.storeCard(incubator.object, roomName, true, "awesome/comments_o")
-					raiseCard(incubator.object.cardIndex)
-
-					updateVisibleRows()
-					gridLayout.reorder()
-				}
-			}
-		} else {
-			incubator.object.cardIndex = cardsModel.storeCard(incubator.object, roomName, true, "awesome/comments_o")
-			raiseCard(incubator.object.cardIndex)
+			roomCard.cardIndex = cardsModel.storeCard(roomCard, roomName, true, "awesome/comments_o")
+			raiseCard(roomCard.cardIndex)
 
 			updateVisibleRows()
 			gridLayout.reorder()
@@ -945,22 +936,13 @@ Rectangle {
 
 	function createChatGxsCard(friendname, gxsid, objectName) {
 		var component = Qt.createComponent(objectName, gridLayout);
-		var incubator = component.incubateObject(gridLayout, {"headerName": friendname,
-													            "gxsId": gxsid});
+		if (component.status === Component.Ready) {
+			var chat = component.createObject(gridLayout,
+											  {"headerName": friendname,
+												"gxsId": gxsid});
 
-		if (incubator.status != Component.Ready) {
-			incubator.onStatusChanged = function(status) {
-				if (status == Component.Ready) {
-					incubator.object.cardIndex = cardsModel.storeCard(incubator.object, friendname, true, "awesome/user_o")
-					raiseCard(incubator.object.cardIndex)
-
-					updateVisibleRows()
-					gridLayout.reorder()
-				}
-			}
-		} else {
-			incubator.object.cardIndex = cardsModel.storeCard(incubator.object, friendname, true, "awesome/user_o")
-			raiseCard(incubator.object.cardIndex)
+			chat.cardIndex = cardsModel.storeCard(chat, friendname, true, "awesome/user_o")
+			raiseCard(chat.cardIndex)
 
 			updateVisibleRows()
 			gridLayout.reorder()
@@ -969,23 +951,14 @@ Rectangle {
 
 	function createChatPeerCard(friendname, location, rspeerid, chat_id, objectName) {
 		var component = Qt.createComponent(objectName, gridLayout);
-		var incubator = component.incubateObject(gridLayout, {"headerName": friendname + "@" + location,
-													            "chatId": chat_id,
-													            "rsPeerId": rspeerid});
+		if (component.status === Component.Ready) {
+			var chat = component.createObject(gridLayout,
+											  {"headerName": friendname + "@" + location,
+											   "chatId": chat_id,
+											   "rsPeerId": rspeerid});
 
-		if (incubator.status != Component.Ready) {
-			incubator.onStatusChanged = function(status) {
-				if (status == Component.Ready) {
-					incubator.object.cardIndex = cardsModel.storeCard(incubator.object, friendname + "@" + location, true, "awesome/user_o")
-					raiseCard(incubator.object.cardIndex)
-
-					updateVisibleRows()
-					gridLayout.reorder()
-				}
-			}
-		} else {
-			incubator.object.cardIndex = cardsModel.storeCard(incubator.object, friendname + "@" + location, true, "awesome/user_o")
-			raiseCard(incubator.object.cardIndex)
+			chat.cardIndex = cardsModel.storeCard(chat, friendname + "@" + location, true, "awesome/user_o")
+			raiseCard(chat.cardIndex)
 
 			updateVisibleRows()
 			gridLayout.reorder()
