@@ -288,9 +288,29 @@ View {
 			}
 		}
 
-		ListView {
-			anchors{
+		Rectangle {
+			id: upperLine
+
+			anchors {
+				horizontalCenter: parent.horizontalCenter
 				top: upperColumn.bottom
+				topMargin: dp(2)
+			}
+
+			height: dp(3)
+			width: parent.width*0.4
+			radius: dp(3)
+
+			visible: cardsIcons.count != 0
+
+			color: Theme.light.hintColor
+		}
+
+		ListView {
+			id: cardsIcons
+			anchors{
+				top: upperLine.bottom
+				topMargin: dp(2)
 				bottom: bottomColumn.top
 			}
 
