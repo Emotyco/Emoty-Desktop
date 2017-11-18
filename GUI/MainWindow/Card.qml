@@ -104,6 +104,8 @@ DragTile {
 		elevation: 2
 		backgroundColor: Palette.colors["grey"]["50"]
 
+		radius: dp(10)
+
 		Item {
 			id: header
 
