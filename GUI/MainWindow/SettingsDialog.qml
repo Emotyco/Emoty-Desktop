@@ -207,8 +207,8 @@ Dialog {
 	}
 
 	Item {
-		width: main.width < dp(900) ? main.width - dp(100) : dp(600)
-		height: main.width < dp(450) ? main.width - dp(100) : dp(300)
+		width: main.width < dp(900) ? main.width - dp(100) : dp(700)
+		height: main.width < dp(450) ? main.width - dp(100) : dp(350)
 
 		Column {
 			anchors {

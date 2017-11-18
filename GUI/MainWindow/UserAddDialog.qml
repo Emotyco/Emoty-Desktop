@@ -79,8 +79,8 @@ Dialog {
 	}
 
 	Grid {
-		width: main.width < dp(800) ? main.width - dp(100) : dp(700)
-		height: main.width < dp(300) ? main.width - dp(100) : dp(300)
+		width: main.width < dp(800) ? main.width - dp(100) : dp(750)
+		height: main.width < dp(400) ? main.width - dp(100) : dp(300)
 		spacing: dp(8)
 
 		Item {
@@ -131,7 +131,7 @@ Dialog {
 
 				height: dp(35)
 
-				text: "Paste your friend's certificate here"
+				text: "Paste your friend's certificate here:"
 				textFormat: Text.PlainText
 				wrapMode: Text.WordWrap
 
