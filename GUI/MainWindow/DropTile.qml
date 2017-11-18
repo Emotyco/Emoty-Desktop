@@ -39,6 +39,7 @@ DropArea {
 		id: dropRectangle
 
 		anchors.fill: parent
+		radius: dp(10)
 
 		color: Qt.rgba(0,0,0,0.2)
 		state: "hidden"
