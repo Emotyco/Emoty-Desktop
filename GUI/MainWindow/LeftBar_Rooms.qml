@@ -27,10 +27,11 @@ import Material.ListItems 0.1 as ListItem
 Rectangle {
 	color: "#f2f2f2"
 
+	property string resp
 	// For handling tokens
 	property int stateToken: 0
 
-	Component.onDestruction: main.unregisterToken(stateToken)
+	Component.onDestruction: mainGUIObject.unregisterToken(stateToken)
 
 	property bool firstTime: true
 
@@ -39,21 +40,52 @@ Rectangle {
 			if(firstTime)
 				firstTime = false
 
+			resp = par.response
+
 			privateLobbiesModel.json = par.response
 			subscribedPublicLobbiesModel.json = par.response
 			unsubscribedPublicLobbiesModel.json = par.response
 
 			stateToken = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken, getLobbies)
+			mainGUIObject.registerToken(stateToken, getLobbies)
+
+			updateUnreadCount()
 		}
 
 		rsApi.request("/chat/lobbies/", "", callbackFn)
 	}
 
+	Connections {
+		target: mainGUIObject
+		onCardCreated: updateUnreadCount()
+	}
+
+	function updateUnreadCount() {
+		var jsonResp = JSON.parse(resp)
+		var count = 0
+		for (var i = 0; i<jsonResp.data.length; i++) {
+			if(jsonResp.data[i].is_broadcast == false) {
+				var found = false
+				for(var ii = 0; ii != cardsModel.rowCount(); ii++)
+				{
+					var card = cardsModel.getCardByListIndex(ii);
+					if(card.chatId == jsonResp.data[i].chat_id){
+						found = true
+						break;
+					}
+				}
+
+				if(!found)
+					count++
+			}
+		}
+		mainGUIObject.unreadMsgsLobbies = count
+	}
+
 	function subscribeLobby(chatId) {
 		var jsonData = {
 			id: chatId,
-			gxs_id: main.defaultGxsId
+			gxs_id: mainGUIObject.defaultGxsId
 		}
 
 		function callbackFn(par) {
@@ -146,7 +178,7 @@ Rectangle {
 					itemLabel.style: "body1"
 
 					onClicked: {
-						main.createRoomCard(model.name, model.chat_id)
+						mainGUIObject.createRoomCard(model.name, model.chat_id)
 						leftBar.state = "narrow"
 					}
 
@@ -179,7 +211,7 @@ Rectangle {
 
 					Tooltip {
 						text: "Topic: " + model.topic
-							  + (main.advmode
+							  + (mainGUIObject.advmode
 								   ? "\n" + "Chat Id: " + model.chat_id
 								   : "")
 						mouseArea: ink
@@ -241,7 +273,7 @@ Rectangle {
 					leftBar.state = "narrow"
 					var component = Qt.createComponent("CreateLobby.qml");
 					if (component.status === Component.Ready) {
-						var createId = component.createObject(main, {"isPrivate": true});
+						var createId = component.createObject(mainGUIObject, {"isPrivate": true});
 						createId.show();
 					}
 				}
@@ -266,7 +298,7 @@ Rectangle {
 					itemLabel.style: "body1"
 
 					onClicked: {
-						main.createRoomCard(model.name, model.chat_id)
+						mainGUIObject.createRoomCard(model.name, model.chat_id)
 						leftBar.state = "narrow"
 					}
 
@@ -299,7 +331,7 @@ Rectangle {
 
 					Tooltip {
 						text: "Topic: " + model.topic
-							  + (main.advmode
+							  + (mainGUIObject.advmode
 								   ? "\n" + "Chat Id: " + model.chat_id
 								   : "")
 						mouseArea: ink
@@ -361,7 +393,7 @@ Rectangle {
 					leftBar.state = "narrow"
 					var component = Qt.createComponent("CreateLobby.qml");
 					if (component.status === Component.Ready) {
-						var createId = component.createObject(main, {"isPrivate": false});
+						var createId = component.createObject(mainGUIObject, {"isPrivate": false});
 						createId.show();
 					}
 				}
@@ -389,7 +421,7 @@ Rectangle {
 						subscribeLobby(model.id)
 						setAutosubsribeLobby(model.id, true)
 
-						main.createRoomCard(model.name, model.chat_id)
+						mainGUIObject.createRoomCard(model.name, model.chat_id)
 						leftBar.state = "narrow"
 					}
 
@@ -424,7 +456,7 @@ Rectangle {
 
 					Tooltip {
 						text: "Topic: " + model.topic
-							  + (main.advmode
+							  + (mainGUIObject.advmode
 								   ? "\n" + "Chat Id: " + model.chat_id
 								   : "")
 						mouseArea: ink

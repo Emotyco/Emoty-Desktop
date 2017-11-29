@@ -36,6 +36,7 @@ Card {
 	property int stateToken_msg: 0
 	property int stateToken_gxs: 0
 	property int stateToken_gxsContacts: 0
+	property int stateToken_unreadCount: 0
 
 	Component.onDestruction: {
 		mainGUIObject.unregisterToken(stateToken_p)
@@ -90,10 +91,33 @@ Card {
 		rsApi.request("/identity/*/", "", callbackFn)
 	}
 
+	function getUnreadCount() {
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
+
+			var found = false
+			for (var i = 0; i<jsonResp.data.length; i++) {
+				if(jsonResp.data[i].chat_id == chatId) {
+					indicatorNumber = jsonResp.data[i].unread_count
+					found = true
+				}
+			}
+
+			if(!found)
+				indicatorNumber = 0
+
+			stateToken_unreadCount = jsonResp.statetoken
+			mainGUIObject.registerToken(stateToken_unreadCount, getUnreadCount)
+		}
+
+		rsApi.request("/chat/unread_msgs/", "", callbackFn)
+	}
+
 	Component.onCompleted: {
 		getLobbyMessages();
 		getLobbyParticipants()
 		getContacts()
+		getUnreadCount()
 	}
 
 	RoomParticipantsSortModel {

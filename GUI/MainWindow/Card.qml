@@ -31,6 +31,11 @@ DragTile {
 	default property alias data: content.data
 	property string headerName
 	property int cardIndex
+	property int indicatorNumber: 0
+
+	onIndicatorNumberChanged: {
+		mainGUIObject.cardsModel.setIndicatorNumber(cardIndex, indicatorNumber)
+	}
 
 	// Just for "restore" option
 	property int tmpCol: 0

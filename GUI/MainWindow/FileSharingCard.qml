@@ -40,6 +40,8 @@ Card {
 
 	property string search_id: ""
 
+	indicatorNumber: transferSortModel.sourceModel.dataCount
+
 	Component.onDestruction: {
 		mainGUIObject.unregisterToken(downloadStateToken)
 		mainGUIObject.unregisterToken(uploadStateToken)
@@ -110,7 +112,6 @@ Card {
 		getUploads()
 		getSharedDirs()
 		getFriendsSharedDirs()
-		getSearchResult()
 	}
 
 	TransferFilesSortModel {

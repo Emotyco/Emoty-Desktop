@@ -51,10 +51,6 @@ View {
 				width: dp(300)
 				elevation: 3
 			}
-			PropertyChanges {
-				target: tabs
-				visible: true
-			}
 		},
 		State {
 			name: "narrow"
@@ -75,11 +71,6 @@ View {
 					property: "width"
 					easing.type: Easing.InOutQuad
 					duration: MaterialAnimation.pageTransitionDuration
-				}
-				PropertyAction {
-					target: tabs
-					property: "visible"
-					value: false
 				}
 			}
 		},
@@ -107,7 +98,6 @@ View {
 		z: 1
 
 		color: "#f2f2f2"
-		visible: false
 
 		MouseArea {
 			anchors.fill: parent
@@ -127,6 +117,8 @@ View {
 
 				frameVisible: false
 				tabsVisible: false
+
+				currentIndex: 2
 
 				Tab {
 					title: "General"
@@ -193,25 +185,25 @@ View {
 			}
 
 			Connections {
-				target: main
-				onDefaultAvatarChanged: sideModel.setProperty(0, "src", main.defaultAvatar)
+				target: mainGUIObject
+				onDefaultAvatarChanged: sideModel.setProperty(0, "src", mainGUIObject.defaultAvatar)
 			}
 
 			ListModel {
 				id: sideModel
 
 				Component.onCompleted: {
-					append({"src": main.defaultAvatar,
+					append({"src": mainGUIObject.defaultAvatar,
 							   "icon": false,
 							   "helperName": "Profile",
 							   "protruding": true
 						   });
-					append({"src": "awesome/comments",
+					append({"src": "awesome/comments_o",
 							   "icon": true,
 							   "helperName": "Rooms",
 							   "protruding": true
 						   });
-					append({"src": "awesome/folder",
+					append({"src": "awesome/folder_o",
 							   "icon": true,
 							   "helperName": "Files Sharing",
 							   "protruding": false
@@ -297,20 +289,68 @@ View {
 				topMargin: dp(2)
 			}
 
-			height: dp(3)
+			height: dp(2)
 			width: parent.width*0.4
-			radius: dp(3)
-
-			visible: cardsIcons.count != 0
 
 			color: Theme.light.hintColor
+
+			states: [
+				State {
+					name: "hide"; when: cardsIcons.count == 0
+					PropertyChanges {
+						target: upperLine
+						width: 0
+					}
+				},
+				State {
+					name: "show"; when: cardsIcons.count != 0
+					PropertyChanges {
+						target: upperLine
+						width: parent.width*0.4
+					}
+				}
+			]
+
+			transitions: [
+				Transition {
+					from: "hide"; to: "show"
+
+					ParallelAnimation {
+						NumberAnimation {
+							target: upperLine
+							property: "opacity"
+							from: 0
+							to: 1
+							easing.type: Easing.InOutQuad;
+							duration: MaterialAnimation.pageTransitionDuration
+						}
+						NumberAnimation {
+							target: upperLine
+							property: "width"
+							easing.type: Easing.OutBounce;
+							duration: MaterialAnimation.pageTransitionDuration*4
+						}
+					}
+				},
+				Transition {
+					from: "show"; to: "hide"
+
+					ParallelAnimation {
+						NumberAnimation {
+							target: upperLine
+							property: "width"
+							easing.type: Easing.InBounce;
+							duration: MaterialAnimation.pageTransitionDuration*2
+						}
+					}
+				}
+			]
 		}
 
 		ListView {
 			id: cardsIcons
 			anchors{
 				top: upperLine.bottom
-				topMargin: dp(2)
 				bottom: bottomColumn.top
 			}
 
@@ -319,6 +359,9 @@ View {
 			clip: true
 			model: cardsModel
 			delegate: SideImg {
+				id: sideImg
+
+				property real k: 1
 				name: model.name
 				srcIcon: model.source
 				isIcon: model.isIcon
@@ -326,8 +369,199 @@ View {
 				margins: 0
 				selected: false
 
-				onClicked: {
-					raiseCard(model.cardIndex)
+				state: "nentered"
+				states: [
+					State {
+						name: "entered"; when: ink.containsMouse
+						PropertyChanges {
+							target: sideImg
+							iconSize: dp(28)
+						}
+						PropertyChanges {
+							target: numberNotification
+							anchors.rightMargin: dp(3)
+							anchors.topMargin: dp(3)
+						}
+					},
+					State {
+						name: "nentered"; when: !ink.containsMouse
+						PropertyChanges {
+							target: sideImg
+							iconSize: dp(24)
+						}
+						PropertyChanges {
+							target: numberNotification
+							anchors.rightMargin: dp(7)
+							anchors.topMargin: dp(7)
+						}
+					}
+				]
+
+				transitions: [
+					Transition {
+						from: "nentered"; to: "entered"
+
+						ParallelAnimation {
+							NumberAnimation {
+								property: "iconSize"
+								easing.type: Easing.OutQuad
+								duration: MaterialAnimation.pageTransitionDuration/2
+							}
+
+							NumberAnimation {
+								target: numberNotification
+								properties: "anchors.rightMargin, anchors.topMargin"
+								easing.type: Easing.OutQuad
+								duration: MaterialAnimation.pageTransitionDuration/2
+							}
+						}
+					},
+					Transition {
+						from: "entered"; to: "nentered"
+
+						ParallelAnimation {
+							NumberAnimation {
+								property: "iconSize"
+								easing.type: Easing.OutQuad
+								duration: MaterialAnimation.pageTransitionDuration/4
+							}
+
+							NumberAnimation {
+								target: numberNotification
+								properties: "anchors.rightMargin, anchors.topMargin"
+								easing.type: Easing.OutQuad
+								duration: MaterialAnimation.pageTransitionDuration/2
+							}
+						}
+					}
+				]
+
+				Ink {
+					id: ink
+
+					anchors.fill: parent
+					z: -1
+
+					acceptedButtons: Qt.RightButton | Qt.LeftButton
+					onClicked: {
+						if(mouse.button == Qt.LeftButton)
+							raiseCard(model.cardIndex)
+						else if(mouse.button == Qt.RightButton)
+							overflowMenu.open(sideImg, mouse.x, mouse.y)
+					}
+				}
+
+				Tooltip {
+					id: toolTip
+					text: model.name === "" ? toolTip.visible = false : model.name
+					mouseArea: ink
+				}
+
+				Dropdown {
+					id: overflowMenu
+					objectName: "overflowMenu"
+					overlayLayer: "dialogOverlayLayer"
+					width: dp(200)
+					height: dp(2*30)
+					enabled: true
+					anchor: Item.TopLeft
+					durationSlow: 300
+					durationFast: 150
+
+					Column{
+						anchors.fill: parent
+
+						ListItem.Standard {
+							height: dp(30)
+							text: "Show"
+							itemLabel.style: "menu"
+
+							onClicked: {
+								overflowMenu.close()
+								raiseCard(model.cardIndex)
+							}
+						}
+
+						ListItem.Standard {
+							height: dp(30)
+							text: "Close"
+							itemLabel.style: "menu"
+
+							onClicked: {
+								overflowMenu.close()
+								cardsModel.getCard(model.cardIndex).destroy()
+							}
+						}
+					}
+				}
+
+				View {
+					id: numberNotification
+					anchors {
+						top: parent.top
+						right: parent.right
+						topMargin: dp(7)
+						rightMargin: dp(7)
+					}
+
+					width: textNotification.text.length > 1 ? dp(20)*k : dp(14)*k
+					height: textNotification.text.length > 1 ? dp(16)*k : dp(14)*k
+					radius: width/2
+
+					backgroundColor: Theme.primaryColor
+					elevation: 1
+					visible: model.indicator != 0
+
+					Text {
+						id: textNotification
+						anchors.fill: parent
+						text: model.indicator
+						color: "white"
+						font.family: "Roboto"
+						font.pixelSize: text.length > 2 ? dp(9)*k : dp(11)*k
+						verticalAlignment: Text.AlignVCenter
+						horizontalAlignment: Text.AlignHCenter
+					}
+				}
+			}
+
+			add: Transition {
+				ParallelAnimation {
+					NumberAnimation {
+						property: "iconSize"
+						from: dp(10)
+						to: dp(24)
+						easing.type: Easing.OutBounce;
+						duration: MaterialAnimation.pageTransitionDuration*4
+					}
+
+					NumberAnimation {
+						property: "k"
+						from: 0.5
+						to: 1
+						easing.type: Easing.OutBounce;
+						duration: MaterialAnimation.pageTransitionDuration*4
+					}
+				}
+			}
+
+			remove: Transition {
+				ParallelAnimation {
+					NumberAnimation {
+						property: "iconSize"
+						from: dp(24)
+						to: dp(10)
+						easing.type: Easing.InBounce;
+						duration: MaterialAnimation.pageTransitionDuration*2
+					}
+
+					NumberAnimation {
+						property: "k"
+						from: 1
+						to: 0.5
+						easing.type: Easing.InBounce;
+						duration: MaterialAnimation.pageTransitionDuration*2
+					}
 				}
 			}
 		}

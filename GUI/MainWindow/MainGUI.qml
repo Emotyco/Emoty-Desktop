@@ -112,7 +112,6 @@ Rectangle {
 	Component.onCompleted: {
 		updateVisibleRows()
 		getOwnIdentities()
-		getUnreadMsgs()
 		getRunState()
 		getAdvancedMode()
 		getFlickableGridMode()
@@ -302,25 +301,6 @@ Rectangle {
 		}
 
 		rsApi.request("/identity/own_ids/", JSON.stringify(jsonData), callbackFn)
-	}
-
-	function getUnreadMsgs() {
-		function callbackFn(par) {
-			notifier.handleChatMessages(par.response)
-			var jsonResp = JSON.parse(par.response)
-
-			var count = 0
-			for (var i = 0; i<jsonResp.data.length; i++) {
-				if(jsonResp.data[i].is_lobby == true)
-					count++
-			}
-			main.unreadMsgsLobbies = count
-
-			stateToken_unreadMsgs = jsonResp.statetoken
-			main.registerToken(stateToken_unreadMsgs, getUnreadMsgs)
-		}
-
-		rsApi.request("/chat/unread_msgs/", "", callbackFn)
 	}
 
 	function getRunState() {
@@ -893,6 +873,7 @@ Rectangle {
 	CardsModel {
 		id: cardsModel
 	}
+	signal cardCreated
 
 	function raiseCard(index) {
 		for(var i = 0; i != cardsModel.rowCount(); i++)
@@ -913,8 +894,9 @@ Rectangle {
 											  {"headerName": roomName,
 												"chatId": chatId});
 
-			roomCard.cardIndex = cardsModel.storeCard(roomCard, roomName, true, "awesome/comments_o")
+			roomCard.cardIndex = cardsModel.storeCard(roomCard, roomName, true, "awesome/comments_o", roomCard.indicatorNumber)
 			raiseCard(roomCard.cardIndex)
+			cardCreated()
 
 			updateVisibleRows()
 			gridLayout.reorder()
@@ -927,8 +909,9 @@ Rectangle {
 			var fsCard = component.createObject(gridLayout,
 											  {"headerName": "File Sharing"});
 
-			fsCard.cardIndex = cardsModel.storeCard(fsCard, "File Sharing", true, "awesome/folder_o")
+			fsCard.cardIndex = cardsModel.storeCard(fsCard, "File Sharing", true, "awesome/folder_o", fsCard.indicatorNumber)
 			raiseCard(fsCard.cardIndex)
+			cardCreated()
 
 			updateVisibleRows()
 			gridLayout.reorder()
@@ -942,8 +925,9 @@ Rectangle {
 											  {"headerName": friendname,
 												"gxsId": gxsid});
 
-			chat.cardIndex = cardsModel.storeCard(chat, friendname, true, "awesome/user_o")
+			chat.cardIndex = cardsModel.storeCard(chat, friendname, true, "awesome/user_o", chat.indicatorNumber)
 			raiseCard(chat.cardIndex)
+			cardCreated()
 
 			updateVisibleRows()
 			gridLayout.reorder()
@@ -958,8 +942,9 @@ Rectangle {
 											   "chatId": chat_id,
 											   "rsPeerId": rspeerid});
 
-			chat.cardIndex = cardsModel.storeCard(chat, friendname + "@" + location, true, "awesome/user_o")
+			chat.cardIndex = cardsModel.storeCard(chat, friendname + "@" + location, true, "awesome/user_o", chat.indicatorNumber)
 			raiseCard(chat.cardIndex)
+			cardCreated()
 
 			updateVisibleRows()
 			gridLayout.reorder()

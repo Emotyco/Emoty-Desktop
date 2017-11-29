@@ -34,9 +34,12 @@ Card {
 
 	// For handling tokens
 	property int stateToken: 0
+	property int stateToken_unreadMsgs: 0
 
-	Component.onDestruction: main.unregisterToken(stateToken)
-
+	Component.onDestruction: {
+		mainGUIObject.unregisterToken(stateToken)
+		mainGUIObject.unregisterToken(stateToken_unreadMsgs)
+	}
 	Behavior on height {
 		ScriptAction { script: {contentm.positionViewAtEnd()} }
 	}
@@ -57,7 +60,32 @@ Card {
 		rsApi.request("/chat/messages/"+drag.chatId, "", callbackFn)
 	}
 
-	Component.onCompleted: drag.getChatMessages()
+	function getUnreadMsgs() {
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
+
+			var found = false
+			for (var i = 0; i<jsonResp.data.length; i++) {
+				if(jsonResp.data[i].chat_id == chatId) {
+					indicatorNumber = jsonResp.data[i].unread_count
+					found = true
+				}
+			}
+
+			if(!found)
+				indicatorNumber = 0
+
+			stateToken_unreadMsgs = jsonResp.statetoken
+			mainGUIObject.registerToken(stateToken_unreadMsgs, getUnreadMsgs)
+		}
+
+		rsApi.request("/chat/unread_msgs/", "", callbackFn)
+	}
+
+	Component.onCompleted: {
+		drag.getChatMessages()
+		getUnreadMsgs()
+	}
 
 	WorkerScript {
 		id: msgWorker

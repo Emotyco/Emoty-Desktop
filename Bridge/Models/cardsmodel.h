@@ -37,7 +37,8 @@ public:
 		NameRole,
 		IsIconRole,
 		SourceRole,
-		IndexRole
+		IndexRole,
+		IndicatorRole
 	};
 
 	CardsModel(QObject *parent = 0)
@@ -48,10 +49,11 @@ public:
 	virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
 
 public slots:
-	int storeCard(QJSValue cardObject, QString name, bool isIcon, QString source);
+	int storeCard(QJSValue cardObject, QString name, bool isIcon, QString source, int indicatorNumber);
 	bool removeCard(int index);
 	QJSValue getCard(int index);
 	QJSValue getCardByListIndex(int index);
+	bool setIndicatorNumber(int index, int indicatorNumber);
 
 protected:
 	virtual QHash<int, QByteArray> roleNames() const;
@@ -59,9 +61,10 @@ protected:
 private:
 	struct Card {
 		Card(QJSValue cardObject, QString name,
-		     bool isIcon, QString source, int index)
+		     bool isIcon, QString source, int index, int indicator)
 		    : cardObject(cardObject), name(name),
-		      isIcon(isIcon), source(source), index(index)
+		      isIcon(isIcon), source(source),
+		      index(index), indicator(indicator)
 		{}
 
 		QJSValue cardObject;
@@ -69,6 +72,7 @@ private:
 		bool isIcon;
 		QString source;
 		int index;
+		int indicator;
 	};
 
 	int counter;

@@ -21,11 +21,11 @@
  ****************************************************************/
 #include "cardsmodel.h"
 
-int CardsModel::storeCard(QJSValue cardObject, QString name, bool isIcon, QString source)
+int CardsModel::storeCard(QJSValue cardObject, QString name, bool isIcon, QString source, int indicatorNumber)
 {
 	beginInsertRows(QModelIndex(), cardsList.size(), cardsList.size());
 	counter++;
-	cardsList.push_back(Card(cardObject, name, isIcon, source, counter));
+	cardsList.push_back(Card(cardObject, name, isIcon, source, counter, 0));
 	endInsertRows();
 
 	return counter;
@@ -78,6 +78,24 @@ QJSValue CardsModel::getCardByListIndex(int index)
 	}
 }
 
+bool CardsModel::setIndicatorNumber(int cardIndex, int indicatorNumber)
+{
+	std::list<Card>::iterator vit = cardsList.begin();
+	for(int i = 0; vit != cardsList.end(); ++vit)
+	{
+		if ( cardIndex == (*vit).index)
+		{
+			(*vit).indicator = indicatorNumber;
+			emit dataChanged(index(i),index(i));
+
+			return true;
+		}
+
+		++i;
+	}
+
+	return false;
+}
 
 int CardsModel::rowCount(const QModelIndex &) const
 {
@@ -108,6 +126,8 @@ QVariant CardsModel::data(const QModelIndex & index, int role) const
 		return (*vit).source;
 	else if(role == IndexRole)
 		return (*vit).index;
+	else if(role == IndicatorRole)
+		return (*vit).indicator;
 
 	return QVariant();
 }
@@ -121,6 +141,7 @@ QHash<int, QByteArray> CardsModel::roleNames() const
 	roles[IsIconRole] = "isIcon";
 	roles[SourceRole] = "source";
 	roles[IndexRole] = "cardIndex";
+	roles[IndicatorRole] = "indicator";
 
 	return roles;
 }
