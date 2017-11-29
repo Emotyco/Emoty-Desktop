@@ -64,7 +64,7 @@ Rectangle {
 		var jsonResp = JSON.parse(resp)
 		var count = 0
 		for (var i = 0; i<jsonResp.data.length; i++) {
-			if(jsonResp.data[i].is_broadcast == false) {
+			if(jsonResp.data[i].is_broadcast == false && jsonResp.data[i].unread_msg_count != 0) {
 				var found = false
 				for(var ii = 0; ii != cardsModel.rowCount(); ii++)
 				{
