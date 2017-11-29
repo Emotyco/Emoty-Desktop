@@ -100,7 +100,7 @@ Component {
 				if(mouse.button == Qt.RightButton)
 					overflowMenu.open(friendroot, mouse.x, mouse.y)
 				else if(mouse.button == Qt.LeftButton)
-					main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+					mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
 			}
 
 			states: [
@@ -127,7 +127,7 @@ Component {
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
 				width: dp(200)
-				height: isEmpty ? 0 : main.advmode ? dp(3*30) : dp(2*30)
+				height: isEmpty ? 0 : mainGUIObject.advmode ? dp(3*30) : dp(2*30)
 				enabled: true
 				anchor: Item.TopLeft
 				durationSlow: 300
@@ -165,14 +165,14 @@ Component {
 
 						onClicked: {
 							overflowMenu.close()
-							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+							mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
 						}
 					}
 
 					ListItem.Standard {
 						height: dp(30)
-						enabled: main.advmode && !isEmpty
-						visible: main.advmode && !isEmpty
+						enabled: mainGUIObject.advmode && !isEmpty
+						visible: mainGUIObject.advmode && !isEmpty
 
 						text: "Details"
 						itemLabel.style: "menu"
@@ -193,7 +193,7 @@ Component {
 						onClicked: {
 							overflowMenu.close()
 
-							if(!main.advmode && model.is_only && model.pgp_linked) {
+							if(!mainGUIObject.advmode && model.is_only && model.pgp_linked) {
 								confirmationDialog.show("Do you want to remove contact?
 (It will remove all connections.)", function() {
 	                                var jsonData = {

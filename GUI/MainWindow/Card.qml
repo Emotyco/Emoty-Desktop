@@ -48,7 +48,7 @@ DragTile {
 	height: 0
 
 	col: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))
-	row: main.visibleRows
+	row: mainGUIObject.visibleRows
 
 	opacity: 0
 
@@ -60,7 +60,7 @@ DragTile {
 		updateVisibleRows()
 		if(
 				dragTile.col === parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)) &&
-				dragTile.row === main.visibleRows &&
+				dragTile.row === mainGUIObject.visibleRows &&
 				dragTile.gridX === 0 &&
 				dragTile.gridY === 0
 				)
@@ -233,7 +233,7 @@ DragTile {
 										return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)) || 1
 									})
 									dragTile.row = Qt.binding(function() {
-										return main.visibleRows
+										return mainGUIObject.visibleRows
 									})
 									maximized = true
 								}

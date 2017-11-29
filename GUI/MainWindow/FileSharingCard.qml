@@ -41,15 +41,15 @@ Card {
 	property string search_id: ""
 
 	Component.onDestruction: {
-		main.unregisterToken(downloadStateToken)
-		main.unregisterToken(uploadStateToken)
-		main.unregisterToken(searchStateToken)
+		mainGUIObject.unregisterToken(downloadStateToken)
+		mainGUIObject.unregisterToken(uploadStateToken)
+		mainGUIObject.unregisterToken(searchStateToken)
 	}
 
 	function getDownloads() {
 		function callbackFn(par) {
 			downloadStateToken = JSON.parse(par.response).statetoken
-			main.registerToken(downloadStateToken, getDownloads)
+			mainGUIObject.registerToken(downloadStateToken, getDownloads)
 
 			transferSortModel.sourceModel.loadJSONDownloadList(par.response)
 		}
@@ -59,7 +59,7 @@ Card {
 	function getUploads() {
 		function callbackFn(par) {
 			uploadStateToken = JSON.parse(par.response).statetoken
-			main.registerToken(uploadStateToken, getUploads)
+			mainGUIObject.registerToken(uploadStateToken, getUploads)
 
 			transferSortModel.sourceModel.loadJSONUploadList(par.response)
 		}
@@ -97,7 +97,7 @@ Card {
 
 		function callbackFn(par) {
 			searchStateToken = JSON.parse(par.response).statetoken
-			main.registerToken(searchStateToken, getSearchResult)
+			mainGUIObject.registerToken(searchStateToken, getSearchResult)
 
 			resultModel.loadJSONSearchFiles(par.response)
 		}

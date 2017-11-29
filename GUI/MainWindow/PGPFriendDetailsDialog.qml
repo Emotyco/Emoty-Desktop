@@ -37,8 +37,8 @@ Dialog {
 	property int stateToken_pgp: 0
 
 	Component.onDestruction: {
-		main.unregisterToken(stateToken_gxs)
-		main.unregisterToken(stateToken_pgp)
+		mainGUIObject.unregisterToken(stateToken_gxs)
+		mainGUIObject.unregisterToken(stateToken_pgp)
 	}
 
 	property string pgp_key
@@ -87,7 +87,7 @@ Dialog {
 			gxsIdModel.json = par.response
 
 			stateToken_gxs = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_gxs, refreshGxsIdModel)
+			mainGUIObject.registerToken(stateToken_gxs, refreshGxsIdModel)
 		}
 
 		rsApi.request("/identity/*/", "", callbackFn)
@@ -98,7 +98,7 @@ Dialog {
 			locationsModel.json = par.response
 
 			stateToken_pgp = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_pgp, refreshPgpIdModel)
+			mainGUIObject.registerToken(stateToken_pgp, refreshPgpIdModel)
 		}
 
 		rsApi.request("/peers/*", "", callbackFn)
@@ -192,8 +192,8 @@ Dialog {
 	}
 
 	Item {
-		width: main.width < dp(900) ? main.width - dp(100) : dp(600)
-		height: main.width < dp(450) ? main.width - dp(100) : dp(300)
+		width: mainGUIObject.width < dp(900) ? mainGUIObject.width - dp(100) : dp(600)
+		height: mainGUIObject.width < dp(450) ? mainGUIObject.width - dp(100) : dp(300)
 
 		Column {
 			anchors {
@@ -659,7 +659,7 @@ Dialog {
 										onClicked: {
 											overflowMenu.close()
 
-											main.createChatPeerCard(model.name, model.location, model.peer_id, model.chat_id, "ChatPeerCard.qml")
+											mainGUIObject.createChatPeerCard(model.name, model.location, model.peer_id, model.chat_id, "ChatPeerCard.qml")
 											rsApi.request("/chat/mark_chat_as_read/"+model.chat_id, "", function(){})
 
 											scrollingDialog.close()
@@ -809,7 +809,7 @@ Dialog {
 										onClicked: {
 											overflowMenu2.close()
 
-											main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+											mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
 
 											scrollingDialog.close()
 										}

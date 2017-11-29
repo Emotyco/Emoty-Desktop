@@ -83,7 +83,7 @@ Item {
 	}
 
 	Component.onCompleted: {
-		main.gridChanged.connect(refresh)
+		mainGUIObject.gridChanged.connect(refresh)
 	}
 
 	states: [

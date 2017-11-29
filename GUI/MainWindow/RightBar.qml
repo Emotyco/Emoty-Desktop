@@ -64,11 +64,11 @@ View {
 		function callbackFn(par) {
 			if(firstTime_gxsContacts) {
 				firstTime_gxsContacts = false
-				main.loadMask = false
+				mainGUIObject.loadMask = false
 			}
 
 			stateToken_gxsContacts = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_gxsContacts, refreshGxsIdModel)
+			mainGUIObject.registerToken(stateToken_gxsContacts, refreshGxsIdModel)
 
 			gxsModel.loadJSONContacts(par.response)
 			refreshPgpIdModel()
@@ -85,7 +85,7 @@ View {
 			var jsonResp = JSON.parse(par.response)
 
 			stateToken_pgp = jsonResp.statetoken
-			main.registerToken(stateToken_pgp, refreshPgpIdModel)
+			mainGUIObject.registerToken(stateToken_pgp, refreshPgpIdModel)
 
 			var count = 0
 			for (var i = 0; i<jsonResp.data.length; i++) {
@@ -113,7 +113,7 @@ View {
 		function callbackFn(par) {
 			var jsonResp = JSON.parse(par.response)
 			stateToken_unreadedMsgs = jsonResp.statetoken
-			main.registerToken(stateToken_unreadedMsgs, getUnreadedMsgs)
+			mainGUIObject.registerToken(stateToken_unreadedMsgs, getUnreadedMsgs)
 
 			gxsModel.loadJSONUnread(par.response)
 		}
@@ -169,8 +169,8 @@ View {
 	}
 
 	Component.onDestruction: {
-		main.unregisterToken(stateToken_gxsContacts)
-		main.unregisterToken(stateToken_pgp)
+		mainGUIObject.unregisterToken(stateToken_gxsContacts)
+		mainGUIObject.unregisterToken(stateToken_pgp)
 	}
 
 	WorkerScript {
@@ -202,14 +202,14 @@ View {
 		state: "bigGxsBox"
 		states: [
 			State {
-				name: "smallGxsBox"; when: main.advmode
+				name: "smallGxsBox"; when: mainGUIObject.advmode
 				AnchorChanges {
 					target: gxsBox
 					anchors.bottom: pgpBox.top
 				}
 			},
 			State{
-				name: "normalMode"; when: !main.advmode
+				name: "normalMode"; when: !mainGUIObject.advmode
 				AnchorChanges {
 					target: gxsBox
 					anchors.bottom: parent.bottom
@@ -384,19 +384,19 @@ View {
 			height: dp(25)
 
 			Component.onCompleted: {
-				visible = main.advmode
+				visible = mainGUIObject.advmode
 			}
 
 			states: [
 				State {
-					name: "show"; when: main.advmode
+					name: "show"; when: mainGUIObject.advmode
 					PropertyChanges {
 						target: tabButtons
 						enabled: true
 					}
 				},
 				State{
-					name: "hide"; when: !main.advmode
+					name: "hide"; when: !mainGUIObject.advmode
 					PropertyChanges {
 						target: tabButtons
 						anchors.topMargin: -tabButtons.height
@@ -510,7 +510,7 @@ View {
 
 			states: [
 				State {
-					when: main.advmode
+					when: mainGUIObject.advmode
 					PropertyChanges {
 						target: tabView
 						currentIndex: 0
@@ -625,9 +625,9 @@ View {
 				showBorder: false
 
 				Connections {
-					target: main
+					target: mainGUIObject
 					onAdvmodeChanged: {
-						if(main.advmode)
+						if(mainGUIObject.advmode)
 							identitiesModel.setSearchText(searchText.text)
 					}
 				}
@@ -635,13 +635,13 @@ View {
 				onTextChanged: {
 					contactsModel.setSearchText(text)
 
-					if(main.advmode)
+					if(mainGUIObject.advmode)
 						identitiesModel.setSearchText(text)
 				}
 				onAccepted: {
 					contactsModel.setSearchText(text)
 
-					if(main.advmode)
+					if(mainGUIObject.advmode)
 						identitiesModel.setSearchText(text)
 				}
 			}
@@ -664,19 +664,19 @@ View {
 		Drag.hotSpot.y: 0
 
 		Component.onCompleted: {
-			visible = main.advmode
+			visible = mainGUIObject.advmode
 		}
 
 		states: [
 			State {
-				name: "hide"; when: !main.advmode
+				name: "hide"; when: !mainGUIObject.advmode
 				PropertyChanges {
 					target: pgpBox
 					enabled: false
 				}
 			},
 			State {
-				name: "show"; when: main.advmode
+				name: "show"; when: mainGUIObject.advmode
 				PropertyChanges {
 					target: pgpBox
 					enabled: true

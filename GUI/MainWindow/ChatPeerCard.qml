@@ -44,7 +44,7 @@ Card {
 	function getChatMessages() {
 		function callbackFn(par) {
 			stateToken = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken, getChatMessages)
+			mainGUIObject.registerToken(stateToken, getChatMessages)
 
 			msgWorker.sendMessage({
 				'action' : 'refreshMessages',

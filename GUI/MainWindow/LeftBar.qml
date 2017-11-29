@@ -232,7 +232,7 @@ View {
 
 					onClicked: {
 						if(helperName === "Files Sharing")
-							main.createFileSharingCard()
+							mainGUIObject.createFileSharingCard()
 						else {
 							if(leftBar.state === "narrow") {
 								tabView.currentIndex = model.index+1
@@ -271,12 +271,12 @@ View {
 						elevation: 1
 
 						visible: helperName == "Rooms" ?
-									main.unreadMsgsLobbies > 0 ? true : false
+									mainGUIObject.unreadMsgsLobbies > 0 ? true : false
 						          : false
 
 						Text {
 							anchors.fill: parent
-							text: helperName == "Rooms" ? main.unreadMsgsLobbies : ""
+							text: helperName == "Rooms" ? mainGUIObject.unreadMsgsLobbies : ""
 							color: "white"
 							font.family: "Roboto"
 							font.pixelSize: dp(11)

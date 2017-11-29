@@ -43,7 +43,7 @@ Card {
 
 	function initiateChat() {
 		var jsonData = {
-			own_gxs_hex: main.defaultGxsId,
+			own_gxs_hex: mainGUIObject.defaultGxsId,
 			remote_gxs_hex: drag.gxsId
 		}
 
@@ -86,7 +86,7 @@ Card {
 
 		function callbackFn(par) {
 			stateToken = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken, getChatMessages)
+			mainGUIObject.registerToken(stateToken, getChatMessages)
 
 			msgWorker.sendMessage({
 				'action' : 'refreshMessages',
@@ -101,7 +101,7 @@ Card {
 
 	Component.onCompleted: drag.initiateChat()
 	Component.onDestruction: {
-		main.unregisterToken(stateToken)
+		mainGUIObject.unregisterToken(stateToken)
 		closeChat()
 	}
 

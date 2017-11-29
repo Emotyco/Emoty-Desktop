@@ -79,8 +79,8 @@ Dialog {
 	}
 
 	Grid {
-		width: main.width < dp(800) ? main.width - dp(100) : dp(750)
-		height: main.width < dp(400) ? main.width - dp(100) : dp(300)
+		width: mainGUIObject.width < dp(800) ? mainGUIObject.width - dp(100) : dp(750)
+		height: mainGUIObject.width < dp(400) ? mainGUIObject.width - dp(100) : dp(300)
 		spacing: dp(8)
 
 		Item {

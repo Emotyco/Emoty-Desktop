@@ -38,10 +38,11 @@ Card {
 	property int stateToken_gxsContacts: 0
 
 	Component.onDestruction: {
-		main.unregisterToken(stateToken_p)
-		main.unregisterToken(stateToken_msg)
-		main.unregisterToken(stateToken_gxs)
-		main.unregisterToken(stateToken_gxsContacts)
+		mainGUIObject.unregisterToken(stateToken_p)
+		mainGUIObject.unregisterToken(stateToken_msg)
+		mainGUIObject.unregisterToken(stateToken_gxs)
+		mainGUIObject.unregisterToken(stateToken_gxsContacts)
+		mainGUIObject.unregisterToken(stateToken_unreadCount)
 	}
 
 	property bool firstTime_msg: true
@@ -49,7 +50,7 @@ Card {
 	function getLobbyParticipants() {
 		function callbackFn(par) {
 			stateToken_p = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_p, getLobbyParticipants)
+			mainGUIObject.registerToken(stateToken_p, getLobbyParticipants)
 
 			roomParticipantsSortModel.sourceModel.loadJSONParticipants(par.response)
 			roomInvitationSortModel.sourceModel.loadJSONParticipants(par.response)
@@ -64,7 +65,7 @@ Card {
 				firstTime_msg = false
 
 			stateToken_msg = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_msg, getLobbyMessages)
+			mainGUIObject.registerToken(stateToken_msg, getLobbyMessages)
 
 			messagesWorker.sendMessage({
 				'action' : 'refreshMessages',
@@ -80,7 +81,7 @@ Card {
 	function getContacts() {
 		function callbackFn(par) {
 			stateToken_gxsContacts = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_gxsContacts, getContacts)
+			mainGUIObject.registerToken(stateToken_gxsContacts, getContacts)
 
 			roomParticipantsSortModel.sourceModel.loadJSONIdentities(par.response)
 			roomInvitationSortModel.sourceModel.loadJSONInvitations(par.response)
@@ -332,13 +333,13 @@ Card {
 						onTextChanged: {
 							roomParticipantsSortModel.setSearchText(text)
 
-							if(main.advmode)
+							if(mainGUIObject.advmode)
 								roomParticipantsSortModel.setSearchText(text)
 						}
 						onAccepted: {
 							roomParticipantsSortModel.setSearchText(text)
 
-							if(main.advmode)
+							if(mainGUIObject.advmode)
 								roomParticipantsSortModel.setSearchText(text)
 						}
 					}
@@ -404,14 +405,14 @@ Card {
 
 						onClicked: {
 							if(mouse.button == Qt.RightButton)
-								if(main.advmode || !model.own)
+								if(mainGUIObject.advmode || !model.own)
 									overflowMenu2.open(roomFriend, mouse.x, mouse.y)
 						}
 
 						onDoubleClicked: {
 							if(mouse.button == Qt.LeftButton)
 								if(!model.own)
-									main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+									mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
 						}
 					}
 
@@ -420,7 +421,7 @@ Card {
 						objectName: "overflowMenu"
 						overlayLayer: "dialogOverlayLayer"
 						width: dp(200)
-						height: (main.advmode
+						height: (mainGUIObject.advmode
 								 ? (model.is_contact
 									? model.own ? dp(1*30) : dp(2*30)
 									: model.own ? dp(2*30) : dp(3*30))
@@ -464,7 +465,7 @@ Card {
 
 								onClicked: {
 									overflowMenu2.close()
-									main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+									mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
 								}
 							}
 
@@ -473,8 +474,8 @@ Card {
 								text: "Details"
 								itemLabel.style: "menu"
 
-								enabled: main.advmode
-								visible: main.advmode
+								enabled: mainGUIObject.advmode
+								visible: mainGUIObject.advmode
 
 								onClicked: {
 									overflowMenu2.close()
@@ -595,13 +596,13 @@ Card {
 						onTextChanged: {
 							roomInvitationSortModel.setSearchText(text)
 
-							if(main.advmode)
+							if(mainGUIObject.advmode)
 								roomInvitationSortModel.setSearchText(text)
 						}
 						onAccepted: {
 							roomInvitationSortModel.setSearchText(text)
 
-							if(main.advmode)
+							if(mainGUIObject.advmode)
 								roomInvitationSortModel.setSearchText(text)
 						}
 					}

@@ -48,8 +48,8 @@ PopupBase {
 	opacity: showing ? 1 : 0
 	visible: opacity > 0
 
-	width: main.width
-	height: main.height
+	width: mainGUIObject.width
+	height: mainGUIObject.height
 
 	globalMouseAreaEnabled: mask.visible ? false : enableHiding
 
@@ -62,7 +62,7 @@ PopupBase {
 	}
 
 	function createIdentity(name) {
-		var isNotAnonymous = main.advmode ? !checkBox.checked : true
+		var isNotAnonymous = mainGUIObject.advmode ? !checkBox.checked : true
 
 		var jsonData = {
 			name: name,
@@ -94,7 +94,7 @@ PopupBase {
 		}
 
 		width: dp(350)
-		height: main.advmode ? dp(430) : dp(400)
+		height: mainGUIObject.advmode ? dp(430) : dp(400)
 
 		elevation: 5
 		radius: dp(2)
@@ -287,8 +287,8 @@ PopupBase {
 			height: dp(50)
 			width: parent.width*0.63
 
-			visible: main.advmode
-			enabled: main.advmode
+			visible: mainGUIObject.advmode
+			enabled: mainGUIObject.advmode
 			clip: true
 
 			CheckBox {

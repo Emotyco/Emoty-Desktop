@@ -25,14 +25,14 @@ Rectangle {
 
 	function setIdentityAvatar() {
 		var jsonData = {
-			gxs_id: main.defaultGxsId,
+			gxs_id: mainGUIObject.defaultGxsId,
 			avatar: avatar
 		}
 
 		function callbackFn(par) {
 			var json = JSON.parse(par.response)
 			if(json.data.avatar.length > 0)
-				main.defaultAvatar = "data:image/png;base64," + json.data.avatar
+				mainGUIObject.defaultAvatar = "data:image/png;base64," + json.data.avatar
 		}
 
 		rsApi.request("/identity/set_avatar", JSON.stringify(jsonData), callbackFn)
@@ -61,8 +61,8 @@ Rectangle {
 				radius: width/2
 
 				Connections {
-					target: main
-					onDefaultAvatarChanged: {canvas.loadImage(main.defaultAvatar); canvas.requestPaint()}
+					target: mainGUIObject
+					onDefaultAvatarChanged: {canvas.loadImage(mainGUIObject.defaultAvatar); canvas.requestPaint()}
 
 				}
 
@@ -71,14 +71,14 @@ Rectangle {
 
 					anchors.fill: parent
 
-					Component.onCompleted:loadImage(main.defaultAvatar)
+					Component.onCompleted:loadImage(mainGUIObject.defaultAvatar)
 					onPaint: {
 						var ctx = getContext("2d");
-						if (canvas.isImageLoaded(main.defaultAvatar)) {
+						if (canvas.isImageLoaded(mainGUIObject.defaultAvatar)) {
 							var profile = Qt.createQmlObject('
                                 import QtQuick 2.5;
                                 Image{
-                                    source: main.defaultAvatar
+                                    source: mainGUIObject.defaultAvatar
                                     visible:false
                                     fillMode: Image.PreserveAspectCrop
                                 }', canvas);
@@ -113,7 +113,7 @@ Rectangle {
 						}
 
 						onClicked: {
-							if(main.defaultAvatar != "avatar.png")
+							if(mainGUIObject.defaultAvatar != "avatar.png")
 								overlayView.open(canvas)
 							else
 								fileDialog.open()
@@ -124,7 +124,7 @@ Rectangle {
 							height: dp(60)
 
 							opacity: circleInk.containsMouse ? 1 : 0
-							visible: main.defaultAvatar == "avatar.png"
+							visible: mainGUIObject.defaultAvatar == "avatar.png"
 
 							name: "awesome/edit"
 							color: Theme.dark.iconColor
@@ -154,7 +154,7 @@ Rectangle {
 					horizontalCenter: parent.horizontalCenter
 				}
 
-				text: main.defaultGxsName
+				text: mainGUIObject.defaultGxsName
 				color: Theme.light.textColor
 
 				font {
@@ -190,13 +190,13 @@ Rectangle {
 			text: model.name
 			textColor: selected ? Theme.primaryColor : Theme.light.textColor
 
-			selected: main.defaultGxsId === model.own_gxs_id
+			selected: mainGUIObject.defaultGxsId === model.own_gxs_id
 			itemLabel.style: "body1"
 
 			onClicked: {
-				main.defaultGxsName = model.name
-				main.defaultGxsId = model.own_gxs_id
-				main.getDefaultAvatar()
+				mainGUIObject.defaultGxsName = model.name
+				mainGUIObject.defaultGxsId = model.own_gxs_id
+				mainGUIObject.getDefaultAvatar()
 			}
 
 			MouseArea {
@@ -210,7 +210,7 @@ Rectangle {
 				id: overflowMenu
 				objectName: "overflowMenu"
 				width: dp(200)
-				height: main.advmode ? dp(2*30) : dp(1*30)
+				height: mainGUIObject.advmode ? dp(2*30) : dp(1*30)
 				enabled: true
 				anchor: Item.TopLeft
 				durationSlow: 300
@@ -221,8 +221,8 @@ Rectangle {
 
 					ListItem.Standard {
 						height: dp(30)
-						enabled: main.advmode
-						visible: main.advmode
+						enabled: mainGUIObject.advmode
+						visible: mainGUIObject.advmode
 
 						text: "Details"
 						itemLabel.style: "menu"
@@ -268,7 +268,7 @@ Rectangle {
 				leftBar.state = "narrow"
 				var component = Qt.createComponent("CreateIdentity.qml");
 				if (component.status === Component.Ready) {
-					var createId = component.createObject(main);
+					var createId = component.createObject(mainGUIObject);
 					createId.enableHiding = true;
 					createId.show();
 				}
@@ -279,14 +279,14 @@ Rectangle {
 	OverlayView {
 		id: overlayView
 
-		width: main.width < main.height ? (dp(700)+main.width*0.3 < main.width ? dp(700)
-																			   : main.width*0.7)
-										: (dp(700)+main.height*0.3 < main.height ? dp(700)
-																				 : main.height*0.7)
-		height: main.width < main.height ? (dp(700)+main.width*0.3 < main.width ? dp(700)
-																				: main.width*0.7)
-										 : (dp(700)+main.height*0.3 < main.height ? dp(700)
-																				  : main.height*0.7)
+		width: mainGUIObject.width < mainGUIObject.height ? (dp(700)+mainGUIObject.width*0.3 < mainGUIObject.width ? dp(700)
+																			   : mainGUIObject.width*0.7)
+										: (dp(700)+mainGUIObject.height*0.3 < mainGUIObject.height ? dp(700)
+																				 : mainGUIObject.height*0.7)
+		height: mainGUIObject.width < mainGUIObject.height ? (dp(700)+mainGUIObject.width*0.3 < mainGUIObject.width ? dp(700)
+																				: mainGUIObject.width*0.7)
+										 : (dp(700)+mainGUIObject.height*0.3 < mainGUIObject.height ? dp(700)
+																				  : mainGUIObject.height*0.7)
 
 		radiusOnStart: overlayView.width/2
 
@@ -298,7 +298,7 @@ Rectangle {
 
 			anchors.fill: parent
 
-			source: Qt.resolvedUrl(main.defaultAvatar)
+			source: Qt.resolvedUrl(mainGUIObject.defaultAvatar)
 			fillMode: Image.PreserveAspectCrop
 
 			Behavior on radius {

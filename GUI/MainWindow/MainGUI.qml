@@ -31,7 +31,7 @@ import QtQuick.Controls 1.3 as Controls
 import CardsModel 0.2
 
 Rectangle {
-	id: main
+	id: mainGUIObject
 
 	property bool borderless: false
 	property bool haveOwnIdFirstTime: true
@@ -47,8 +47,9 @@ Rectangle {
 
 	property int unreadMsgsLobbies: 0
 
-	property int visibleRows: Math.round((main.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
+	property int visibleRows: Math.round((mainGUIObject.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
 	property alias gridLayout: gridLayout
+	property alias cardsModel: cardsModel
 
 	signal gridChanged
 
@@ -278,10 +279,10 @@ Rectangle {
                     }
                 }
             }
-            ', main);
+            ', mainGUIObject);
 	}
 
-	onDefaultGxsIdChanged: main.getDefaultAvatar()
+	onDefaultGxsIdChanged: mainGUIObject.getDefaultAvatar()
 
 	// For handling tokens
 	property int stateToken_ownGxs: 0
@@ -297,7 +298,7 @@ Rectangle {
 			ownGxsIdModel.json = par.response; haveOwnId()
 
 			stateToken_ownGxs = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_ownGxs, getOwnIdentities)
+			mainGUIObject.registerToken(stateToken_ownGxs, getOwnIdentities)
 		}
 
 		rsApi.request("/identity/own_ids/", JSON.stringify(jsonData), callbackFn)
@@ -328,12 +329,12 @@ Rectangle {
 		};
 
 		function callbackFn(par) {
-			main.state = String(JSON.parse(par.response).data.runstate)
+			mainGUIObject.state = String(JSON.parse(par.response).data.runstate)
 		}
 
 		var ret = rsApi.request("/control/runstate/", JSON.stringify(jsonData), callbackFn)
 		if(ret < 1)
-			main.state = "fatal_error"
+			mainGUIObject.state = "fatal_error"
 	}
 
 	function getAdvancedMode() {
@@ -342,7 +343,7 @@ Rectangle {
 		};
 
 		function callbackFn(par) {
-			main.advmode = Boolean(JSON.parse(par.response).data.advanced_mode)
+			mainGUIObject.advmode = Boolean(JSON.parse(par.response).data.advanced_mode)
 			notifier.setAdvMode(Boolean(JSON.parse(par.response).data.advanced_mode))
 		}
 
@@ -355,7 +356,7 @@ Rectangle {
 		};
 
 		function callbackFn(par) {
-			main.flickablemode = Boolean(JSON.parse(par.response).data.flickable_grid_mode)
+			mainGUIObject.flickablemode = Boolean(JSON.parse(par.response).data.flickable_grid_mode)
 		}
 
 		rsApi.request("/settings/get_flickable_grid_mode/", JSON.stringify(jsonData), callbackFn)
@@ -365,7 +366,7 @@ Rectangle {
 		if (ownGxsIdModel.count === 0 && haveOwnIdFirstTime) {
 			var component = Qt.createComponent("CreateIdentity.qml");
 			if (component.status === Component.Ready) {
-				var createId = component.createObject(main);
+				var createId = component.createObject(mainGUIObject);
 				createId.show();
 			}
 			haveOwnIdFirstTime = false;
@@ -395,7 +396,7 @@ Rectangle {
 		function callbackFn(par) {
 			var jsonResp = JSON.parse(par.response)
 			stateToken_invitations = jsonResp.statetoken
-			main.registerToken(stateToken_invitations, getRoomInvitations)
+			mainGUIObject.registerToken(stateToken_invitations, getRoomInvitations)
 
 			if(jsonResp.data.length > 0)
 				for(var i = 0; i < jsonResp.data.length; i++)
@@ -464,7 +465,7 @@ Rectangle {
 		color: Qt.rgba(0,0,0,0.4)
 		z: 20
 
-		state: main.loadMask ? "visible" : "invisible"
+		state: mainGUIObject.loadMask ? "visible" : "invisible"
 
 		states:[
 			State {
@@ -718,7 +719,7 @@ Rectangle {
 		GridLayout {
 			id: gridLayout
 
-			property int h: (main.height-dp(30))
+			property int h: (mainGUIObject.height-dp(30))
 			property int rowspace: parseInt(h/dp(50))
 
 			property alias gridRepeater: gridRepeater
@@ -739,7 +740,7 @@ Rectangle {
 			rowSpacing: h<dp(650) ? (h-((rowspace-1)*dp(50)))/(rowspace-2)
 							  : (h-((rowspace-2)*dp(50)))/(rowspace-3)
 
-			onColumnsChanged: main.gridChanged()
+			onColumnsChanged: mainGUIObject.gridChanged()
 
 			Repeater {
 				id: gridRepeater
@@ -828,8 +829,8 @@ Rectangle {
 	}
 
 	function updateVisibleRows() {
-		main.visibleRows = Qt.binding(function() {
-			return Math.round((main.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
+		mainGUIObject.visibleRows = Qt.binding(function() {
+			return Math.round((mainGUIObject.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
 		});
 	}
 
@@ -872,7 +873,7 @@ Rectangle {
 		var jsonData = JSON.parse(par.response).data
 		var arrayLength = jsonData.length;
 		for (var i = 0; i < arrayLength; i++)
-			main.tokenExpire(jsonData[i])
+			mainGUIObject.tokenExpire(jsonData[i])
 	}
 
 	//
@@ -979,7 +980,7 @@ Rectangle {
 		running: true
 		repeat: true
 		onTriggered: {
-			rsApi.request("/statetokenservice/*", '['+Object.keys(main.tokens)+']', checkTokens)
+			rsApi.request("/statetokenservice/*", '['+Object.keys(mainGUIObject.tokens)+']', checkTokens)
 		}
 	}
 

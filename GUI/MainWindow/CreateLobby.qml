@@ -45,8 +45,8 @@ PopupBase {
 	opacity: showing ? 1 : 0
 	visible: opacity > 0
 
-	width: main.width
-	height: main.height
+	width: mainGUIObject.width
+	height: mainGUIObject.height
 
 	globalMouseAreaEnabled: true
 
@@ -66,7 +66,7 @@ PopupBase {
 		}
 
 		width: dp(350)
-		height: main.advmode ? dp(165) : dp(130)
+		height: mainGUIObject.advmode ? dp(165) : dp(130)
 
 		elevation: 5
 		radius: dp(2)
@@ -105,9 +105,9 @@ PopupBase {
 			onAccepted: {
 				var jsonData = {
 					lobby_name: name.text,
-					gxs_id: main.defaultGxsId,
+					gxs_id: mainGUIObject.defaultGxsId,
 					lobby_public: !isPrivate,
-					pgp_signed: main.advmode ? checkBox.checked : true
+					pgp_signed: mainGUIObject.advmode ? checkBox.checked : true
 				}
 
 				rsApi.request("/chat/create_lobby", JSON.stringify(jsonData), function(){})
@@ -125,8 +125,8 @@ PopupBase {
 			height: dp(50)
 			width: parent.width*0.67
 
-			visible: main.advmode
-			enabled: main.advmode
+			visible: mainGUIObject.advmode
+			enabled: mainGUIObject.advmode
 			clip: true
 
 			RowLayout {
@@ -176,9 +176,9 @@ PopupBase {
 			onClicked: {
 				var jsonData = {
 					lobby_name: name.text,
-					gxs_id: main.defaultGxsId,
+					gxs_id: mainGUIObject.defaultGxsId,
 					lobby_public: !isPrivate,
-					pgp_signed: main.advmode ? checkBox.checked : true
+					pgp_signed: mainGUIObject.advmode ? checkBox.checked : true
 				}
 
 				rsApi.request("/chat/create_lobby", JSON.stringify(jsonData), function(){})
