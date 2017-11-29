@@ -38,6 +38,7 @@ ListItem.BaseListItem {
 	property alias iconName: icon.name
 	property alias iconSource: icon.source
 	property alias iconColor: icon.color
+	property alias iconSize: icon.size
 	property string name
 
 	implicitHeight: 48 * Units.dp
@@ -88,7 +89,7 @@ ListItem.BaseListItem {
 
 				anchors.fill: parent
 
-				name: srcIcon
+				name: isIcon ? srcIcon : ""
 				visible: isIcon
 				color: listItem.selected ? Theme.primaryColor
 						: darkBackground ? Theme.dark.iconColor : Theme.light.iconColor
@@ -107,7 +108,7 @@ ListItem.BaseListItem {
 				anchors.fill: parent
 
 				visible: !isIcon
-				source: srcIcon
+				source: !isIcon ? srcIcon : ""
 				fillMode: Image.PreserveAspectCrop
 			}
 		}
