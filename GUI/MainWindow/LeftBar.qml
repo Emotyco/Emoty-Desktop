@@ -216,8 +216,34 @@ View {
 				delegate: SideImg {
 					name: helperName
 
-					srcIcon: src
-					isIcon: icon
+					Connections {
+						target: mainGUIObject
+						onDefaultAvatarChanged: {
+							if(helperName == "Profile") {
+								if(mainGUIObject.defaultAvatar == "none" || mainGUIObject.defaultAvatar == "") {
+									srcIcon = "awesome/user_o"
+									isIcon = true
+								}
+								else {
+									srcIcon = mainGUIObject.defaultAvatar
+									isIcon = false
+								}
+							}
+						}
+					}
+
+					srcIcon: {
+						if(src == "none" || src == "")
+							return "awesome/user_o"
+
+						return src
+					}
+					isIcon: {
+						if(src == "none" || src == "")
+							return true
+
+						return icon
+					}
 
 					margins: 0
 					selected: false

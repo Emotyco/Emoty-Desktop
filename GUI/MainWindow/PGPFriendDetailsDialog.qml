@@ -729,37 +729,91 @@ Dialog {
 								identityDetailsDialog.showIdentity(model.name, model.gxs_id)
 							}
 
-							action: Canvas {
-								id: canvas2
+							action: Item {
+								id: identityAvatar
 								anchors.centerIn: parent
-
 								width: dp(32)
 								height: dp(32)
 
-								Component.onCompleted:loadImage("avatar.png")
-								onPaint: {
-									var ctx = getContext("2d");
-									if (canvas2.isImageLoaded("avatar.png")) {
-										var profile = Qt.createQmlObject('
-                                            import QtQuick 2.5
-                                            Image {
-                                                source: "avatar.png"
-                                                visible:false
-                                            }', canvas2);
+								property string avatar: (gxs_avatars.getAvatar(model.gxs_id) == "none"
+														 || gxs_avatars.getAvatar(model.gxs_id) == "")
+														? "none"
+														: gxs_avatars.getAvatar(model.gxs_id)
 
-										var centreX = width/2;
-										var centreY = height/2;
+								onAvatarChanged: canvas.loadImage(identityAvatar.avatar)
 
-										ctx.save()
-										ctx.beginPath();
-										ctx.moveTo(centreX, centreY);
-										ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
-										ctx.clip();
-										ctx.drawImage(profile, 0, 0, canvas2.width, canvas2.height)
-										ctx.restore()
-									}
+								Component.onCompleted: {
+									if(gxs_avatars.getAvatar(model.gxs_id) == "")
+										getIdentityAvatar()
 								}
-								onImageLoaded:requestPaint()
+
+								function getIdentityAvatar() {
+									var jsonData = {
+										gxs_id: model.gxs_id
+									}
+
+									function callbackFn(par) {
+										var json = JSON.parse(par.response)
+										if(json.returncode == "fail") {
+											getIdentityAvatar()
+											return
+										}
+
+										gxs_avatars.storeAvatar(model.gxs_id, json.data.avatar)
+										if(gxs_avatars.getAvatar(model.gxs_id) != "none")
+											identityAvatar.avatar = gxs_avatars.getAvatar(model.gxs_id)
+									}
+
+									rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+								}
+
+								Canvas {
+									id: canvas
+
+									anchors.centerIn: parent
+									width: dp(32)
+									height: dp(32)
+
+									enabled: identityAvatar.avatar != "none"
+									visible: identityAvatar.avatar != "none"
+
+									onPaint: {
+										var ctx = getContext("2d");
+										if (canvas.isImageLoaded(identityAvatar.avatar)) {
+											var profile = Qt.createQmlObject('
+                                                import QtQuick 2.5
+                                                Image {
+                                                    source: identityAvatar.avatar
+                                                    visible:false
+                                                }', canvas);
+											var centreX = width/2;
+											var centreY = height/2;
+
+											ctx.save()
+											ctx.beginPath();
+											ctx.moveTo(centreX, centreY);
+											ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
+											ctx.clip();
+											ctx.drawImage(profile, 0, 0, canvas.width, canvas.height);
+											ctx.restore()
+										}
+									}
+									onImageLoaded:requestPaint()
+								}
+
+								Icon {
+									anchors.centerIn: parent
+
+									width: dp(32)
+									height: dp(32)
+									size: dp(32)
+
+									enabled: identityAvatar.avatar == "none"
+									visible: identityAvatar.avatar == "none"
+
+									name: "awesome/user_o"
+									color: Theme.light.iconColor
+								}
 							}
 
 							MouseArea {

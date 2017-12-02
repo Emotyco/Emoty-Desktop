@@ -123,7 +123,15 @@ Dialog {
 
 				model: identitiesModel
 				delegate: RoomFriend {
-					property string avatar: "avatar.png"
+					property string avatar: (gxs_avatars.getAvatar(model.gxs_id) == "none"
+											 || gxs_avatars.getAvatar(model.gxs_id) == "")
+											? "none"
+											: gxs_avatars.getAvatar(model.gxs_id)
+
+					onAvatarChanged: {
+						imageSource = avatar
+						image.loadImage(avatar)
+					}
 
 					width: parent.width
 
@@ -132,15 +140,19 @@ Dialog {
 					itemLabel.style: "body1"
 
 					imageSource: avatar
-					isIcon: false
+					isIcon: avatar == "none"
+					iconName: "awesome/user_o"
+					iconSize: dp(32)
 
 					Connections {
 						target: identitiesSelectionDialog
-						onOpened: getIdentityAvatar()
 						onClosed: selected = false
 					}
 
-					Component.onCompleted: getIdentityAvatar()
+					Component.onCompleted: {
+						if(gxs_avatars.getAvatar(model.gxs_id) == "")
+							getIdentityAvatar()
+					}
 
 					function getIdentityAvatar() {
 						var jsonData = {
@@ -149,11 +161,14 @@ Dialog {
 
 						function callbackFn(par) {
 							var json = JSON.parse(par.response)
-							if(json.data.avatar.length > 0)
-								avatar = "data:image/png;base64," + json.data.avatar
-
-							if(json.returncode == "fail")
+							if(json.returncode == "fail") {
 								getIdentityAvatar()
+								return
+							}
+
+							gxs_avatars.storeAvatar(model.gxs_id, json.data.avatar)
+							if(gxs_avatars.getAvatar(model.gxs_id) != "none")
+								avatar = gxs_avatars.getAvatar(model.gxs_id)
 						}
 
 						rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)

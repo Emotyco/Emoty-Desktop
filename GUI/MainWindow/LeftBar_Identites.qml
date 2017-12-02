@@ -113,7 +113,7 @@ Rectangle {
 						}
 
 						onClicked: {
-							if(mainGUIObject.defaultAvatar != "avatar.png")
+							if(mainGUIObject.defaultAvatar != "none")
 								overlayView.open(canvas)
 							else
 								fileDialog.open()
@@ -124,7 +124,7 @@ Rectangle {
 							height: dp(60)
 
 							opacity: circleInk.containsMouse ? 1 : 0
-							visible: mainGUIObject.defaultAvatar == "avatar.png"
+							visible: mainGUIObject.defaultAvatar == "none"
 
 							name: "awesome/edit"
 							color: Theme.dark.iconColor

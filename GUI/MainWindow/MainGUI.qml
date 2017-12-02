@@ -43,7 +43,7 @@ Rectangle {
 
 	property string defaultGxsName
 	property string defaultGxsId
-	property string defaultAvatar: "avatar.png"
+	property string defaultAvatar: "none"
 
 	property int unreadMsgsLobbies: 0
 
@@ -354,22 +354,26 @@ Rectangle {
 	}
 
 	function getDefaultAvatar() {
-		var jsonData = {
-			gxs_id: defaultGxsId
+		if(gxs_avatars.getAvatar(defaultGxsId) == "") {
+			var jsonData = {
+				gxs_id: defaultGxsId
+			}
+
+			function callbackFn(par) {
+				var json = JSON.parse(par.response)
+				if(json.returncode == "fail") {
+					getDefaultAvatar()
+					return
+				}
+
+				gxs_avatars.storeAvatar(defaultGxsId, json.data.avatar)
+				defaultAvatar = gxs_avatars.getAvatar(defaultGxsId)
+			}
+
+			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
 		}
-
-		function callbackFn(par) {
-			var json = JSON.parse(par.response)
-			if(json.data.avatar.length > 0)
-				defaultAvatar = "data:image/png;base64," + json.data.avatar
-			else
-				defaultAvatar = "avatar.png"
-
-			if(json.returncode == "fail")
-				getDefaultAvatar()
-		}
-
-		rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+		else
+			defaultAvatar = gxs_avatars.getAvatar(defaultGxsId)
 	}
 
 	function getRoomInvitations() {

@@ -45,6 +45,7 @@
     #include "Util/cursorshape.h"
     #include "Util/qquickviewhelper.h"
     #include "Util/base64.h"
+    #include "Util/gxsavatars.h"
 
     #include "Bridge/Models/contactssortmodel.h"
     #include "Bridge/Models/identitiessortmodel.h"
@@ -156,6 +157,9 @@ int main(int argc, char *argv[])
 	IdentitiesSortModel *identitiesModel = new IdentitiesSortModel();
 	identitiesModel->setSourceModel(ContactsModel::getInstance());
 	ctxt->setContextProperty("identitiesModel", identitiesModel);
+
+	GXSAvatars gxs_avatars;
+	ctxt->setContextProperty("gxs_avatars", &gxs_avatars);
 
 	view->setSource(QUrl("qrc:/MainGUI.qml"));
 	// Create window

@@ -65,7 +65,8 @@ HEADERS += libresapilocalclient.h \
     Bridge/Models/sharedfilesmodel.h \
     Bridge/Models/searchfilemodel.h \
     Bridge/Models/searchfilesortmodel.h \
-    Bridge/Models/cardsmodel.h
+    Bridge/Models/cardsmodel.h \
+    Util/gxsavatars.h
 
 SOURCES += main.cpp \
     libresapilocalclient.cpp \
@@ -86,7 +87,8 @@ SOURCES += main.cpp \
     Bridge/Models/sharedfilesmodel.cpp \
     Bridge/Models/searchfilemodel.cpp \
     Bridge/Models/searchfilesortmodel.cpp \
-    Bridge/Models/cardsmodel.cpp
+    Bridge/Models/cardsmodel.cpp \
+    Util/gxsavatars.cpp
 
 RESOURCES += \
     GUI/MainWindow/mainwindow.qrc \

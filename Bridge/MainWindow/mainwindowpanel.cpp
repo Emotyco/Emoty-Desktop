@@ -36,6 +36,7 @@
 #include "notifier.h"
 #include "soundnotifier.h"
 #include "Util/runstatehelper.h"
+#include "Util/gxsavatars.h"
 #include "Bridge/Models/contactsmodel.h"
 
 MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
@@ -80,6 +81,9 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 	identitiesModel = new IdentitiesSortModel();
 	identitiesModel->setSourceModel(ContactsModel::getInstance());
 	ctxt->setContextProperty("identitiesModel", identitiesModel);
+
+	GXSAvatars gxs_avatars;
+	ctxt->setContextProperty("gxs_avatars", &gxs_avatars);
 
 	this->setSource(QUrl("qrc:/Borderless.qml"));
 	show();

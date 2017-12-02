@@ -34,6 +34,7 @@ Component {
 		property bool entered: false
 		property string msg: ""
 
+		property string gxsId: model.gxs_id
 		property bool isEmpty: model.gxs_id == ""
 		property string state_string: model.state_string
 		property color statuscolor: state_string === "online"   ? "#4caf50" :   // green
@@ -41,11 +42,16 @@ Component {
 									state_string === "away"		? "#FFEB3B" :   // yellow
 																  "#9E9E9E"		// grey
 
-		property string avatar: model.avatar == ""
-								? "avatar.png"
-								: "data:image/png;base64," + model.avatar
+		property string avatar: (gxs_avatars.getAvatar(model.gxs_id) == "none"
+								 || gxs_avatars.getAvatar(model.gxs_id) == "")
+								? "none"
+								: gxs_avatars.getAvatar(model.gxs_id)
 
 		onAvatarChanged: canvas.loadImage(avatar)
+		onGxsIdChanged: {
+			canvas.clear_canvas()
+			avatar = gxs_avatars.getAvatar(model.gxs_id)
+		}
 
 		width: parent.width
 		height: dp(50)
@@ -62,7 +68,7 @@ Component {
 		]
 
 		Component.onCompleted: {
-			if(model.avatar == "")
+			if(gxs_avatars.getAvatar(model.gxs_id) == "")
 				getIdentityAvatar()
 		}
 
@@ -73,11 +79,14 @@ Component {
 
 			function callbackFn(par) {
 				var json = JSON.parse(par.response)
-				if(json.data.avatar.length > 0)
-					gxsModel.loadJSONAvatar(model.gxs_id, par.response)
-
-				if(json.returncode == "fail")
+				if(json.returncode == "fail") {
 					getIdentityAvatar()
+					return
+				}
+
+				gxs_avatars.storeAvatar(model.gxs_id, json.data.avatar)
+				if(gxs_avatars.getAvatar(model.gxs_id) != "none")
+					friendroot.avatar = gxs_avatars.getAvatar(model.gxs_id)
 			}
 
 			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
@@ -227,8 +236,8 @@ Component {
 				width: dp(32)
 				height: dp(32)
 
-				enabled: model.avatar != ""
-				visible: model.avatar != ""
+				enabled: friendroot.avatar != "none"
+				visible: friendroot.avatar != "none"
 
 				onPaint: {
 					var ctx = getContext("2d");
@@ -252,6 +261,14 @@ Component {
 					}
 				}
 				onImageLoaded:requestPaint()
+
+				function clear_canvas() {
+					if(canvas.available) {
+						var ctx = canvas.getContext("2d");
+						ctx.reset();
+						canvas.requestPaint();
+					}
+				}
 			}
 
 			Icon {
@@ -259,8 +276,8 @@ Component {
 
 				anchors.verticalCenter: parent.verticalCenter
 
-				enabled: model.avatar == ""
-				visible: model.avatar == ""
+				enabled: friendroot.avatar == "none" || friendroot.avatar == ""
+				visible: friendroot.avatar == "none" || friendroot.avatar == ""
 
 				x: dp(14)
 				width: dp(32)
