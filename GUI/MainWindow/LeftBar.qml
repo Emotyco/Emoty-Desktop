@@ -401,7 +401,8 @@ View {
 						name: "entered"; when: ink.containsMouse
 						PropertyChanges {
 							target: sideImg
-							iconSize: dp(28)
+							iconSize: dp(30)
+							imageSize: dp(36)
 						}
 						PropertyChanges {
 							target: numberNotification
@@ -413,7 +414,8 @@ View {
 						name: "nentered"; when: !ink.containsMouse
 						PropertyChanges {
 							target: sideImg
-							iconSize: dp(24)
+							iconSize: dp(26)
+							imageSize: dp(32)
 						}
 						PropertyChanges {
 							target: numberNotification
@@ -435,6 +437,12 @@ View {
 							}
 
 							NumberAnimation {
+								property: "imageSize"
+								easing.type: Easing.OutQuad
+								duration: MaterialAnimation.pageTransitionDuration/2
+							}
+
+							NumberAnimation {
 								target: numberNotification
 								properties: "anchors.rightMargin, anchors.topMargin"
 								easing.type: Easing.OutQuad
@@ -448,6 +456,12 @@ View {
 						ParallelAnimation {
 							NumberAnimation {
 								property: "iconSize"
+								easing.type: Easing.OutQuad
+								duration: MaterialAnimation.pageTransitionDuration/4
+							}
+
+							NumberAnimation {
+								property: "imageSize"
 								easing.type: Easing.OutQuad
 								duration: MaterialAnimation.pageTransitionDuration/4
 							}
@@ -556,7 +570,23 @@ View {
 					NumberAnimation {
 						property: "iconSize"
 						from: dp(10)
-						to: dp(24)
+						to: dp(26)
+						easing.type: Easing.OutBounce;
+						duration: MaterialAnimation.pageTransitionDuration*4
+					}
+
+					NumberAnimation {
+						property: "imageSize"
+						from: dp(22)
+						to: dp(32)
+						easing.type: Easing.OutBounce;
+						duration: MaterialAnimation.pageTransitionDuration*4
+					}
+
+					NumberAnimation {
+						property: "opacity"
+						from: 0
+						to: 1
 						easing.type: Easing.OutBounce;
 						duration: MaterialAnimation.pageTransitionDuration*4
 					}
@@ -575,8 +605,24 @@ View {
 				ParallelAnimation {
 					NumberAnimation {
 						property: "iconSize"
-						from: dp(24)
+						from: dp(26)
 						to: dp(10)
+						easing.type: Easing.InBounce;
+						duration: MaterialAnimation.pageTransitionDuration*2
+					}
+
+					NumberAnimation {
+						property: "imageSize"
+						from: dp(32)
+						to: dp(22)
+						easing.type: Easing.InBounce;
+						duration: MaterialAnimation.pageTransitionDuration*2
+					}
+
+					NumberAnimation {
+						property: "opacity"
+						from: 1
+						to: 0
 						easing.type: Easing.InBounce;
 						duration: MaterialAnimation.pageTransitionDuration*2
 					}

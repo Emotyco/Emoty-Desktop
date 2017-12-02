@@ -39,6 +39,8 @@ ListItem.BaseListItem {
 	property alias iconSource: icon.source
 	property alias iconColor: icon.color
 	property alias iconSize: icon.size
+	property alias imageSize: image.width
+
 	property string name
 
 	implicitHeight: 48 * Units.dp
@@ -94,7 +96,7 @@ ListItem.BaseListItem {
 				color: listItem.selected ? Theme.primaryColor
 						: darkBackground ? Theme.dark.iconColor : Theme.light.iconColor
 
-				size: 24 * Units.dp
+				size: 26 * Units.dp
 
 				Behavior on rotation {
 					NumberAnimation {
@@ -105,7 +107,11 @@ ListItem.BaseListItem {
 			}
 
 			Circle.CircleImage {
-				anchors.fill: parent
+				id: image
+				anchors.centerIn: parent
+
+				width: dp(32)
+				height: width
 
 				visible: !isIcon
 				source: !isIcon ? srcIcon : ""
