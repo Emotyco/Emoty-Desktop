@@ -595,37 +595,15 @@ Dialog {
 								nodeDetailsDialog.showAccount(model.name, model.pgp_id, model.location, model.peer_id)
 							}
 
-							action: Canvas {
-								id: canvas
+							action: Icon {
 								anchors.centerIn: parent
 
 								width: dp(32)
 								height: dp(32)
+								size: dp(32)
 
-								Component.onCompleted:loadImage("avatar.png")
-								onPaint: {
-									var ctx = getContext("2d");
-									if (canvas.isImageLoaded("avatar.png")) {
-										var profile = Qt.createQmlObject('
-                                            import QtQuick 2.5
-                                            Image {
-                                                source: "avatar.png"
-                                                visible:false
-                                            }', canvas);
-
-										var centreX = width/2;
-										var centreY = height/2;
-
-										ctx.save()
-										ctx.beginPath();
-										ctx.moveTo(centreX, centreY);
-										ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
-										ctx.clip();
-										ctx.drawImage(profile, 0, 0, canvas.width, canvas.height)
-										ctx.restore()
-									}
-								}
-								onImageLoaded:requestPaint()
+								name: "awesome/user"
+								color: Theme.light.iconColor
 							}
 
 							MouseArea {
