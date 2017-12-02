@@ -25,12 +25,26 @@ import Material 0.3
 
 Component {
 	Item {
-		property string avatar: "avatar.png"
+		property string avatar: (gxs_avatars.getAvatar(model.author_id) == "none"
+								 || gxs_avatars.getAvatar(model.author_id) == "")
+								? "none"
+								: gxs_avatars.getAvatar(model.author_id)
+
+		onAvatarChanged: {
+			image.loadImage(avatar)
+		}
+
+		property bool previous_author_same: model.author_id == author_id_previous
 
 		width: parent.width
-		height: model.incoming ? view.height + dp(15) + label.height : view.height + dp(15)
+		height: model.incoming ?
+					(previous_author_same ? view.height + dp(5) : view.height + dp(20) + label.height)
+				  : (previous_author_same ? view.height + dp(5) : view.height + dp(20))
 
-		Component.onCompleted: getIdentityAvatar()
+		Component.onCompleted: {
+			if(gxs_avatars.getAvatar(model.author_id) == "" && model.incoming == true)
+				getIdentityAvatar()
+		}
 
 		function getIdentityAvatar() {
 			var jsonData = {
@@ -39,11 +53,14 @@ Component {
 
 			function callbackFn(par) {
 				var json = JSON.parse(par.response)
-				if(json.data.avatar.length > 0)
-					avatar = "data:image/png;base64," + json.data.avatar
-
-				if(json.returncode == "fail")
+				if(json.returncode == "fail") {
 					getIdentityAvatar()
+					return
+				}
+
+				gxs_avatars.storeAvatar(model.author_id, json.data.avatar)
+				if(gxs_avatars.getAvatar(model.author_id) != "none")
+					avatar = gxs_avatars.getAvatar(model.author_id)
 			}
 
 			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
@@ -57,11 +74,11 @@ Component {
 				bottom: view.bottom
 			}
 
-			width: dp(32)
-			height: dp(32)
+			width: dp(36)
+			height: dp(36)
 
-			visible: model.incoming
-			enabled: model.incoming
+			visible: model.incoming && !previous_author_same && avatar != "none"
+			enabled: model.incoming && !previous_author_same && avatar != "none"
 
 			Component.onCompleted:loadImage(avatar)
 			onPaint: {
@@ -90,16 +107,36 @@ Component {
 			onImageLoaded:requestPaint()
 		}
 
+		Icon {
+			id: icon
+
+			anchors {
+				left: parent.left
+				bottom: view.bottom
+			}
+
+			width: dp(36)
+			height: dp(36)
+
+			name: "awesome/user_o"
+			visible: model.incoming && !previous_author_same && avatar == "none"
+			color: Theme.light.iconColor
+
+			size: dp(30)
+		}
+
 		Label {
 			id: label
 			anchors {
-				top: parent.top
 				left: image.right
-				leftMargin: parent.width*0.03 + dp(10)
+				leftMargin: dp(24)
+				topMargin: dp(5)
+				bottom: view.top
+				bottomMargin: dp(3)
 			}
 
-			visible: model.incoming
-			enabled: model.incoming
+			visible: model.incoming && !previous_author_same
+			enabled: model.incoming && !previous_author_same
 
 			style: "caption"
 			text: model.author_name
@@ -111,12 +148,11 @@ Component {
 			id: view
 
 			anchors {
-				top: model.incoming ? label.bottom : undefined
 				right: model.incoming === false ? parent.right : undefined
 				left: model.incoming === false ?  undefined : image.right
 				rightMargin: parent.width*0.03
-				leftMargin: parent.width*0.03
-				topMargin: dp(3)
+				leftMargin: dp(17)
+				bottom: parent.bottom
 			}
 
 			height: textMsg.implicitHeight + dp(12)
@@ -135,10 +171,12 @@ Component {
 					top: parent.top
 					topMargin: dp(6)
 					left: parent.left
+					leftMargin: dp(10)
 					right: parent.right
+					rightMargin: dp(10)
 				}
 
-				text: model.msg
+				text: model.msg_content
 				textFormat: Text.RichText
 				wrapMode: Text.WordWrap
 
@@ -148,7 +186,7 @@ Component {
 				selectByMouse: true
 				selectionColor: Theme.accentColor
 
-				horizontalAlignment: TextEdit.AlignHCenter
+				horizontalAlignment: TextEdit.AlignLeft//AlignHCenter
 
 				font {
 					family: "Roboto"

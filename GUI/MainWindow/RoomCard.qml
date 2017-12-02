@@ -27,6 +27,7 @@ import Material.ListItems 0.1 as ListItem
 
 import RoomParticipantsSortModel 0.2
 import RoomInvitationSortModel 0.2
+import MessagesModel 0.2
 
 Card {
 	property var chatId
@@ -65,15 +66,10 @@ Card {
 			if(firstTime_msg)
 				firstTime_msg = false
 
+			messagesModel.loadJSONMessages(par.response)
+
 			stateToken_msg = JSON.parse(par.response).statetoken
 			mainGUIObject.registerToken(stateToken_msg, getLobbyMessages)
-
-			messagesWorker.sendMessage({
-				'action' : 'refreshMessages',
-				'response' : par.response,
-				'query' : '$.data[*]',
-				'model' : messagesModel
-			})
 		}
 
 		rsApi.request("/chat/messages/"+chatId, "", callbackFn)
@@ -128,13 +124,7 @@ Card {
 		id: roomInvitationSortModel
 	}
 
-	WorkerScript {
-		id: messagesWorker
-		source: "qrc:/MessagesUpdater.js"
-		onMessage: contentm.positionViewAtEnd()
-	}
-
-	ListModel {
+	MessagesModel {
 		id: messagesModel
 	}
 
