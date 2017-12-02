@@ -929,7 +929,8 @@ Rectangle {
 											  {"headerName": friendname,
 												"gxsId": gxsid});
 
-			chat.cardIndex = cardsModel.storeCard(chat, friendname, true, "awesome/user_o", chat.indicatorNumber)
+			var avatar = gxs_avatars.getAvatar(gxsid)
+			chat.cardIndex = cardsModel.storeCard(chat, friendname, avatar == "none", avatar == "none" ? "awesome/user_o" : avatar, chat.indicatorNumber)
 			raiseCard(chat.cardIndex)
 			cardCreated()
 
@@ -946,7 +947,7 @@ Rectangle {
 											   "chatId": chat_id,
 											   "rsPeerId": rspeerid});
 
-			chat.cardIndex = cardsModel.storeCard(chat, friendname + "@" + location, true, "awesome/user_o", chat.indicatorNumber)
+			chat.cardIndex = cardsModel.storeCard(chat, friendname + "@" + location, true, "awesome/user", chat.indicatorNumber)
 			raiseCard(chat.cardIndex)
 			cardCreated()
 
