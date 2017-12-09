@@ -178,6 +178,41 @@ Card {
 						width: 1
 						height: dp(5)
 					}
+
+					footer: Item{
+						width: 1
+						height: dp(10)
+					}
+
+					property bool complete: false
+					Component.onCompleted: complete = true
+
+					add: Transition {
+						ParallelAnimation {
+							NumberAnimation {
+								property: "view.anchors.bottomMargin"
+								from: -dp(35)
+								to: dp(0)
+								easing.type: Easing.OutBounce
+								duration: Material.MaterialAnimation.pageTransitionDuration
+							}
+
+							NumberAnimation {
+								property: "opacity"
+								from: 0
+								to: 1
+								easing.type: Easing.OutBounce
+								duration: Material.MaterialAnimation.pageTransitionDuration
+							}
+
+							ScriptAction {
+								script: {
+									if(contentm.complete)
+										contentm.positionViewAtEnd()
+								}
+							}
+						}
+					}
 				}
 
 				Material.Scrollbar {
@@ -199,9 +234,13 @@ Card {
 													   : (msgBox.contentHeight+dp(22))) < dp(200) ? (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(30)) : (msgBox.contentHeight+dp(22))) : dp(200)
 				z: 1
 
-				Behavior on height {
-					ScriptAction{script: contentm.positionViewAtEnd()}
-				}
+				/*Behavior on height {
+					ScriptAction {
+						script: {
+							contentm.positionViewAtEnd()
+						}
+					}
+				}*/
 
 				Material.View {
 					id: footerView
@@ -257,19 +296,20 @@ Card {
 
 						Keys.onPressed:{
 							if(event.key == Qt.Key_Return) {
-								var jsonData = {
-									chat_id: chatId,
-									msg: msgBox.text
+								event.accepted = true
+								if(msgBox.text.length > 0) {
+									var jsonData = {
+										chat_id: chatId,
+										msg: msgBox.text
+									}
+
+									rsApi.request("chat/send_message/", JSON.stringify(jsonData), function(){})
+
+									getLobbyMessages()
+									msgBox.text = "";
+
+									soundNotifier.playChatMessageSended()
 								}
-
-								rsApi.request("chat/send_message/", JSON.stringify(jsonData), function(){})
-
-								getLobbyMessages()
-								contentm.positionViewAtEnd()
-								msgBox.text = "";
-								event.accepted = true;
-
-								soundNotifier.playChatMessageSended()
 							}
 						}
 					}

@@ -35,6 +35,7 @@ Component {
 		}
 
 		property bool previous_author_same: model.author_id == author_id_previous
+		property alias view: view
 
 		width: parent.width
 		height: model.incoming ?

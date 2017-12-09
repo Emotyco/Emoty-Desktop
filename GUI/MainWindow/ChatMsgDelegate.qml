@@ -25,8 +25,11 @@ import Material 0.3
 
 Component {
 	Item {
+		property bool previous_author_same: model.author_id == model.author_id_previous
+		property alias view: view
+
 		width: parent.width
-		height: view.height + dp(15)
+		height: previous_author_same ? view.height + dp(5) : view.height + dp(15)
 
 		View {
 			id: view
@@ -36,9 +39,10 @@ Component {
 				left: model.incoming === false ?  undefined : parent.left
 				rightMargin: parent.width*0.03
 				leftMargin: parent.width*0.03
+				bottom: parent.bottom
 			}
 
-			height: textMsg.implicitHeight + dp(14)
+			height: textMsg.implicitHeight + dp(12)
 			width: (textMsg.implicitWidth + dp(20)) > (parent.width*0.8)
 				    ? (parent.width*0.8)
 					: textMsg.implicitWidth + dp(20)
@@ -46,6 +50,14 @@ Component {
 			backgroundColor: model.incoming === false ? Theme.primaryColor : "white"
 			elevation: 1
 			radius: 10
+
+			Rectangle {
+				anchors.fill: parent
+				radius: 10
+
+				visible: !model.was_send
+				opacity: 0.3
+			}
 
 			TextEdit {
 				id: textMsg
@@ -69,11 +81,29 @@ Component {
 				selectByMouse: true
 				selectionColor: Theme.accentColor
 
+				horizontalAlignment: TextEdit.AlignLeft
+
 				font {
 					family: "Roboto"
 					pixelSize: dp(13)
 				}
 			}
+		}
+
+		ProgressCircle {
+			anchors {
+				right: view.left
+				rightMargin: dp(7)
+				verticalCenter: view.verticalCenter
+			}
+
+			width: dp(15)
+			height: dp(15)
+			dashThickness: dp(2)
+
+			color: Theme.light.iconColor
+
+			visible: !model.was_send
 		}
 	}
 }

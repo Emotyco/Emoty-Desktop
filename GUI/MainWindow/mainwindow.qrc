@@ -34,7 +34,6 @@
         <file>IdentityDetailsDialog.qml</file>
         <file>ConfirmationDialog.qml</file>
         <file>SizeConfirmationDialog.qml</file>
-        <file>MessagesUpdater.js</file>
         <file>PgpListUpdater.js</file>
         <file>IdentitiesSelectionDialog.qml</file>
         <file>FileSharingCard.qml</file>
