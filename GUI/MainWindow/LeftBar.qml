@@ -636,6 +636,14 @@ View {
 					}
 				}
 			}
+
+			displaced: Transition {
+				NumberAnimation {
+					property: "y"
+					easing.type: Easing.InBounce
+					duration: MaterialAnimation.pageTransitionDuration*2
+				}
+			}
 		}
 
 		Column {
