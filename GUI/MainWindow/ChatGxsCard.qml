@@ -89,8 +89,7 @@ Card {
 
 		function callbackFn(par) {
 			stateToken = JSON.parse(par.response).statetoken
-			mainGUIObject.registerToken(stateToken, getChatMessages)
-
+			mainGUIObject.registerTokenWithIndex(stateToken, getChatMessages, cardIndex)
 			messagesModel.loadJSONMessages(par.response)
 		}
 
@@ -113,7 +112,7 @@ Card {
 				indicatorNumber = 0
 
 			stateToken_unreadMsgs = jsonResp.statetoken
-			mainGUIObject.registerToken(stateToken_unreadMsgs, getUnreadMsgs)
+			mainGUIObject.registerTokenWithIndex(stateToken_unreadMsgs, getUnreadMsgs, cardIndex)
 		}
 
 		rsApi.request("/chat/unread_msgs/", "", callbackFn)
@@ -121,8 +120,8 @@ Card {
 
 	Component.onCompleted: drag.initiateChat()
 	Component.onDestruction: {
-		mainGUIObject.unregisterToken(stateToken)
-		mainGUIObject.unregisterToken(stateToken_unreadMsgs)
+		mainGUIObject.unregisterTokenWithIndex(stateToken, cardIndex)
+		mainGUIObject.unregisterTokenWithIndex(stateToken_unreadMsgs, cardIndex)
 		closeChat()
 	}
 

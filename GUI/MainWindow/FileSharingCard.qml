@@ -43,15 +43,15 @@ Card {
 	indicatorNumber: transferSortModel.sourceModel.dataCount
 
 	Component.onDestruction: {
-		mainGUIObject.unregisterToken(downloadStateToken)
-		mainGUIObject.unregisterToken(uploadStateToken)
-		mainGUIObject.unregisterToken(searchStateToken)
+		mainGUIObject.unregisterTokenWithIndex(downloadStateToken, cardIndex)
+		mainGUIObject.unregisterTokenWithIndex(uploadStateToken, cardIndex)
+		mainGUIObject.unregisterTokenWithIndex(searchStateToken, cardIndex)
 	}
 
 	function getDownloads() {
 		function callbackFn(par) {
 			downloadStateToken = JSON.parse(par.response).statetoken
-			mainGUIObject.registerToken(downloadStateToken, getDownloads)
+			mainGUIObject.registerTokenWithIndex(downloadStateToken, getDownloads, cardIndex)
 
 			transferSortModel.sourceModel.loadJSONDownloadList(par.response)
 		}
@@ -61,7 +61,7 @@ Card {
 	function getUploads() {
 		function callbackFn(par) {
 			uploadStateToken = JSON.parse(par.response).statetoken
-			mainGUIObject.registerToken(uploadStateToken, getUploads)
+			mainGUIObject.registerTokenWithIndex(uploadStateToken, getUploads, cardIndex)
 
 			transferSortModel.sourceModel.loadJSONUploadList(par.response)
 		}
@@ -99,7 +99,7 @@ Card {
 
 		function callbackFn(par) {
 			searchStateToken = JSON.parse(par.response).statetoken
-			mainGUIObject.registerToken(searchStateToken, getSearchResult)
+			mainGUIObject.registerTokenWithIndex(searchStateToken, getSearchResult, cardIndex)
 
 			resultModel.loadJSONSearchFiles(par.response)
 		}
@@ -860,7 +860,7 @@ Card {
 
 								color: Material.Theme.light.iconColor
 								verticalAlignment: Text.AlignVCenter
-								horizontalAlignment: Text.AlignRight
+								horizontalAlignment: Text.AlignLeft
 							}
 
 							Material.View {
@@ -1078,7 +1078,7 @@ Card {
 								color: Material.Theme.light.iconColor
 
 								verticalAlignment: Text.AlignVCenter
-								horizontalAlignment: Text.AlignRight
+								horizontalAlignment: Text.AlignLeft
 							}
 						}
 

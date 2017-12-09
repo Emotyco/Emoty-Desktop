@@ -832,22 +832,6 @@ Rectangle {
 			tokens[token] = [callback]
 	}
 
-	function tokenExpire(token)
-	{
-		if(Array.isArray(tokens[token]))
-		{
-			var arrLen = tokens[token].length
-			for(var i=0; i<arrLen; ++i)
-			{
-				var tokCallback = tokens[token][i]
-				if (typeof tokCallback == 'function')
-					tokCallback()
-			}
-		}
-
-		delete tokens[token]
-	}
-
 	function isTokenValid(token) {
 		return Array.isArray(tokens[token])
 	}
@@ -863,8 +847,42 @@ Rectangle {
 	//
 	//////
 
+	function tokenExpire(token) {
+		if(Array.isArray(tokens[token]))
+		{
+			tokens[token].forEach(function(tok) {
+				if (typeof tok == 'function')
+					tok()
+				else {
+					if(Array.isArray(tok)) {
+						tok.forEach(function(cardFunc) {
+							if (typeof cardFunc == 'function')
+								cardFunc()
+						});
+					}
+				}
+			});
+		}
+
+		delete tokens[token]
+	}
+
+	function registerTokenWithIndex(token, callback, cardIndex) {
+		if(!Array.isArray(tokens[token]))
+			tokens[token] = new Array(cardIndex)
+
+		if (Array.isArray(tokens[token][cardIndex]))
+			tokens[token][cardIndex].push(callback)
+		else
+			tokens[token][cardIndex] = [callback]
+	}
+
 	function unregisterToken(token) {
 		delete tokens[token]
+	}
+
+	function unregisterTokenWithIndex(token, cardIndex) {
+		delete tokens[token][cardIndex]
 	}
 
 	/*

@@ -35,16 +35,14 @@ Card {
 	// For handling tokens
 	property int stateToken_p: 0
 	property int stateToken_msg: 0
-	property int stateToken_gxs: 0
 	property int stateToken_gxsContacts: 0
 	property int stateToken_unreadCount: 0
 
 	Component.onDestruction: {
-		mainGUIObject.unregisterToken(stateToken_p)
-		mainGUIObject.unregisterToken(stateToken_msg)
-		mainGUIObject.unregisterToken(stateToken_gxs)
-		mainGUIObject.unregisterToken(stateToken_gxsContacts)
-		mainGUIObject.unregisterToken(stateToken_unreadCount)
+		mainGUIObject.unregisterTokenWithIndex(stateToken_p, cardIndex)
+		mainGUIObject.unregisterTokenWithIndex(stateToken_msg, cardIndex)
+		mainGUIObject.unregisterTokenWithIndex(stateToken_gxsContacts, cardIndex)
+		mainGUIObject.unregisterTokenWithIndex(stateToken_unreadCount, cardIndex)
 	}
 
 	property bool firstTime_msg: true
@@ -52,7 +50,7 @@ Card {
 	function getLobbyParticipants() {
 		function callbackFn(par) {
 			stateToken_p = JSON.parse(par.response).statetoken
-			mainGUIObject.registerToken(stateToken_p, getLobbyParticipants)
+			mainGUIObject.registerTokenWithIndex(stateToken_p, getLobbyParticipants, cardIndex)
 
 			roomParticipantsSortModel.sourceModel.loadJSONParticipants(par.response)
 			roomInvitationSortModel.sourceModel.loadJSONParticipants(par.response)
@@ -69,7 +67,7 @@ Card {
 			messagesModel.loadJSONMessages(par.response)
 
 			stateToken_msg = JSON.parse(par.response).statetoken
-			mainGUIObject.registerToken(stateToken_msg, getLobbyMessages)
+			mainGUIObject.registerTokenWithIndex(stateToken_msg, getLobbyMessages, cardIndex)
 		}
 
 		rsApi.request("/chat/messages/"+chatId, "", callbackFn)
@@ -78,7 +76,7 @@ Card {
 	function getContacts() {
 		function callbackFn(par) {
 			stateToken_gxsContacts = JSON.parse(par.response).statetoken
-			mainGUIObject.registerToken(stateToken_gxsContacts, getContacts)
+			mainGUIObject.registerTokenWithIndex(stateToken_gxsContacts, getContacts, cardIndex)
 
 			roomParticipantsSortModel.sourceModel.loadJSONIdentities(par.response)
 			roomInvitationSortModel.sourceModel.loadJSONInvitations(par.response)
@@ -103,7 +101,7 @@ Card {
 				indicatorNumber = 0
 
 			stateToken_unreadCount = jsonResp.statetoken
-			mainGUIObject.registerToken(stateToken_unreadCount, getUnreadCount)
+			mainGUIObject.registerTokenWithIndex(stateToken_unreadCount, getUnreadCount, cardIndex)
 		}
 
 		rsApi.request("/chat/unread_msgs/", "", callbackFn)

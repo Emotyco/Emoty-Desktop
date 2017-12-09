@@ -28,7 +28,7 @@ import Material.ListItems 0.1 as ListItem
 DragTile {
 	id: dragTile
 
-	default property alias data: content.data
+	default property alias contentData: content.data
 	property string headerName
 	property int cardIndex
 	property int indicatorNumber: 0
