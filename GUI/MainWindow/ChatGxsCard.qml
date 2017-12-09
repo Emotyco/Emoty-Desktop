@@ -25,6 +25,8 @@ import QtQuick 2.5
 import Material 0.3 as Material
 import Material.ListItems 0.1 as ListItem
 
+import MessagesModel 0.2
+
 Card {
 	id: drag
 
@@ -68,7 +70,6 @@ Card {
 				if(status == 2)
 					drag.getChatMessages()
 			}
-
 		}
 
 		rsApi.request("/chat/distant_chat_status/", JSON.stringify(jsonData), callbackFn)
@@ -90,12 +91,7 @@ Card {
 			stateToken = JSON.parse(par.response).statetoken
 			mainGUIObject.registerToken(stateToken, getChatMessages)
 
-			msgWorker.sendMessage({
-				'action' : 'refreshMessages',
-				'response' : par.response,
-				'query' : '$.data[*]',
-				'model' : msgModel
-			})
+			messagesModel.loadJSONMessages(par.response)
 		}
 
 		rsApi.request("/chat/messages/"+drag.chatId, "", callbackFn)
@@ -130,15 +126,8 @@ Card {
 		closeChat()
 	}
 
-
-	WorkerScript {
-		id: msgWorker
-		source: "qrc:/MessagesUpdater.js"
-		onMessage: contentm.positionViewAtEnd()
-	}
-
-	ListModel {
-		id: msgModel
+	MessagesModel {
+		id: messagesModel
 	}
 
 	Item {
@@ -168,7 +157,7 @@ Card {
 				snapMode: ListView.NoSnap
 				flickableDirection: Flickable.AutoFlickDirection
 
-				model: msgModel
+				model: messagesModel
 				delegate: ChatMsgDelegate{}
 
 				header: Item {

@@ -59,7 +59,7 @@ Component {
 					rightMargin: dp(10)
 				}
 
-				text: model.msg
+				text: model.msg_content
 				textFormat: Text.RichText
 				wrapMode: Text.WordWrap
 
