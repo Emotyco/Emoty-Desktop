@@ -42,10 +42,10 @@ Component {
 					(model.last_from_author ? view.height + dp(8) : view.height + dp(5))
 				  : (model.incoming ?
 						 model.last_from_author ?
-							 view.height + dp(23) + label.height + timeText.height
+							 view.height + dp(23) + label.height
 						   : view.height + dp(20) + label.height
 					   : model.last_from_author ?
-						     view.height + dp(23) + timeText.height
+						     view.height + dp(23)
 					       : view.height + dp(20)
 					 )
 

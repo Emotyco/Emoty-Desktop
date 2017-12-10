@@ -16,6 +16,7 @@ Rectangle {
 	property alias iconSize: icon.size
 	property alias iconColor: icon.color
 
+	property alias image: image
 	property alias imageSource: image.source
 
 	property bool containMouse
@@ -91,8 +92,8 @@ Rectangle {
 
 			visible: !isIcon
 
-			onSourceChanged: loadImage(source)
-			Component.onCompleted: loadImage(source)
+			//onSourceChanged: loadImage(source)
+			//Component.onCompleted: loadImage(source)
 			onPaint: {
 				var ctx = getContext("2d");
 				if (image.isImageLoaded(source)) {

@@ -26,10 +26,12 @@ import Material 0.3
 Component {
 	Item {
 		property bool previous_author_same: model.author_id == model.author_id_previous
-		property alias view: view
+		property alias timeText: timeText
 
 		width: parent.width
-		height: previous_author_same ? view.height + dp(5) : view.height + dp(15)
+		height: previous_author_same ?
+					model.last_from_author ? view.height + dp(8) : view.height + dp(5)
+		          : model.last_from_author ? view.height + dp(18) : view.height + dp(15)
 
 		View {
 			id: view
@@ -39,7 +41,8 @@ Component {
 				left: model.incoming === false ?  undefined : parent.left
 				rightMargin: parent.width*0.03
 				leftMargin: parent.width*0.03
-				bottom: parent.bottom
+				bottom: timeText.top
+				bottomMargin: model.last_from_author ? dp(3) : 0
 			}
 
 			height: textMsg.implicitHeight + dp(12)
@@ -88,6 +91,34 @@ Component {
 					pixelSize: dp(13)
 				}
 			}
+		}
+
+		Label {
+			id: timeText
+			anchors {
+				right: model.incoming === false ? view.right : undefined
+				left: model.incoming === false ?  undefined : view.left
+				bottom: parent.bottom
+				leftMargin: dp(7)
+				rightMargin: dp(7)
+			}
+
+			visible: model.last_from_author
+			enabled: model.last_from_author
+
+			style: "caption"
+			font.pixelSize: dp(10)
+			text: {
+				var now = Date.now()
+				var time = new Date(1000 * model.send_time)
+
+				if(((now - time) / (24 * 3600 * 1000)) >= 1)
+					return time.getDate()+"."+time.getMonth()+"."+time.getFullYear()+" "+time.toLocaleTimeString("en-GB")
+
+				return time.toLocaleTimeString("en-GB")
+			}
+
+			color: Theme.light.subTextColor
 		}
 
 		ProgressCircle {
