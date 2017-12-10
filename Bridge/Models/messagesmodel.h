@@ -40,7 +40,7 @@ public:
 		SendTimeRole,
 		WasSendRole,
 		AuthorIdPreviousRole,
-		AuthorAvatarRole
+		LastFromAuthor
 	};
 
 	MessagesModel(QObject *parent = 0)
@@ -52,7 +52,6 @@ public:
 
 public slots:
 	void loadJSONMessages(QString json);
-	void storeAuthorAvatar(QString json, QString author_id);
 
 protected:
 	virtual QHash<int, QByteArray> roleNames() const;
@@ -63,12 +62,12 @@ private:
 		           QString msg_id, bool incoming,
 		           QString msg_content, QString recv_time,
 		           QString send_time, bool was_send,
-		           QString author_id_previous, QString author_avatar)
+		           QString author_id_previous, bool last_from_author)
 		    : author_id(author_id), author_name(author_name),
 		      msg_id(msg_id), incoming(incoming),
 		      msg_content(msg_content), recv_time(recv_time),
 		      send_time(send_time), was_send(was_send),
-		      author_id_previous(author_id_previous), author_avatar(author_avatar)
+		      author_id_previous(author_id_previous), last_from_author(last_from_author)
 		{}
 
 		QString author_id;
@@ -80,7 +79,7 @@ private:
 		QString send_time;
 		bool was_send;
 		QString author_id_previous;
-		QString author_avatar;
+		bool last_from_author;
 	};
 
 	std::list<Message> messageData;

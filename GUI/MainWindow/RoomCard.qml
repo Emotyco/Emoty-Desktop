@@ -188,7 +188,7 @@ Card {
 					add: Transition {
 						ParallelAnimation {
 							NumberAnimation {
-								property: "view.anchors.bottomMargin"
+								property: "timeText.anchors.bottomMargin"
 								from: -dp(35)
 								to: dp(0)
 								easing.type: Easing.OutBounce

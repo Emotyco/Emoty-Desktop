@@ -44,6 +44,10 @@ void MessagesModel::loadJSONMessages(QString json)
 			{
 				QJsonObject jsonMessage = (*it).toObject();
 
+				if(!messageData.empty()
+				        && messageData.back().author_id == jsonMessage.value("author_id").toString())
+					messageData.back().last_from_author = false;
+
 				messageData.emplace_back(Message(
 				                            jsonMessage.value("author_id").toString(),
 				                            jsonMessage.value("author_name").toString(),
@@ -54,7 +58,7 @@ void MessagesModel::loadJSONMessages(QString json)
 				                            jsonMessage.value("send_time").toString(),
 				                            jsonMessage.value("was_send").toBool(),
 				                            author_id_previous,
-				                            ""
+				                            true
 				                        ));
 				author_id_previous = jsonMessage.value("author_id").toString();
 			}
@@ -94,13 +98,11 @@ void MessagesModel::loadJSONMessages(QString json)
 
 				if(!found)
 				{
-					QString avatar = "";
-					for(std::list<Message>::iterator vit = messageData.begin(); vit != messageData.end(); ++vit)
+					if(!messageData.empty()
+					        && messageData.back().author_id == jsonMessage.value("author_id").toString())
 					{
-						if((*vit).author_id == jsonMessage.value("author_id").toString()) {
-							avatar = (*vit).author_avatar;
-							break;
-						}
+						messageData.back().last_from_author = false;
+						emit dataChanged(index(messageData.size()-1),index(messageData.size()-1));
 					}
 
 					QModelIndex qModelIndex;
@@ -115,37 +117,12 @@ void MessagesModel::loadJSONMessages(QString json)
 					                            jsonMessage.value("send_time").toString(),
 					                            jsonMessage.value("was_send").toBool(),
 					                            messageData.rbegin()->author_id,
-					                            avatar
+					                            true
 					                          ));
 					endInsertRows();
 				}
 			}
 		}
-	}
-}
-
-void MessagesModel::storeAuthorAvatar(QString json, QString author_id)
-{
-	QJsonObject qJsonObject = QJsonDocument::fromJson(json.toUtf8()).object();
-	QJsonValue jsData = qJsonObject.value("data");
-	QString avatar = jsData.toObject().value("avatar").toString();
-
-	if(author_id == "")
-		return;
-
-	int i = 0;
-	for(std::list<Message>::iterator vit = messageData.begin(); vit != messageData.end(); ++vit)
-	{
-		if((*vit).author_id == author_id) {
-			if(avatar == "")
-				(*vit).author_avatar = "none";
-			else
-				(*vit).author_avatar = avatar;
-
-			emit dataChanged(index(i),index(i));
-			//break;
-		}
-		i++;
 	}
 }
 
@@ -188,8 +165,8 @@ QVariant MessagesModel::data(const QModelIndex & index, int role) const
 		return (*vit).was_send;
 	else if(role == AuthorIdPreviousRole)
 		return (*vit).author_id_previous;
-	else if(role == AuthorAvatarRole)
-		return (*vit).author_avatar;
+	else if(role == LastFromAuthor)
+		return (*vit).last_from_author;
 
 	return QVariant();
 }
@@ -207,7 +184,7 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	roles[SendTimeRole] = "send_time";
 	roles[WasSendRole] = "was_send";
 	roles[AuthorIdPreviousRole] = "author_id_previous";
-	roles[AuthorAvatarRole] = "author_avatar";
+	roles[LastFromAuthor] = "last_from_author";
 
 	return roles;
 }

@@ -35,12 +35,19 @@ Component {
 		}
 
 		property bool previous_author_same: model.author_id == author_id_previous
-		property alias view: view
+		property alias timeText: timeText
 
 		width: parent.width
-		height: model.incoming ?
-					(previous_author_same ? view.height + dp(5) : view.height + dp(20) + label.height)
-				  : (previous_author_same ? view.height + dp(5) : view.height + dp(20))
+		height: previous_author_same ?
+					(model.last_from_author ? view.height + dp(8) : view.height + dp(5))
+				  : (model.incoming ?
+						 model.last_from_author ?
+							 view.height + dp(23) + label.height + timeText.height
+						   : view.height + dp(20) + label.height
+					   : model.last_from_author ?
+						     view.height + dp(23) + timeText.height
+					       : view.height + dp(20)
+					 )
 
 		Component.onCompleted: {
 			if(gxs_avatars.getAvatar(model.author_id) == "" && model.incoming == true)
@@ -72,7 +79,8 @@ Component {
 
 			anchors {
 				left: parent.left
-				bottom: view.bottom
+				top: label.top
+				topMargin: dp(15)
 			}
 
 			width: dp(36)
@@ -113,7 +121,8 @@ Component {
 
 			anchors {
 				left: parent.left
-				bottom: view.bottom
+				top: label.top
+				topMargin: dp(15)
 			}
 
 			width: dp(36)
@@ -153,7 +162,8 @@ Component {
 				left: model.incoming === false ?  undefined : image.right
 				rightMargin: parent.width*0.03
 				leftMargin: dp(17)
-				bottom: parent.bottom
+				bottom: timeText.top
+				bottomMargin: model.last_from_author ? dp(3) : 0
 			}
 
 			height: textMsg.implicitHeight + dp(12)
@@ -194,6 +204,34 @@ Component {
 					pixelSize: dp(13)
 				}
 			}
+		}
+
+		Label {
+			id: timeText
+			anchors {
+				right: model.incoming === false ? view.right : undefined
+				left: model.incoming === false ?  undefined : view.left
+				bottom: parent.bottom
+				leftMargin: dp(7)
+				rightMargin: dp(7)
+			}
+
+			visible: model.last_from_author
+			enabled: model.last_from_author
+
+			style: "caption"
+			font.pixelSize: dp(10)
+			text: {
+				var now = Date.now()
+				var time = new Date(1000 * model.send_time)
+
+				if(((now - time) / (24 * 3600 * 1000)) >= 1)
+					return time.getDate()+"."+time.getMonth()+"."+time.getFullYear()+" "+time.toLocaleTimeString("en-GB")
+
+				return time.toLocaleTimeString("en-GB")
+			}
+
+			color: Theme.light.subTextColor
 		}
 	}
 }
