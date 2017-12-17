@@ -39,19 +39,61 @@ Component {
 
 		width: parent.width
 		height: previous_author_same ?
-					(model.last_from_author ? view.height + dp(8) : view.height + dp(5))
+					(model.last_from_author ? msgView.height + dp(8) : msgView.height + dp(5))
 				  : (model.incoming ?
 						 model.last_from_author ?
-							 view.height + dp(23) + label.height
-						   : view.height + dp(20) + label.height
+							 msgView.height + dp(23) + label.height
+						   : msgView.height + dp(20) + label.height
 					   : model.last_from_author ?
-						     view.height + dp(23)
-					       : view.height + dp(20)
+						     msgView.height + dp(23)
+					       : msgView.height + dp(20)
 					 )
+
+		property int yOff: Math.round(y - contentm.contentY)
+		property bool isFullyVisible: (yOff > contentm.y
+									   && yOff + height < contentm.y + contentm.height)
+
+		Behavior on isFullyVisible {
+			ScriptAction {
+				script: {
+					if(model.message_index+1 == messagesModel.rowCount()) {
+						contentm.lastVisible = Qt.binding(function() {
+							return yOff + height < contentm.y + contentm.height
+						})
+					}
+				}
+			}
+		}
 
 		Component.onCompleted: {
 			if(gxs_avatars.getAvatar(model.author_id) == "" && model.incoming == true)
 				getIdentityAvatar()
+		}
+
+		SequentialAnimation {
+			running: !model.read && isFullyVisible && view.active && isRaised
+
+			PauseAnimation {
+				duration: 1000
+			}
+			NumberAnimation {
+				target: readNot
+				property: "opacity"
+				from: 1
+				to: 0
+				easing.type: Easing.InOutQuad
+				duration: MaterialAnimation.pageTransitionDuration*4
+			}
+			ScriptAction {
+				script: {
+					var jsonData = {
+						chat_id: roomCard.chatId,
+						msg_id: model.msg_id
+					}
+
+					rsApi.request("/chat/mark_message_as_read/", JSON.stringify(jsonData), function(){})
+				}
+			}
 		}
 
 		function getIdentityAvatar() {
@@ -141,7 +183,7 @@ Component {
 				left: image.right
 				leftMargin: dp(24)
 				topMargin: dp(5)
-				bottom: view.top
+				bottom: msgView.top
 				bottomMargin: dp(3)
 			}
 
@@ -155,7 +197,7 @@ Component {
 		}
 
 		View {
-			id: view
+			id: msgView
 
 			anchors {
 				right: model.incoming === false ? parent.right : undefined
@@ -174,6 +216,7 @@ Component {
 			backgroundColor: model.incoming === false ? Theme.primaryColor : "white"
 			elevation: 1
 			radius: 10
+			clipContent: false
 
 			TextEdit {
 				id: textMsg
@@ -204,13 +247,32 @@ Component {
 					pixelSize: dp(13)
 				}
 			}
+
+			View {
+				id: readNot
+				anchors {
+					top: parent.top
+					right: parent.right
+					topMargin: -dp(3)
+					rightMargin: -dp(3)
+				}
+
+				width: dp(10)
+				height: dp(10)
+				radius: width/2
+
+				elevation: 2
+				backgroundColor: Theme.accentColor
+
+				visible: !model.read && model.incoming
+			}
 		}
 
 		Label {
 			id: timeText
 			anchors {
-				right: model.incoming === false ? view.right : undefined
-				left: model.incoming === false ?  undefined : view.left
+				right: model.incoming === false ? msgView.right : undefined
+				left: model.incoming === false ?  undefined : msgView.left
 				bottom: parent.bottom
 				leftMargin: dp(7)
 				rightMargin: dp(7)

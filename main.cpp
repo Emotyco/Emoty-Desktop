@@ -61,6 +61,7 @@
 #include "Bridge/Models/searchfilemodel.h"
 #include "Bridge/Models/searchfilesortmodel.h"
 #include "Bridge/Models/cardsmodel.h"
+#include "Bridge/Models/messagesmodel.h"
 
 Q_COREAPP_STARTUP_FUNCTION(registerRoomParticipantsSortModelTypes)
 Q_COREAPP_STARTUP_FUNCTION(registerRoomInvitationSortModelTypes)
@@ -69,6 +70,7 @@ Q_COREAPP_STARTUP_FUNCTION(registerSharedFilesModelTypes)
 Q_COREAPP_STARTUP_FUNCTION(registerSearchFileModelTypes)
 Q_COREAPP_STARTUP_FUNCTION(registerSearchFileSortModelTypes)
 Q_COREAPP_STARTUP_FUNCTION(registerCardsModelTypes)
+Q_COREAPP_STARTUP_FUNCTION(registerMessagesModelTypes)
 
 int main(int argc, char *argv[])
 {

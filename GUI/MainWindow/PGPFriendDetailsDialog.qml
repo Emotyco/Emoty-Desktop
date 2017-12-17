@@ -638,8 +638,6 @@ Dialog {
 											overflowMenu.close()
 
 											mainGUIObject.createChatPeerCard(model.name, model.location, model.peer_id, model.chat_id, "ChatPeerCard.qml")
-											rsApi.request("/chat/mark_chat_as_read/"+model.chat_id, "", function(){})
-
 											scrollingDialog.close()
 										}
 									}

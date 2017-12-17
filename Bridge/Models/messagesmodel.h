@@ -31,6 +31,7 @@ class MessagesModel : public QAbstractListModel
 	Q_OBJECT
 public:
 	enum MessageRoles {
+		MessageIndexRole,
 		AuthorIdRole,
 		AuthorNameRole,
 		MsgIdRole,
@@ -39,6 +40,7 @@ public:
 		RecvTimeRole,
 		SendTimeRole,
 		WasSendRole,
+		ReadRole,
 		AuthorIdPreviousRole,
 		LastFromAuthor
 	};
@@ -61,12 +63,12 @@ private:
 		Message(QString author_id, QString author_name,
 		           QString msg_id, bool incoming,
 		           QString msg_content, QString recv_time,
-		           QString send_time, bool was_send,
+		           QString send_time, bool was_send, bool read,
 		           QString author_id_previous, bool last_from_author)
 		    : author_id(author_id), author_name(author_name),
 		      msg_id(msg_id), incoming(incoming),
 		      msg_content(msg_content), recv_time(recv_time),
-		      send_time(send_time), was_send(was_send),
+		      send_time(send_time), was_send(was_send), read(read),
 		      author_id_previous(author_id_previous), last_from_author(last_from_author)
 		{}
 
@@ -78,6 +80,7 @@ private:
 		QString recv_time;
 		QString send_time;
 		bool was_send;
+		bool read;
 		QString author_id_previous;
 		bool last_from_author;
 	};

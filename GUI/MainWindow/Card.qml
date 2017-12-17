@@ -32,6 +32,7 @@ DragTile {
 	property string headerName
 	property int cardIndex
 	property int indicatorNumber: 0
+	property bool isRaised: true
 
 	onIndicatorNumberChanged: {
 		mainGUIObject.cardsModel.setIndicatorNumber(cardIndex, indicatorNumber)
@@ -58,7 +59,7 @@ DragTile {
 	opacity: 0
 
 	Component.onDestruction: {
-		cardsModel.removeCard(cardIndex)
+		mainGUIObject.removeCard(cardIndex)
 	}
 
 	onRefresh: {
@@ -108,10 +109,17 @@ DragTile {
 		}
 	}
 
+	Connections {
+		target: dragTile
+		onPressedTile: {
+			mainGUIObject.raiseCard(cardIndex)
+		}
+	}
+
 	View {
 		anchors.fill: parent
 
-		elevation: 2
+		elevation: isRaised ? 2 : 0
 		backgroundColor: Palette.colors["grey"]["50"]
 
 		radius: dp(10)

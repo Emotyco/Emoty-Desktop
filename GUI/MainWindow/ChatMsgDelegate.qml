@@ -28,13 +28,55 @@ Component {
 		property bool previous_author_same: model.author_id == model.author_id_previous
 		property alias timeText: timeText
 
+		property int yOff: Math.round(y - contentm.contentY)
+		property bool isFullyVisible: (yOff > contentm.y
+									   && yOff + height < contentm.y + contentm.height)
+
+		Behavior on isFullyVisible {
+			ScriptAction {
+				script: {
+					if(model.message_index+1 == messagesModel.rowCount()) {
+						contentm.lastVisible = Qt.binding(function() {
+							return yOff + height < contentm.y + contentm.height
+						})
+					}
+				}
+			}
+		}
+
+		SequentialAnimation {
+			running: !model.read && isFullyVisible && view.active && isRaised
+
+			PauseAnimation {
+				duration: 1000
+			}
+			NumberAnimation {
+				target: readNot
+				property: "opacity"
+				from: 1
+				to: 0
+				easing.type: Easing.InOutQuad
+				duration: MaterialAnimation.pageTransitionDuration*4
+			}
+			ScriptAction {
+				script: {
+					var jsonData = {
+						chat_id: chatCard.chatId,
+						msg_id: model.msg_id
+					}
+
+					rsApi.request("/chat/mark_message_as_read/", JSON.stringify(jsonData), function(){})
+				}
+			}
+		}
+
 		width: parent.width
 		height: previous_author_same ?
-					model.last_from_author ? view.height + dp(8) : view.height + dp(5)
-		          : model.last_from_author ? view.height + dp(18) : view.height + dp(15)
+					model.last_from_author ? msgView.height + dp(8) : msgView.height + dp(5)
+		          : model.last_from_author ? msgView.height + dp(18) : msgView.height + dp(15)
 
 		View {
-			id: view
+			id: msgView
 
 			anchors {
 				right: model.incoming === false ? parent.right : undefined
@@ -53,6 +95,7 @@ Component {
 			backgroundColor: model.incoming === false ? Theme.primaryColor : "white"
 			elevation: 1
 			radius: 10
+			clipContent: false
 
 			Rectangle {
 				anchors.fill: parent
@@ -91,13 +134,32 @@ Component {
 					pixelSize: dp(13)
 				}
 			}
+
+			View {
+				id: readNot
+				anchors {
+					top: parent.top
+					right: parent.right
+					topMargin: -dp(3)
+					rightMargin: -dp(3)
+				}
+
+				width: dp(10)
+				height: dp(10)
+				radius: width/2
+
+				elevation: 2
+				backgroundColor: Theme.accentColor
+
+				visible: !model.read && model.incoming
+			}
 		}
 
 		Label {
 			id: timeText
 			anchors {
-				right: model.incoming === false ? view.right : undefined
-				left: model.incoming === false ?  undefined : view.left
+				right: model.incoming === false ? msgView.right : undefined
+				left: model.incoming === false ?  undefined : msgView.left
 				bottom: parent.bottom
 				leftMargin: dp(7)
 				rightMargin: dp(7)
@@ -123,9 +185,9 @@ Component {
 
 		ProgressCircle {
 			anchors {
-				right: view.left
+				right: msgView.left
 				rightMargin: dp(7)
-				verticalCenter: view.verticalCenter
+				verticalCenter: msgView.verticalCenter
 			}
 
 			width: dp(15)

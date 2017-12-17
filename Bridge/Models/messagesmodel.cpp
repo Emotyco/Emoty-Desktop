@@ -57,6 +57,7 @@ void MessagesModel::loadJSONMessages(QString json)
 				                            jsonMessage.value("recv_time").toString(),
 				                            jsonMessage.value("send_time").toString(),
 				                            jsonMessage.value("was_send").toBool(),
+				                            jsonMessage.value("read").toBool(),
 				                            author_id_previous,
 				                            true
 				                        ));
@@ -73,9 +74,11 @@ void MessagesModel::loadJSONMessages(QString json)
 				{
 					QJsonObject jsonMessage = (*it).toObject();
 					if((*vit).msg_id == jsonMessage.value("id").toString()
-					        && (*vit).was_send != jsonMessage.value("was_send").toBool())
+					        && ((*vit).was_send != jsonMessage.value("was_send").toBool()
+					            || (*vit).read != jsonMessage.value("read").toBool()))
 					{
 						(*vit).was_send = jsonMessage.value("was_send").toBool();
+						(*vit).read = jsonMessage.value("read").toBool();
 						(*vit).send_time = jsonMessage.value("send_time").toString();
 						emit dataChanged(index(i),index(i));
 					}
@@ -116,6 +119,7 @@ void MessagesModel::loadJSONMessages(QString json)
 					                            jsonMessage.value("recv_time").toString(),
 					                            jsonMessage.value("send_time").toString(),
 					                            jsonMessage.value("was_send").toBool(),
+					                            jsonMessage.value("read").toBool(),
 					                            messageData.rbegin()->author_id,
 					                            true
 					                          ));
@@ -137,6 +141,9 @@ QVariant MessagesModel::data(const QModelIndex & index, int role) const
 
 	if(idx < 0 || idx >= messageData.size())
 		return QVariant("Something went wrong...");
+
+	if(role == MessageIndexRole)
+		return idx;
 
 	std::list<Message>::const_iterator vit = messageData.begin();
 	for(int i = 0; vit != messageData.end(); ++vit)
@@ -163,6 +170,8 @@ QVariant MessagesModel::data(const QModelIndex & index, int role) const
 		return (*vit).send_time;
 	else if(role == WasSendRole)
 		return (*vit).was_send;
+	else if(role == ReadRole)
+		return (*vit).read;
 	else if(role == AuthorIdPreviousRole)
 		return (*vit).author_id_previous;
 	else if(role == LastFromAuthor)
@@ -175,6 +184,7 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 {
 	QHash<int, QByteArray> roles;
 
+	roles[MessageIndexRole] = "message_index";
 	roles[AuthorIdRole] = "author_id";
 	roles[AuthorNameRole] = "author_name";
 	roles[MsgIdRole] = "msg_id";
@@ -183,6 +193,7 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	roles[RecvTimeRole] = "recv_time";
 	roles[SendTimeRole] = "send_time";
 	roles[WasSendRole] = "was_send";
+	roles[ReadRole] = "read";
 	roles[AuthorIdPreviousRole] = "author_id_previous";
 	roles[LastFromAuthor] = "last_from_author";
 

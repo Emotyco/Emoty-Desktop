@@ -28,7 +28,7 @@ import Material.ListItems 0.1 as ListItem
 import MessagesModel 0.2
 
 Card {
-	id: drag
+	id: chatCard
 
 	property string gxsId
 	property string chatId
@@ -47,7 +47,7 @@ Card {
 	function initiateChat() {
 		var jsonData = {
 			own_gxs_hex: mainGUIObject.defaultGxsId,
-			remote_gxs_hex: drag.gxsId
+			remote_gxs_hex: chatCard.gxsId
 		}
 
 		function callbackFn(par) {
@@ -61,14 +61,14 @@ Card {
 
 	function checkChatStatus() {
 		var jsonData = {
-			chat_id: drag.chatId
+			chat_id: chatCard.chatId
 		}
 
 		function callbackFn(par) {
 			if(status != String(JSON.parse(par.response).data.status)) {
 				status = String(JSON.parse(par.response).data.status)
 				if(status == 2)
-					drag.getChatMessages()
+					chatCard.getChatMessages()
 			}
 		}
 
@@ -77,14 +77,14 @@ Card {
 
 	function closeChat() {
 		var jsonData = {
-			distant_chat_hex: drag.chatId
+			distant_chat_hex: chatCard.chatId
 		}
 
 		rsApi.request("/chat/close_distant_chat/", JSON.stringify(jsonData), function(){})
 	}
 
 	function getChatMessages() {
-		if (drag.chatId == "")
+		if (chatCard.chatId == "")
 			return
 
 		function callbackFn(par) {
@@ -93,7 +93,7 @@ Card {
 			messagesModel.loadJSONMessages(par.response)
 		}
 
-		rsApi.request("/chat/messages/"+drag.chatId, "", callbackFn)
+		rsApi.request("/chat/messages/"+chatCard.chatId, "", callbackFn)
 	}
 
 	function getUnreadMsgs() {
@@ -118,7 +118,7 @@ Card {
 		rsApi.request("/chat/unread_msgs/", "", callbackFn)
 	}
 
-	Component.onCompleted: drag.initiateChat()
+	Component.onCompleted: chatCard.initiateChat()
 	Component.onDestruction: {
 		mainGUIObject.unregisterTokenWithIndex(stateToken, cardIndex)
 		mainGUIObject.unregisterTokenWithIndex(stateToken_unreadMsgs, cardIndex)
@@ -146,6 +146,10 @@ Card {
 			ListView {
 				id: contentm
 
+				property bool lastVisible: true
+				property bool complete: false
+				Component.onCompleted: complete = true
+
 				anchors {
 					fill: parent
 					leftMargin: dp(5)
@@ -169,9 +173,6 @@ Card {
 					height: dp(15)
 				}
 
-				property bool complete: false
-				Component.onCompleted: complete = true
-
 				add: Transition {
 					ParallelAnimation {
 						NumberAnimation {
@@ -192,9 +193,130 @@ Card {
 
 						ScriptAction {
 							script: {
-								if(contentm.complete)
+								if(contentm.complete) {
 									contentm.positionViewAtEnd()
+									contentm.lastVisible = true
+								}
 							}
+						}
+					}
+				}
+
+				Material.View {
+					id: notiView
+					anchors {
+						bottom: parent.bottom
+						horizontalCenter: parent.horizontalCenter
+						bottomMargin: dp(15)
+					}
+
+					height: notiMsg.implicitHeight + dp(8)
+					width: parent.width*0.8
+
+					backgroundColor: Material.Theme.accentColor
+					elevation: 2
+					radius: 10
+
+					states: [
+						State {
+							name: "hide"; when: !(indicatorNumber > 0 && !contentm.lastVisible)
+							PropertyChanges {
+								target: notiView
+								visible: false
+							}
+						},
+						State {
+							name: "show"; when: indicatorNumber > 0 && !contentm.lastVisible
+							PropertyChanges {
+								target: notiView
+								visible: true
+							}
+						}
+					]
+
+					transitions: [
+						Transition {
+							from: "hide"; to: "show"
+
+							SequentialAnimation {
+								PropertyAction {
+									target: notiView
+									property: "visible"
+									value: true
+								}
+								ParallelAnimation {
+									NumberAnimation {
+										target: notiView
+										property: "opacity"
+										from: 0
+										to: 1
+										easing.type: Easing.InOutQuad;
+										duration: Material.MaterialAnimation.pageTransitionDuration
+									}
+									NumberAnimation {
+										target: notiView
+										property: "anchors.bottomMargin"
+										from: -notiView.height
+										to: dp(15)
+										easing.type: Easing.InOutQuad;
+										duration: Material.MaterialAnimation.pageTransitionDuration
+									}
+								}
+							}
+						},
+						Transition {
+							from: "show"; to: "hide"
+
+							SequentialAnimation {
+								ParallelAnimation {
+									NumberAnimation {
+										target: notiView
+										property: "opacity"
+										from: 1
+										to: 0
+										easing.type: Easing.InOutQuad
+										duration: Material.MaterialAnimation.pageTransitionDuration
+									}
+									NumberAnimation {
+										target: notiView
+										property: "anchors.bottomMargin"
+										from: dp(15)
+										to: -notiView.height
+										easing.type: Easing.InOutQuad
+										duration: Material.MaterialAnimation.pageTransitionDuration
+									}
+								}
+								PropertyAction {
+									target: notiView;
+									property: "visible";
+									value: false
+								}
+							}
+						}
+					]
+
+					MouseArea {
+						anchors.fill: parent
+						onClicked: contentm.positionViewAtEnd()
+					}
+
+					Text {
+						id: notiMsg
+
+						anchors {
+							top: parent.top
+							topMargin: dp(4)
+							left: parent.left
+							right: parent.right
+						}
+						text: "New message arrived"
+
+						color: "white"
+						horizontalAlignment: TextEdit.AlignHCenter
+
+						font {
+							family: "Roboto"
+							pixelSize: dp(13)
 						}
 					}
 				}
@@ -220,14 +342,14 @@ Card {
 
 			states: [
 				State {
-					name: "hide"; when: drag.status == 2
+					name: "hide"; when: chatCard.status == 2
 					PropertyChanges {
 						target: itemInfo
 						visible: false
 					}
 				},
 				State {
-					name: "show"; when: drag.status != 2
+					name: "show"; when: chatCard.status != 2
 					PropertyChanges {
 						target: itemInfo
 						visible: true
@@ -327,10 +449,10 @@ Card {
 						right: parent.right
 					}
 
-					text: drag.status == 0 ? "Something goes wrong..."
-						: drag.status == 1 ? "Tunnel is pending..."
-						: drag.status == 2 ? "Connection is established"
-						: drag.status == 3 ? "Your friend closed chat."
+					text: chatCard.status == 0 ? "Something goes wrong..."
+						: chatCard.status == 1 ? "Tunnel is pending..."
+						: chatCard.status == 2 ? "Connection is established"
+						: chatCard.status == 3 ? "Your friend closed chat."
 						: "Something goes wrong..."
 
 					textFormat: Text.RichText
@@ -408,12 +530,8 @@ Card {
 					verticalScrollBarPolicy: Qt.ScrollBarAlwaysOff
 
 					onActiveFocusChanged: {
-						if(activeFocus) {
-							if(drag.chatId.length > 0)
-								rsApi.request("/chat/mark_chat_as_read/"+drag.chatId, "", function(){})
-
+						if(activeFocus)
 							footerView.elevation = 2
-						}
 						else
 							footerView.elevation = 1
 					}
@@ -421,13 +539,13 @@ Card {
 					Keys.onPressed: {
 						if(event.key == Qt.Key_Return) {
 							event.accepted = true
-							if(msgBox.text.length > 0 && drag.status == 2) {
+							if(msgBox.text.length > 0 && chatCard.status == 2) {
 								var jsonData = {
-									chat_id: drag.chatId,
+									chat_id: chatCard.chatId,
 									msg: msgBox.text
 								}
 								rsApi.request("chat/send_message/", JSON.stringify(jsonData), function(){})
-								drag.getChatMessages()
+								chatCard.getChatMessages()
 								msgBox.text = ""
 
 								soundNotifier.playChatMessageSended()
@@ -444,7 +562,7 @@ Card {
 			repeat: true
 			running: false
 
-			onTriggered: drag.checkChatStatus()
+			onTriggered: chatCard.checkChatStatus()
 		}
 	}
 }

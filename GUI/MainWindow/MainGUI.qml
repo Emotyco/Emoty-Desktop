@@ -882,7 +882,8 @@ Rectangle {
 	}
 
 	function unregisterTokenWithIndex(token, cardIndex) {
-		delete tokens[token][cardIndex]
+		if(typeof tokens[token][cardIndex] !== 'undefined')
+			delete tokens[token][cardIndex]
 	}
 
 	/*
@@ -901,11 +902,30 @@ Rectangle {
 		for(var i = 0; i != cardsModel.rowCount(); i++)
 		{
 			var card = cardsModel.getCardByListIndex(i);
-			if(card.cardIndex == index)
+			if(card.cardIndex == index) {
 				card.z = 20
+				card.isRaised = true
+			}
 			else{
 				card.z = card.z == 0 ? 0 : --card.z
+				card.isRaised = false
 			}
+		}
+	}
+
+	function removeCard(index) {
+		cardsModel.removeCard(index)
+
+		if(cardsModel.rowCount() != 0) {
+			var highestCard = cardsModel.getCardByListIndex(0)
+			for(var i = 0; i != cardsModel.rowCount(); i++)
+			{
+				var card = cardsModel.getCardByListIndex(i);
+				if(card.z > highestCard.z) {
+					highestCard = card
+				}
+			}
+			raiseCard(highestCard.cardIndex)
 		}
 	}
 

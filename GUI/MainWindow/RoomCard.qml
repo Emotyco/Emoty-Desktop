@@ -30,6 +30,7 @@ import RoomInvitationSortModel 0.2
 import MessagesModel 0.2
 
 Card {
+	id: roomCard
 	property var chatId
 
 	// For handling tokens
@@ -159,6 +160,10 @@ Card {
 				ListView {
 					id: contentm
 
+					property bool lastVisible: true
+					property bool complete: false
+					Component.onCompleted: complete = true
+
 					anchors {
 						fill: parent
 						leftMargin: dp(5)
@@ -182,9 +187,6 @@ Card {
 						height: dp(10)
 					}
 
-					property bool complete: false
-					Component.onCompleted: complete = true
-
 					add: Transition {
 						ParallelAnimation {
 							NumberAnimation {
@@ -205,9 +207,130 @@ Card {
 
 							ScriptAction {
 								script: {
-									if(contentm.complete)
+									if(contentm.complete) {
 										contentm.positionViewAtEnd()
+										contentm.lastVisible = true
+									}
 								}
+							}
+						}
+					}
+
+					Material.View {
+						id: notiView
+						anchors {
+							bottom: parent.bottom
+							horizontalCenter: parent.horizontalCenter
+							bottomMargin: dp(15)
+						}
+
+						height: notiMsg.implicitHeight + dp(8)
+						width: parent.width*0.8
+
+						backgroundColor: Material.Theme.accentColor
+						elevation: 2
+						radius: 10
+
+						states: [
+							State {
+								name: "hide"; when: !(indicatorNumber > 0 && !contentm.lastVisible)
+								PropertyChanges {
+									target: notiView
+									visible: false
+								}
+							},
+							State {
+								name: "show"; when: indicatorNumber > 0 && !contentm.lastVisible
+								PropertyChanges {
+									target: notiView
+									visible: true
+								}
+							}
+						]
+
+						transitions: [
+							Transition {
+								from: "hide"; to: "show"
+
+								SequentialAnimation {
+									PropertyAction {
+										target: notiView
+										property: "visible"
+										value: true
+									}
+									ParallelAnimation {
+										NumberAnimation {
+											target: notiView
+											property: "opacity"
+											from: 0
+											to: 1
+											easing.type: Easing.InOutQuad;
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+										NumberAnimation {
+											target: notiView
+											property: "anchors.bottomMargin"
+											from: -notiView.height
+											to: dp(15)
+											easing.type: Easing.InOutQuad;
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+									}
+								}
+							},
+							Transition {
+								from: "show"; to: "hide"
+
+								SequentialAnimation {
+									ParallelAnimation {
+										NumberAnimation {
+											target: notiView
+											property: "opacity"
+											from: 1
+											to: 0
+											easing.type: Easing.InOutQuad
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+										NumberAnimation {
+											target: notiView
+											property: "anchors.bottomMargin"
+											from: dp(15)
+											to: -notiView.height
+											easing.type: Easing.InOutQuad
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+									}
+									PropertyAction {
+										target: notiView;
+										property: "visible";
+										value: false
+									}
+								}
+							}
+						]
+
+						MouseArea {
+							anchors.fill: parent
+							onClicked: contentm.positionViewAtEnd()
+						}
+
+						Text {
+							id: notiMsg
+
+							anchors {
+								top: parent.top
+								topMargin: dp(4)
+								left: parent.left
+								right: parent.right
+							}
+							text: "New message arrived"
+
+							color: "white"
+							horizontalAlignment: TextEdit.AlignHCenter
+
+							font {
+								family: "Roboto"
+								pixelSize: dp(13)
 							}
 						}
 					}
@@ -282,12 +405,8 @@ Card {
 						frameVisible: false
 
 						onActiveFocusChanged: {
-							if(activeFocus) {
-								if(chatId.length > 0)
-									rsApi.request("/chat/mark_chat_as_read/"+chatId, "", function(){})
-
+							if(activeFocus)
 								footerView.elevation = 2
-							}
 							else
 								footerView.elevation = 1
 						}
