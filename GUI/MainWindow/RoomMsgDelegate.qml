@@ -232,7 +232,7 @@ Component {
 
 				text: model.msg_content
 				textFormat: Text.RichText
-				wrapMode: Text.WordWrap
+				wrapMode: Text.Wrap
 
 				color: model.incoming === false ? "white" : Theme.light.textColor
 				readOnly: true
@@ -240,7 +240,7 @@ Component {
 				selectByMouse: true
 				selectionColor: Theme.accentColor
 
-				horizontalAlignment: TextEdit.AlignLeft//AlignHCenter
+				horizontalAlignment: TextEdit.AlignLeft
 
 				font {
 					family: "Roboto"
