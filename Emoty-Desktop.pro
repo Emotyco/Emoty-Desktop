@@ -96,4 +96,5 @@ RESOURCES += \
     GUI/MainWindow/mainwindow.qrc \
     GUI/LoginWindow/login.qrc \
     Images/images.qrc \
-    Fonts/fonts.qrc
+    Fonts/fonts.qrc \
+    GUI/Emojione/emojione.qrc

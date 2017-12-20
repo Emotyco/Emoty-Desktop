@@ -23,6 +23,8 @@
 import QtQuick 2.5
 import Material 0.3
 
+import "qrc:/emojione.js" as EmojiOne
+
 Component {
 	Item {
 		property string avatar: (gxs_avatars.getAvatar(model.author_id) == "none"
@@ -230,8 +232,8 @@ Component {
 					rightMargin: dp(10)
 				}
 
-				text: model.msg_content
-				textFormat: Text.RichText
+				text: EmojiOne.emojione.toImage(model.msg_content)
+				textFormat: Text.AutoText
 				wrapMode: Text.Wrap
 
 				color: model.incoming === false ? "white" : Theme.light.textColor
