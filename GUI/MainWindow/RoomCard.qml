@@ -20,7 +20,7 @@
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
 
-import QtQuick 2.5
+import QtQuick 2.7
 
 import Material 0.3 as Material
 import Material.ListItems 0.1 as ListItem
@@ -28,6 +28,8 @@ import Material.ListItems 0.1 as ListItem
 import RoomParticipantsSortModel 0.2
 import RoomInvitationSortModel 0.2
 import MessagesModel 0.2
+
+import "qrc:/eojson.js" as EmojiOneJson
 
 Card {
 	id: roomCard
@@ -384,8 +386,10 @@ Card {
 						id: msgBox
 
 						anchors {
-							fill: parent
-							verticalCenter: parent.verticalCenter
+							left: parent.left
+							top: parent.top
+							bottom: parent.bottom
+							right: emojiButton.left
 							topMargin: dp(5)
 							bottomMargin: dp(5)
 							leftMargin: dp(18)
@@ -426,6 +430,164 @@ Card {
 									msgBox.text = "";
 
 									soundNotifier.playChatMessageSended()
+								}
+							}
+						}
+					}
+
+					Item {
+						id: emojiButton
+						anchors {
+							verticalCenter: parent.verticalCenter
+							right: parent.right
+							rightMargin: dp(13)
+						}
+
+						width: dp(26)
+						height: dp(26)
+
+						property bool colorized: emojiPicker.showing || mA.containsMouse
+
+						states: [
+							State{
+								name: "grey"; when: !(emojiPicker.showing || mA.containsMouse)
+								PropertyChanges {
+									target: emojiColor
+									opacity: 0
+								}
+								PropertyChanges {
+									target: emojiGrey
+									opacity: 0.7
+								}
+							},
+							State {
+								name: "color"; when: (emojiPicker.showing || mA.containsMouse)
+								PropertyChanges {
+									target: emojiColor
+									opacity: 1
+								}
+								PropertyChanges {
+									target: emojiGrey
+									opacity: 0
+								}
+							}
+						]
+
+						Image {
+							id: emojiColor
+							anchors.fill: parent
+
+							sourceSize {
+								width: dp(26)
+								height: dp(26)
+							}
+							source: "qrc:/32/1f601.png"
+							opacity: 0
+
+							Behavior on opacity {
+								NumberAnimation {
+									easing.type: Easing.InOutQuad
+									duration: Material.MaterialAnimation.pageTransitionDuration
+								}
+							}
+						}
+
+						ShaderEffect {
+							id: emojiGrey
+							anchors.fill: parent
+							property variant src: emojiColor
+
+							Behavior on opacity {
+								NumberAnimation {
+									easing.type: Easing.InOutQuad
+									duration: Material.MaterialAnimation.pageTransitionDuration
+								}
+							}
+
+							vertexShader: "
+                                uniform highp mat4 qt_Matrix;
+                                attribute highp vec4 qt_Vertex;
+                                attribute highp vec2 qt_MultiTexCoord0;
+                                varying highp vec2 coord;
+                                void main() {
+                                    coord = qt_MultiTexCoord0;
+                                    gl_Position = qt_Matrix * qt_Vertex;
+                                }"
+							fragmentShader: "
+                                varying highp vec2 coord;
+                                uniform sampler2D src;
+                                uniform lowp float qt_Opacity;
+                                void main() {
+                                    lowp vec4 tex = texture2D(src, coord);
+                                    gl_FragColor = vec4(vec3(dot(tex.rgb,
+                                                        vec3(0.344, 0.5, 0.156))),
+                                                             tex.a) * qt_Opacity;
+                                }"
+						}
+
+						MouseArea {
+							id: mA
+							anchors.fill: parent
+							hoverEnabled: true
+
+							onClicked: emojiPicker.open(contentm, 0, contentm.height-emojiPicker.height-dp(10))
+
+							Material.Dropdown {
+								id: emojiPicker
+								objectName: "overflowMenu"
+								overlayLayer: "dialogOverlayLayer"
+								width: dp(400)
+								height: dp(400)
+								durationSlow: 300
+								durationFast: 150
+								internalView.radius: dp(10)
+
+								Item {
+									id: emojiPickerField
+									anchors.fill: parent
+
+									GridView {
+										id: emojiGridView
+										anchors {
+											fill: parent
+											leftMargin: dp(13)
+											rightMargin: dp(13)
+										}
+										clip: true
+
+										property int idealCellHeight: dp(36)
+										property int idealCellWidth: dp(36)
+
+										cellHeight: idealCellHeight
+										cellWidth: width / Math.floor(width / idealCellWidth)
+
+										model: Object.keys(EmojiOneJson.emojiAlphaCodes)
+										delegate: Item {
+											width: GridView.view.cellWidth
+											height: GridView.view.cellHeight
+
+											Image {
+												width: dp(28)
+												height: dp(28)
+												source: "qrc:/32/"+ Object.keys(EmojiOneJson.emojiAlphaCodes)[index] +".png"
+
+												MouseArea {
+													anchors.fill: parent
+
+													onClicked: {
+														msgBox.insert(msgBox.cursorPosition, EmojiOneJson.emojiAlphaCodes[Object.keys(EmojiOneJson.emojiAlphaCodes)[index]]["alpha_code"])
+														emojiPicker.close()
+														msgBox.focus = true
+													}
+												}
+											}
+										}
+									}
+
+									Material.Scrollbar {
+										anchors.margins: 0
+										flickableItem: emojiGridView
+									}
 								}
 							}
 						}
