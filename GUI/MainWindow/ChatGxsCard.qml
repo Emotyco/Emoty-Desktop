@@ -33,15 +33,40 @@ Card {
 	property string gxsId
 	property string chatId
 	property alias contentm: contentm
+	property string typingIdentityName: ""
+	property int typingTimestamp: 0
+	property bool isTyping: false
 
 	property int status: 1
 
 	// For handling tokens
 	property int stateToken: 0
 	property int stateToken_unreadMsgs: 0
+	property int stateToken_status: 0
 
 	Behavior on height {
 		ScriptAction { script: {contentm.positionViewAtEnd()} }
+	}
+
+	function getChatStatus() {
+		function callbackFn(par) {
+			stateToken_status = JSON.parse(par.response).statetoken
+			mainGUIObject.registerTokenWithIndex(stateToken_status, getChatStatus, cardIndex)
+
+			var jsonResp = JSON.parse(par.response)
+			if(jsonResp.data.status_string == "is typing...") {
+				chatCard.typingIdentityName = jsonResp.data.author_name
+
+				if(chatCard.typingIdentityName != ""
+						&& Date.now()/1000 < parseInt(jsonResp.data.timestamp)+6) {
+					typingTimer.start()
+					chatCard.isTyping = true
+					chatCard.typingTimestamp = jsonResp.data.timestamp
+				}
+			}
+		}
+
+		rsApi.request("/chat/receive_status/"+chatId, "", callbackFn)
 	}
 
 	function initiateChat() {
@@ -53,6 +78,7 @@ Card {
 		function callbackFn(par) {
 			chatId = String(JSON.parse(par.response).data.chat_id)
 			getUnreadMsgs()
+			getChatStatus()
 			timer.running = true
 		}
 
@@ -122,7 +148,22 @@ Card {
 	Component.onDestruction: {
 		mainGUIObject.unregisterTokenWithIndex(stateToken, cardIndex)
 		mainGUIObject.unregisterTokenWithIndex(stateToken_unreadMsgs, cardIndex)
+		mainGUIObject.unregisterTokenWithIndex(stateToken_status, cardIndex)
 		closeChat()
+	}
+
+	Timer {
+		id: typingTimer
+		running: false
+		repeat: true
+		interval: 1000
+		onTriggered: {
+			if(Date.now()/1000 > chatCard.typingTimestamp+6
+					|| chatCard.typingTimestamp == 0) {
+				chatCard.isTyping = false
+				typingTimer.stop()
+			}
+		}
 	}
 
 	MessagesModel {
@@ -482,8 +523,8 @@ Card {
 				right: parent.right
 			}
 
-			height: (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(30)) : (msgBox.contentHeight+dp(22))) < dp(200)
-					    ? (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(30)) : (msgBox.contentHeight+dp(22)))
+			height: (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(40)) : (msgBox.contentHeight+dp(32))) < dp(200)
+					    ? (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(40)) : (msgBox.contentHeight+dp(32)))
 						: dp(200)
 
 			z: 1
@@ -497,7 +538,7 @@ Card {
 
 				anchors {
 					fill: parent
-					bottomMargin: dp(10)
+					bottomMargin: dp(20)
 					leftMargin: dp(15)
 					rightMargin: dp(15)
 				}
@@ -551,6 +592,41 @@ Card {
 								soundNotifier.playChatMessageSended()
 							}
 						}
+					}
+				}
+			}
+
+			Material.Label {
+				id: infoLabel
+				anchors {
+					top: footerView.bottom
+					topMargin: dp(2)
+					left: footerView.left
+					leftMargin: dp(21)
+				}
+
+				visible: chatCard.isTyping
+
+				style: "caption"
+				font.pixelSize: dp(11)
+				font.weight: Font.DemiBold
+
+				color: Material.Theme.light.subTextColor
+				text: chatCard.typingIdentityName + " is typing..."
+
+				function addDot() {
+					if(infoLabel.text.charAt(infoLabel.text.length-3) != ".")
+						infoLabel.text += "."
+					else
+						infoLabel.text = infoLabel.text.slice(0, infoLabel.text.length-2)
+				}
+
+				Timer {
+					running: infoLabel.visible
+					repeat: infoLabel.visible
+					interval: 500
+					onTriggered: {
+						infoLabel.addDot()
 					}
 				}
 			}
