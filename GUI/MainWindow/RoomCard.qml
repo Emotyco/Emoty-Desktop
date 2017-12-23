@@ -34,6 +34,8 @@ import "qrc:/eojson.js" as EmojiOneJson
 Card {
 	id: roomCard
 	property var chatId
+	property int statusTimestamp: 0
+
 	property string typingIdentityName: ""
 	property int typingTimestamp: 0
 	property bool isTyping: false
@@ -125,7 +127,7 @@ Card {
 				typingIdentityName = jsonResp.data.author_name
 
 				if(typingIdentityName != ""
-						&& Date.now()/1000 < parseInt(jsonResp.data.timestamp)+6) {
+						&& Date.now()/1000 < parseInt(jsonResp.data.timestamp)+4) {
 					typingTimer.start()
 					roomCard.isTyping = true
 					roomCard.typingTimestamp = jsonResp.data.timestamp
@@ -150,7 +152,7 @@ Card {
 		repeat: true
 		interval: 1000
 		onTriggered: {
-			if(Date.now()/1000 > typingTimestamp+6 || typingTimestamp == 0) {
+			if(Date.now()/1000 > typingTimestamp+4 || typingTimestamp == 0) {
 				roomCard.isTyping = false
 				typingTimer.stop()
 			}
@@ -453,6 +455,18 @@ Card {
 								footerView.elevation = 2
 							else
 								footerView.elevation = 1
+						}
+
+						onTextChanged: {
+							if(msgBox.text.length != 0 && (statusTimestamp == 0 || statusTimestamp+2000 < Date.now())) {
+								var jsonData = {
+									chat_id: chatId,
+									status: "is typing..."
+								}
+
+								rsApi.request("chat/send_status/", JSON.stringify(jsonData), function(){})
+								statusTimestamp = Date.now()
+							}
 						}
 
 						Keys.onPressed:{

@@ -33,6 +33,8 @@ Card {
 	property string gxsId
 	property string chatId
 	property alias contentm: contentm
+	property int statusTimestamp: 0
+
 	property string typingIdentityName: ""
 	property int typingTimestamp: 0
 	property bool isTyping: false
@@ -58,7 +60,7 @@ Card {
 				chatCard.typingIdentityName = jsonResp.data.author_name
 
 				if(chatCard.typingIdentityName != ""
-						&& Date.now()/1000 < parseInt(jsonResp.data.timestamp)+6) {
+						&& Date.now()/1000 < parseInt(jsonResp.data.timestamp)+4) {
 					typingTimer.start()
 					chatCard.isTyping = true
 					chatCard.typingTimestamp = jsonResp.data.timestamp
@@ -158,7 +160,7 @@ Card {
 		repeat: true
 		interval: 1000
 		onTriggered: {
-			if(Date.now()/1000 > chatCard.typingTimestamp+6
+			if(Date.now()/1000 > chatCard.typingTimestamp+4
 					|| chatCard.typingTimestamp == 0) {
 				chatCard.isTyping = false
 				typingTimer.stop()
@@ -575,6 +577,18 @@ Card {
 							footerView.elevation = 2
 						else
 							footerView.elevation = 1
+					}
+
+					onTextChanged: {
+						if(msgBox.text.length != 0 && (statusTimestamp == 0 || statusTimestamp+2000 < Date.now())) {
+							var jsonData = {
+								chat_id: chatId,
+								status: "is typing..."
+							}
+
+							rsApi.request("chat/send_status/", JSON.stringify(jsonData), function(){})
+							statusTimestamp = Date.now()
+						}
 					}
 
 					Keys.onPressed: {
