@@ -23,6 +23,8 @@
 import QtQuick 2.5
 import Material 0.3
 
+import "qrc:/emojione.js" as EmojiOne
+
 Component {
 	Item {
 		property bool previous_author_same: model.author_id == model.author_id_previous
@@ -117,7 +119,7 @@ Component {
 					rightMargin: dp(10)
 				}
 
-				text: model.msg_content
+				text: EmojiOne.emojione.toImage(model.msg_content)
 				textFormat: Text.RichText
 				wrapMode: Text.Wrap
 
