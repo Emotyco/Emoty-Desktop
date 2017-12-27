@@ -37,6 +37,8 @@ Card {
 	property int downloadStateToken: 0
 	property int uploadStateToken: 0
 	property int searchStateToken: 0
+	property int remoteDirStateToken: 0
+	property int localDirStateToken: 0
 
 	property string search_id: ""
 
@@ -45,7 +47,12 @@ Card {
 	Component.onDestruction: {
 		mainGUIObject.unregisterTokenWithIndex(downloadStateToken, cardIndex)
 		mainGUIObject.unregisterTokenWithIndex(uploadStateToken, cardIndex)
-		mainGUIObject.unregisterTokenWithIndex(searchStateToken, cardIndex)
+
+		if(searchStateToken != 0)
+			mainGUIObject.unregisterTokenWithIndex(searchStateToken, cardIndex)
+
+		mainGUIObject.unregisterTokenWithIndex(remoteDirStateToken, cardIndex)
+		mainGUIObject.unregisterTokenWithIndex(localDirStateToken, cardIndex)
 	}
 
 	function getDownloads() {
@@ -68,25 +75,33 @@ Card {
 
 		rsApi.request("/transfers/uploads/", "", callbackFn)
 	}
-	function getSharedDirs() {
+	function getSharedDirs(ref) {
 		var jsonData = {
+			reference: ref,
 			remote: false,
 			local: true
 		}
 
 		function callbackFn(par) {
+			localDirStateToken = JSON.parse(par.response).statetoken
+			mainGUIObject.registerTokenWithIndex(localDirStateToken, getSharedDirs, cardIndex)
+
 			ownFilesModel.loadJSONSharedFolders(par.response)
 		}
 
 		rsApi.request("filesharing/get_dir_childs", JSON.stringify(jsonData), callbackFn)
 	}
-	function getFriendsSharedDirs() {
+	function getFriendsSharedDirs(ref) {
 		var jsonData = {
+			reference: ref,
 			remote: true,
 			local: false
 		}
 
 		function callbackFn(par) {
+			remoteDirStateToken = JSON.parse(par.response).statetoken
+			mainGUIObject.registerTokenWithIndex(remoteDirStateToken, getFriendsSharedDirs, cardIndex)
+
 			friendsFilesModel.loadJSONSharedFolders(par.response)
 		}
 
@@ -110,8 +125,8 @@ Card {
 	Component.onCompleted: {
 		getDownloads()
 		getUploads()
-		getSharedDirs()
-		getFriendsSharedDirs()
+		getSharedDirs(0)
+		getFriendsSharedDirs(0)
 	}
 
 	TransferFilesSortModel {
@@ -950,11 +965,10 @@ Card {
 									selectFolder: true
 									onAccepted: {
 										var jsonData = {
-											directory: String(fileDialog.fileUrl).substr(7)
+											directory: String(fileDialog.fileUrl).substr(8)
 										}
 
 										rsApi.request("/filesharing/set_shared_dir/", JSON.stringify(jsonData), function(){})
-										getSharedDirs()
 									}
 								}
 							}
@@ -971,8 +985,8 @@ Card {
 									rightMargin: dp(23)
 								}
 
-								property int idealCellHeight: dp(170)
-								property int idealCellWidth: dp(170)
+								property int idealCellHeight: dp(150)
+								property int idealCellWidth: dp(150)
 
 								cellHeight: idealCellHeight
 								cellWidth: width / Math.floor(width / idealCellWidth)
@@ -1093,8 +1107,8 @@ Card {
 									rightMargin: dp(23)
 								}
 
-								property int idealCellHeight: dp(170)
-								property int idealCellWidth: dp(170)
+								property int idealCellHeight: dp(150)
+								property int idealCellWidth: dp(150)
 
 								cellHeight: idealCellHeight
 								cellWidth: width / Math.floor(width / idealCellWidth)

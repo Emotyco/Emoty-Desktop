@@ -81,22 +81,13 @@ Component {
 				onClicked: {
 					if(mouse.button == Qt.LeftButton) {
 						if(model.type == "folder" || model.type == "person") {
-							var jsonData = {
-								reference: model.reference,
-								remote: false,
-								local:	true
+							if(modelName == "ownFiles") {
+								getSharedDirs(model.reference)
 							}
 
 							if(modelName == "friendsFiles") {
-								jsonData.remote = true
-								jsonData.local = false
+								getFriendsSharedDirs(model.reference)
 							}
-
-							function callbackFn(par) {
-								modelObject.loadJSONSharedFolders(par.response)
-							}
-
-							rsApi.request("/filesharing/get_dir_childs/", JSON.stringify(jsonData), callbackFn)
 						}
 						else if(model.type == "file" && (modelName == "friendsFiles" || modelName == "friendsSearchResult" || modelName == "distantSearchResult")) {
 							var downloadData = {
