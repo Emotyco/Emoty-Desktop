@@ -126,7 +126,7 @@ Component {
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
 				width: dp(270)
-				height: dp(3*30)
+				height: model.name.startsWith(":/", 1) || model.name.startsWith("/") ?  dp(4*30+15) : dp(3*30)
 				enabled: true
 				anchor: Item.TopLeft
 				durationSlow: 300
@@ -219,6 +219,43 @@ Component {
 
 								rsApi.request("/filesharing/update_shared_dir/", JSON.stringify(jsonData), function(){})
 							}
+						}
+					}
+
+					Item {
+						width: parent.width
+						height: dp(15)
+
+						visible: model.name.startsWith(":/", 1) || model.name.startsWith("/") ? true : false
+						enabled: model.name.startsWith(":/", 1) || model.name.startsWith("/") ? true : false
+
+						Rectangle {
+							anchors {
+								verticalCenter: parent.verticalCenter
+								horizontalCenter: parent.horizontalCenter
+							}
+
+							width: parent.width*0.8
+							height: dp(1)
+							color: Material.Palette.colors["grey"]["200"]
+						}
+					}
+
+					ListItem.Standard {
+						height: dp(30)
+						text: "Unshare folder"
+						itemLabel.style: "body1"
+
+						visible: model.name.startsWith(":/", 1) || model.name.startsWith("/") ? true : false
+						enabled: model.name.startsWith(":/", 1) || model.name.startsWith("/") ? true : false
+
+						onClicked: {
+							var jsonData = {
+								directory: model.name
+							}
+
+							rsApi.request("/filesharing/remove_shared_dir/", JSON.stringify(jsonData), function(){})
+							overflowMenu.close()
 						}
 					}
 				}
