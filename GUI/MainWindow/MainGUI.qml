@@ -719,8 +719,12 @@ Rectangle {
 	}
 
 	function unregisterTokenWithIndex(token, cardIndex) {
-		if(typeof tokens[token][cardIndex] !== 'undefined')
-			delete tokens[token][cardIndex]
+		try {
+			if(typeof tokens[token][cardIndex] !== 'undefined')
+				delete tokens[token][cardIndex]
+		} catch (e) {
+			console.log(e.stack);
+		}
 	}
 
 	/*
