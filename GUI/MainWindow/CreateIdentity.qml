@@ -164,8 +164,6 @@ Material.PopupBase {
 			width: parent.width < parent.height ? parent.width*0.63 : parent.height*0.63
 			height: parent.width < parent.height ? parent.width*0.63 : parent.height*0.63
 
-			//Component.onCompleted: loadImage(dialog.src)
-
 			visible: avatar != ""
 			enabled: avatar != ""
 
