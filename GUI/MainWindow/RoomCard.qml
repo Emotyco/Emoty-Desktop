@@ -416,6 +416,24 @@ Card {
 					elevation: 1
 					backgroundColor: "white"
 
+					MouseArea {
+						id: searchHoverMA
+						anchors.fill: parent
+						hoverEnabled: true
+
+						onEntered: {
+							footerView.elevation = 2
+							emojiButton.state = "color"
+						}
+						onExited: {
+							emojiButton.state = "grey"
+
+							if(msgBox.activeFocus == false)
+								footerView.elevation = 1
+						}
+						onClicked: msgBox.forceActiveFocus()
+					}
+
 					ScrollView {
 						anchors {
 							left: parent.left
@@ -427,6 +445,22 @@ Card {
 							leftMargin: dp(18)
 							rightMargin: dp(18)
 						}
+
+						hoverEnabled: true
+						onHoveredChanged: {
+							if(hovered) {
+								footerView.elevation = 2
+								emojiButton.state = "color"
+							}
+							else {
+								emojiButton.state = "grey"
+
+								if(msgBox.activeFocus == false)
+									footerView.elevation = 1
+							}
+						}
+
+						ScrollBar.vertical.visible: msgBox.contentHeight+dp(40) >= dp(200)
 
 						TextArea {
 							id: msgBox
@@ -531,7 +565,6 @@ Card {
 
 							Behavior on opacity {
 								NumberAnimation {
-									easing.type: Easing.InOutQuad
 									duration: Material.MaterialAnimation.pageTransitionDuration
 								}
 							}
@@ -544,7 +577,6 @@ Card {
 
 							Behavior on opacity {
 								NumberAnimation {
-									easing.type: Easing.InOutQuad
 									duration: Material.MaterialAnimation.pageTransitionDuration
 								}
 							}
@@ -574,6 +606,17 @@ Card {
 							id: mA
 							anchors.fill: parent
 							hoverEnabled: true
+
+							onEntered: {
+								footerView.elevation = 2
+								emojiButton.state = "color"
+							}
+							onExited: {
+								emojiButton.state = "grey"
+
+								if(msgBox.activeFocus == false)
+									footerView.elevation = 1
+							}
 
 							onClicked: emojiPicker.open(contentm, 0, contentm.height-emojiPicker.height-dp(10))
 
