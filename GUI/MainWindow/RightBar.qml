@@ -22,6 +22,7 @@
 
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import QtQuick.Controls 2.2 as Controls
 
 import Material 0.3
 import Material.ListItems 0.1 as ListItem
@@ -742,27 +743,21 @@ View {
 				Tab {
 					title: "Contacts"
 
-					Item{
-						ListView {
-							id: listView
-
+					Item {
+						Controls.ScrollView {
 							anchors.fill: parent
+							ListView {
+								clip: true
+								model: contactsModel
+								delegate: FriendListDelegate{}
 
-							clip: true
+								LoadingMask {
+									id: loadingMask
+									anchors.fill: parent
 
-							model: contactsModel
-							delegate: FriendListDelegate{}
-
-							LoadingMask {
-								id: loadingMask
-								anchors.fill: parent
-
-								state: firstTime_gxsContacts ? "visible" : "non-visible"
+									state: firstTime_gxsContacts ? "visible" : "non-visible"
+								}
 							}
-						}
-
-						Scrollbar {
-							flickableItem: listView
 						}
 					}
 				}
@@ -770,27 +765,22 @@ View {
 				Tab {
 					title: "All"
 
-					Item{
-						ListView {
-							id: listView2
-
+					Item {
+						Controls.ScrollView {
 							anchors.fill: parent
 
-							clip: true
+							ListView {
+								clip: true
+								model: identitiesModel
+								delegate: FriendListDelegate{}
 
-							model: identitiesModel
-							delegate: FriendListDelegate{}
+								LoadingMask {
+									id: loadingMask2
+									anchors.fill: parent
 
-							LoadingMask {
-								id: loadingMask2
-								anchors.fill: parent
-
-								state: firstTime_gxsContacts ? "visible" : "non-visible"
+									state: firstTime_gxsContacts ? "visible" : "non-visible"
+								}
 							}
-						}
-
-						Scrollbar {
-							flickableItem: listView2
 						}
 					}
 				}
@@ -1104,29 +1094,26 @@ View {
 				}
 			}
 
-			ListView {
-				id: listView3
-
-				LoadingMask {
-					id: loadingMask3
-					anchors.fill: parent
-
-					state: firstTime_pgp ? "visible" : "non-visible"
-				}
-
+			Controls.ScrollView {
 				anchors {
 					fill: parent
 					topMargin: dp(50)
 				}
 
-				clip: true
+				contentWidth: width
 
-				model: pgpIdModel
-				delegate: PgpListDelegate{}
-			}
+				ListView {
+					clip: true
+					model: pgpIdModel
+					delegate: PgpListDelegate{}
 
-			Scrollbar {
-				flickableItem: listView3
+					LoadingMask {
+						id: loadingMask3
+						anchors.fill: parent
+
+						state: firstTime_pgp ? "visible" : "non-visible"
+					}
+				}
 			}
 		}
 	}

@@ -21,6 +21,7 @@
  ****************************************************************/
 import QtQuick 2.7
 import QtQuick.Controls 1.4
+import QtQuick.Controls 2.2 as Controls
 import QtQuick.Dialogs 1.0
 import QtQuick.Layouts 1.3
 
@@ -978,26 +979,26 @@ Card {
 							anchors.fill: parent
 							anchors.topMargin: dp(70)
 
-							GridView {
-								id: ownFiles
+							Controls.ScrollView {
 								anchors {
 									fill: parent
 									rightMargin: dp(23)
 								}
 
-								property int idealCellHeight: dp(150)
-								property int idealCellWidth: dp(150)
+								GridView {
+									id: ownFiles
 
-								cellHeight: idealCellHeight
-								cellWidth: width / Math.floor(width / idealCellWidth)
 
-								clip: true
-								model: ownFilesModel
-								delegate: FileDelegate {}
-							}
+									property int idealCellHeight: dp(150)
+									property int idealCellWidth: dp(150)
 
-							Material.Scrollbar {
-								flickableItem: ownFiles
+									cellHeight: idealCellHeight
+									cellWidth: width / Math.floor(width / idealCellWidth)
+
+									clip: true
+									model: ownFilesModel
+									delegate: FileDelegate {}
+								}
 							}
 						}
 					}
@@ -1100,26 +1101,25 @@ Card {
 							anchors.fill: parent
 							anchors.topMargin: dp(70)
 
-							GridView {
-								id: friendsFiles
+							Controls.ScrollView {
 								anchors {
 									fill: parent
 									rightMargin: dp(23)
 								}
 
-								property int idealCellHeight: dp(150)
-								property int idealCellWidth: dp(150)
+								GridView {
+									id: friendsFiles
 
-								cellHeight: idealCellHeight
-								cellWidth: width / Math.floor(width / idealCellWidth)
+									property int idealCellHeight: dp(150)
+									property int idealCellWidth: dp(150)
 
-								clip: true
-								model: friendsFilesModel
-								delegate: FileDelegate {}
-							}
+									cellHeight: idealCellHeight
+									cellWidth: width / Math.floor(width / idealCellWidth)
 
-							Material.Scrollbar {
-								flickableItem: friendsFiles
+									clip: true
+									model: friendsFilesModel
+									delegate: FileDelegate {}
+								}
 							}
 						}
 					}
@@ -1248,30 +1248,29 @@ Card {
 							anchors.fill: parent
 							anchors.topMargin: dp(70)
 
-							ListView {
-								id: transferList
+							Controls.ScrollView {
 								anchors {
 									fill: parent
 									rightMargin: dp(23)
 								}
 
-								clip: true
-								spacing: dp(15)
+								ListView {
+									id: transferList
 
-								model: transferSortModel
-								delegate: TransferDelegate {}
-								header: Item{
-									width: 1
-									height: dp(10)
-								}
-								footer: Item {
-									width: 1
-									height: dp(10)
-								}
-							}
+									clip: true
+									spacing: dp(15)
 
-							Material.Scrollbar {
-								flickableItem: transferList
+									model: transferSortModel
+									delegate: TransferDelegate {}
+									header: Item{
+										width: 1
+										height: dp(10)
+									}
+									footer: Item {
+										width: 1
+										height: dp(10)
+									}
+								}
 							}
 						}
 					}

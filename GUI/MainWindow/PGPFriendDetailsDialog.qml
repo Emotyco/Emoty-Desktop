@@ -369,7 +369,7 @@ Material.Dialog {
 							height: dp(48)
 							interactive: !own_sign
 
-							secondaryItem: Switch {
+							secondaryItem: Material.Switch {
 								id: switchSignKey
 								anchors.verticalCenter: parent.verticalCenter
 								enabled: !own_sign

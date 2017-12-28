@@ -498,7 +498,7 @@ Material.Dialog {
 								Layout.fillWidth: true
 								Layout.column: 2
 
-								spacing: 3 * Units.dp
+								spacing: 3 * Material.Units.dp
 
 								Material.Label {
 									Layout.alignment: Qt.AlignRight
