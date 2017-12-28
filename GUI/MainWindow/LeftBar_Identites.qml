@@ -1,9 +1,9 @@
 import QtQuick 2.5
-import QtQuick.Controls 1.4
+//import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.0
 import QtGraphicalEffects 1.0
 
-import Material 0.3
+import Material 0.3 as Material
 import Material.Extras 0.1 as Circle
 import Material.ListItems 0.1 as ListItem
 
@@ -59,11 +59,17 @@ Rectangle {
 				height: parent.width*0.6
 
 				radius: width/2
+				visible: mainGUIObject.defaultAvatar != "none"
+				enabled: mainGUIObject.defaultAvatar != "none"
 
 				Connections {
 					target: mainGUIObject
-					onDefaultAvatarChanged: {canvas.loadImage(mainGUIObject.defaultAvatar); canvas.requestPaint()}
-
+					onDefaultAvatarChanged: {
+						if(mainGUIObject.defaultAvatar != "none") {
+							canvas.loadImage(mainGUIObject.defaultAvatar);
+							canvas.requestPaint()
+						}
+					}
 				}
 
 				Canvas {
@@ -97,7 +103,7 @@ Rectangle {
 					}
 					onImageLoaded:requestPaint()
 
-					Ink {
+					Material.Ink {
 						id: circleInk
 
 						anchors.fill: parent
@@ -119,7 +125,7 @@ Rectangle {
 								fileDialog.open()
 						}
 
-						Icon {
+						Material.Icon {
 							anchors.centerIn: parent
 							height: dp(60)
 
@@ -127,7 +133,7 @@ Rectangle {
 							visible: mainGUIObject.defaultAvatar == "none"
 
 							name: "awesome/edit"
-							color: Theme.dark.iconColor
+							color: Material.Theme.dark.iconColor
 							size: dp(40)
 						}
 					}
@@ -143,6 +149,39 @@ Rectangle {
 
 				color: "#80000000"
 				source: avatarRect
+
+				visible: mainGUIObject.defaultAvatar != "none"
+				enabled: mainGUIObject.defaultAvatar != "none"
+			}
+
+			Material.Icon {
+				id: icon
+
+				anchors {
+					horizontalCenter: parent.horizontalCenter
+					verticalCenter: parent.top
+					verticalCenterOffset: parent.width*0.4
+				}
+
+				width: parent.width*0.6
+				height: parent.width*0.6
+
+				name: "awesome/user_o"
+				color: Material.Theme.light.iconColor
+
+				size: dp(parent.width*0.6)
+
+				visible: mainGUIObject.defaultAvatar == "none"
+				enabled: mainGUIObject.defaultAvatar == "none"
+
+				Material.Ink {
+					anchors.fill: parent
+					circular:true
+
+					onEntered: icon.color = Material.Theme.primaryColor
+					onExited: icon.color = Material.Theme.light.iconColor
+					onClicked: fileDialog.open()
+				}
 			}
 
 			Text {
@@ -155,7 +194,7 @@ Rectangle {
 				}
 
 				text: mainGUIObject.defaultGxsName
-				color: Theme.light.textColor
+				color: Material.Theme.light.textColor
 
 				font {
 					family: "Roboto"
@@ -177,7 +216,7 @@ Rectangle {
 				width: parent.width
 
 				text: "Choose identity"
-				textColor: Theme.primaryColor
+				textColor: Material.Theme.primaryColor
 			}
 		}
 
@@ -188,7 +227,7 @@ Rectangle {
 			width: parent.width
 
 			text: model.name
-			textColor: selected ? Theme.primaryColor : Theme.light.textColor
+			textColor: selected ? Material.Theme.primaryColor : Material.Theme.light.textColor
 
 			selected: mainGUIObject.defaultGxsId === model.own_gxs_id
 			itemLabel.style: "body1"
@@ -206,7 +245,7 @@ Rectangle {
 				onClicked: overflowMenu.open(identityDelegate, mouse.x, mouse.y)
 			}
 
-			Dropdown {
+			Material.Dropdown {
 				id: overflowMenu
 				objectName: "overflowMenu"
 				width: dp(200)
@@ -259,7 +298,7 @@ Rectangle {
 			width: parent.width
 
 			text: "Create identity"
-			textColor: Theme.light.textColor
+			textColor: Material.Theme.light.textColor
 
 			itemLabel.style: "body1"
 			iconName: "awesome/plus"
@@ -276,7 +315,7 @@ Rectangle {
 		}
 	}
 
-	OverlayView {
+	Material.OverlayView {
 		id: overlayView
 
 		width: mainGUIObject.width < mainGUIObject.height ? (dp(700)+mainGUIObject.width*0.3 < mainGUIObject.width ? dp(700)
@@ -308,7 +347,7 @@ Rectangle {
 				}
 			}
 
-			IconButton {
+			Material.IconButton {
 				id: updateIcon
 
 				anchors {
@@ -322,13 +361,13 @@ Rectangle {
 
 				iconName: "awesome/edit"
 
-				color: Theme.dark.iconColor
+				color: Material.Theme.dark.iconColor
 				size: dp(40)
 
 				onClicked: fileDialog.open()
 			}
 
-			IconButton {
+			Material.IconButton {
 				id: removeIcon
 
 				anchors {
@@ -342,7 +381,7 @@ Rectangle {
 
 				iconName: "awesome/trash"
 
-				color: Theme.dark.iconColor
+				color: Material.Theme.dark.iconColor
 				size: dp(40)
 
 				onClicked: {

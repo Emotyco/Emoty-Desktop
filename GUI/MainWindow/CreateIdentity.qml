@@ -24,13 +24,13 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.0
 
-import Material 0.3
+import Material 0.3 as Material
 
-PopupBase {
+Material.PopupBase {
 	id: dialog
 
-	property string avatar
-	property string src: "avatar.png"
+	property string avatar: ""
+	property string src: ""
 	property bool enableHiding: false
 
 	anchors {
@@ -86,7 +86,7 @@ PopupBase {
 		onClicked: {}
 	}
 
-	View {
+	Material.View {
 		id: dialogContainer
 
 		anchors {
@@ -124,7 +124,7 @@ PopupBase {
 					from: 0
 					to: 1
 					easing.type: Easing.InOutQuad
-					duration: MaterialAnimation.pageTransitionDuration
+					duration: Material.MaterialAnimation.pageTransitionDuration
 				}
 			}
 
@@ -138,7 +138,7 @@ PopupBase {
 				onExited: {}
 			}
 
-			ProgressCircle {
+			Material.ProgressCircle {
 				id: progressCircle
 
 				anchors.centerIn: parent
@@ -146,7 +146,7 @@ PopupBase {
 				width: dp(48)
 				height: dp(48)
 
-				color: Theme.accentColor
+				color: Material.Theme.accentColor
 
 				dashThickness: dp(7)
 			}
@@ -164,7 +164,10 @@ PopupBase {
 			width: parent.width < parent.height ? parent.width*0.63 : parent.height*0.63
 			height: parent.width < parent.height ? parent.width*0.63 : parent.height*0.63
 
-			Component.onCompleted: loadImage(dialog.src)
+			//Component.onCompleted: loadImage(dialog.src)
+
+			visible: avatar != ""
+			enabled: avatar != ""
 
 			onPaint: {
 				var ctx = getContext("2d");
@@ -193,7 +196,7 @@ PopupBase {
 
 			onImageLoaded:requestPaint()
 
-			Ink {
+			Material.Ink {
 				id: circleInk
 
 				anchors.fill: parent
@@ -207,7 +210,7 @@ PopupBase {
 					opacity: circleInk.containsMouse ? 0.1 : 0
 					radius: width/2
 				}
-				Icon {
+				Material.Icon {
 					anchors.centerIn: parent
 
 					name: "awesome/upload"
@@ -234,7 +237,37 @@ PopupBase {
 			}
 		}
 
-		TextField {
+		Material.Icon {
+			id: icon
+
+			anchors {
+				top: parent.top
+				topMargin: parent.height*0.1
+				horizontalCenter: parent.horizontalCenter
+			}
+
+			width: parent.width < parent.height ? parent.width*0.63 : parent.height*0.63
+			height: parent.width < parent.height ? parent.width*0.63 : parent.height*0.63
+
+			name: "awesome/user_o"
+			color: Material.Theme.light.iconColor
+
+			size: dp(width*0.8)
+
+			visible: avatar == ""
+			enabled: avatar == ""
+
+			Material.Ink {
+				anchors.fill: parent
+				circular:true
+
+				onEntered: icon.color = Material.Theme.primaryColor
+				onExited: icon.color = Material.Theme.light.iconColor
+				onClicked: fileDialog.open()
+			}
+		}
+
+		Material.TextField {
 			id: name
 
 			property bool emptyName: false
@@ -247,7 +280,7 @@ PopupBase {
 
 			width: parent.width < parent.height ? parent.width*0.63 : parent.height*0.63
 
-			color: Theme.primaryColor
+			color: Material.Theme.primaryColor
 
 			horizontalAlignment: TextInput.AlignHCenter
 			focus: true
@@ -291,7 +324,7 @@ PopupBase {
 			enabled: mainGUIObject.advmode
 			clip: true
 
-			CheckBox {
+			Material.CheckBox {
 				id: checkBox
 				anchors {
 					left: parent.left
@@ -301,14 +334,14 @@ PopupBase {
 				darkBackground: false
 			}
 
-			Label {
+			Material.Label {
 				anchors {
 					left: checkBox.right
 					verticalCenter: parent.verticalCenter
 				}
 
 				text: "Anonymous"
-				color: Theme.light.textColor
+				color: Material.Theme.light.textColor
 
 				MouseArea{
 					anchors.fill: parent
@@ -321,11 +354,11 @@ PopupBase {
 			}
 		}
 
-		Button {
+		Material.Button {
 			id: positiveButton
 
 			text: "CREATE IDENTITY"
-			textColor: Theme.accentColor
+			textColor: Material.Theme.accentColor
 
 			context: "dialog"
 			size: dp(15)

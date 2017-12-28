@@ -2,7 +2,6 @@
     <qresource prefix="/">
         <file>navigation_close.png</file>
         <file>wallpaper_grey.jpg</file>
-        <file>avatar.png</file>
         <file>colorful.png</file>
         <file>logo.png</file>
         <file>favicon-32x32.png</file>
