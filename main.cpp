@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
 
 	// Create window
 	ScreenSize screenSize;
-	MainWindow window( windowBackground, screenSize.width()*0.125, screenSize.height()*0.125, screenSize.width()*0.75, screenSize.height()*0.75);
+	MainWindow window( windowBackground, screenSize.width()*0.175, screenSize.height()*0.175, screenSize.width()*0.65, screenSize.height()*0.65);
 	window.setMinimumSize(600, 350);
 
 	QObject::connect(&trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), &window, SLOT(showViaSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
