@@ -11,8 +11,6 @@
         <file>SettingsDialog.qml</file>
         <file>UserAddDialog.qml</file>
         <file>SideImg.qml</file>
-        <file>TextArea.qml</file>
-        <file>TextAreaStyle.qml</file>
         <file>JSONListModel.qml</file>
         <file>jsonpath.js</file>
         <file>DragTile.qml</file>

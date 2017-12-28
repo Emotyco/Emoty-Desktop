@@ -21,10 +21,11 @@
  ****************************************************************/
 
 import QtQuick 2.5
-import Material 0.3
-import Material.Extras 0.1
+import QtQuick.Controls 2.3
 
-Dialog {
+import Material 0.3 as Material
+
+Material.Dialog {
 	property string myKey
 
 	positiveButtonText: "Cancel"
@@ -66,7 +67,7 @@ Dialog {
 		rsApi.request("/peers/self/certificate/", "", callbackFn)
 	}
 
-	Label {
+	Material.Label {
 		anchors.left: parent.left
 
 		height: dp(50)
@@ -75,7 +76,7 @@ Dialog {
 		wrapMode: Text.Wrap
 		text: "Add Friend"
 		style: "title"
-		color: Theme.accentColor
+		color: Material.Theme.accentColor
 	}
 
 	Grid {
@@ -98,7 +99,7 @@ Dialog {
 				text: "It's your certificate. Share it with friends."
 				textFormat: Text.PlainText
 				wrapMode: Text.WordWrap
-				color: Theme.light.textColor
+				color: Material.Theme.light.textColor
 
 				font {
 					family: "Roboto"
@@ -106,16 +107,25 @@ Dialog {
 				}
 			}
 
-			TextArea {
+			ScrollView {
 				anchors {
 					fill: parent
 					topMargin: dp(35)
 				}
 
-				text: myKey.replace(/(\r\n|\n|\r)/gm,"")
-				textFormat: Text.PlainText
-				wrapMode: Text.WrapAnywhere
-				font.pixelSize: dp(12)
+				TextArea {
+					text: myKey.replace(/(\r\n|\n|\r)/gm,"")
+					textFormat: Text.PlainText
+					wrapMode: Text.WrapAnywhere
+					font.pixelSize: dp(12)
+					font.family: "Roboto"
+
+					readOnly: true
+					selectedTextColor: "white"
+					selectionColor: Material.Theme.accentColor
+					selectByMouse: true
+					selectByKeyboard: true
+				}
 			}
 		}
 
@@ -134,6 +144,7 @@ Dialog {
 				text: "Paste your friend's certificate here:"
 				textFormat: Text.PlainText
 				wrapMode: Text.WordWrap
+				color: Material.Theme.light.textColor
 
 				font {
 					family: "Roboto"
@@ -141,20 +152,44 @@ Dialog {
 				}
 			}
 
-			TextArea {
-				id: friendCert
-
+			ScrollView {
+				id: scrollView
 				anchors {
 					fill: parent
 					topMargin: dp(35)
 				}
 
-				placeholderText: myKey.replace(/(\r\n|\n|\r)/gm,"")
-				textFormat: Text.PlainText
-				wrapMode: Text.WrapAnywhere
-				font.pixelSize: dp(12)
+				contentHeight: friendCert.height
 
-				onTextChanged: friendCert.text = friendCert.text.replace(/(\r\n|\n|\r)/gm,"")
+				TextArea {
+					id: friendCert
+
+					textFormat: Text.PlainText
+					wrapMode: Text.WrapAnywhere
+					font.pixelSize: dp(12)
+					font.family: "Roboto"
+
+					onTextChanged: friendCert.text = friendCert.text.replace(/(\r\n|\n|\r)/gm,"")
+
+					selectedTextColor: "white"
+					selectionColor: Material.Theme.accentColor
+					selectByMouse: true
+					focus: true
+
+					background: TextArea {
+						anchors.fill: parent
+						text: myKey.replace(/(\r\n|\n|\r)/gm,"")
+						textFormat: Text.PlainText
+						wrapMode: Text.WrapAnywhere
+						font.pixelSize: dp(12)
+						font.family: "Roboto"
+						readOnly: true
+						focus: false
+						color: "#a0a1a2"
+
+						visible: friendCert.text.length == 0
+					}
+				}
 			}
 		}
 	}

@@ -21,13 +21,12 @@
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
 
-import QtQuick 2.5
+import QtQuick 2.7
 import QtQuick.Layouts 1.3
+import QtQuick.Controls 2.2
 
-import Material 0.3
-import Material.Extras 0.1
+import Material 0.3 as Material
 
-import QtQuick.Controls 1.3 as Controls
 import CardsModel 0.2
 
 Rectangle {
@@ -53,7 +52,7 @@ Rectangle {
 
 	signal gridChanged
 
-	color: Palette.colors["grey"]["200"]
+	color: Material.Palette.colors["grey"]["200"]
 
 	states:[
 		State {
@@ -272,9 +271,9 @@ Rectangle {
 		}
 	}
 
-	AppTheme {
-		primaryColor: Palette.colors["green"]["500"]
-		accentColor: Palette.colors["deepOrange"]["500"]
+	Material.AppTheme {
+		primaryColor: Material.Palette.colors["green"]["500"]
+		accentColor: Material.Palette.colors["deepOrange"]["500"]
 		tabHighlightColor: "white"
 	}
 
@@ -348,7 +347,7 @@ Rectangle {
 				mipmap: true
 			}
 
-			ProgressCircle {
+			Material.ProgressCircle {
 				anchors {
 					top: logoMask.bottom
 					horizontalCenter: parent.horizontalCenter
@@ -358,7 +357,7 @@ Rectangle {
 				height: dp(35)
 				dashThickness: dp(5)
 
-				color: Theme.primaryColor
+				color: Material.Theme.primaryColor
 			}
 		}
 	}
@@ -466,7 +465,7 @@ Rectangle {
 						target: mainGUImask;
 						property: "opacity";
 						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
+						duration: Material.MaterialAnimation.pageTransitionDuration
 					}
 					PropertyAction {
 						target: mainGUImask;
@@ -487,7 +486,7 @@ Rectangle {
 						target: mainGUImask;
 						property: "opacity";
 						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
+						duration: Material.MaterialAnimation.pageTransitionDuration
 					}
 				}
 			}
@@ -577,23 +576,23 @@ Rectangle {
 		}
 	}
 
-	Scrollbar {
+	Material.Scrollbar {
 		flickableItem: flickable
 	}
 
-	OverlayLayer {
+	Material.OverlayLayer {
 		id: dialogOverlayLayer
 		objectName: "dialogOverlayLayer"
 		z: 10
 	}
 
-	OverlayLayer {
+	Material.OverlayLayer {
 		id: tooltipOverlayLayer
 		objectName: "tooltipOverlayLayer"
 		z:5
 	}
 
-	OverlayLayer {
+	Material.OverlayLayer {
 		id: overlayLayer
 		z: 11
 	}
@@ -855,14 +854,14 @@ Rectangle {
 
 	// Units
 	function dp(dp) {
-		return dp * Units.dp
+		return dp * Material.Units.dp
 	}
 
 	function gu(gu) {
 		return units.gu(gu)
 	}
 
-	UnitsHelper {
+	Material.UnitsHelper {
 		id: units
 	}
 }

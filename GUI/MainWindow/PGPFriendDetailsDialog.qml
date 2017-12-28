@@ -20,14 +20,14 @@
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
 
-import QtQuick 2.5
+import QtQuick 2.7
+import QtQuick.Controls 2.2
 import QtQuick.Controls 1.4 as QtControls
 
-import Material 0.3
-import Material.Extras 0.1
+import Material 0.3 as Material
 import Material.ListItems 0.1 as ListItem
 
-Dialog {
+Material.Dialog {
 	id: scrollingDialog
 
 	property string name: ""
@@ -174,7 +174,7 @@ Dialog {
 		query: "$.data.gpg_signers[*]"
 	}
 
-	Label {
+	Material.Label {
 		id: titleLabel
 
 		anchors {
@@ -188,7 +188,7 @@ Dialog {
 		wrapMode: Text.Wrap
 		text: name + "'s details"
 		style: "title"
-		color: Theme.accentColor
+		color: Material.Theme.accentColor
 	}
 
 	Item {
@@ -284,7 +284,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: TextField {
+								secondaryItem: Material.TextField {
 									anchors.verticalCenter: parent.verticalCenter
 									width: fingerprint.width*0.7
 
@@ -302,7 +302,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: MenuField {
+								secondaryItem: Material.MenuField {
 									id: selection
 									z: 2
 									model: ["Unset", "Unknown", "No trust", "Marginal", "Full", "Ultimate"]
@@ -330,7 +330,7 @@ Dialog {
 						}
 					}
 
-					Scrollbar {
+					Material.Scrollbar {
 						flickableItem: generalListView
 					}
 				}
@@ -392,19 +392,25 @@ Dialog {
 						}
 
 						TextArea {
+							id: pgpTextArea
 							anchors {
 								left: parent.left
 								right: parent.right
 								leftMargin: dp(16)
 								rightMargin: dp(16)
 							}
-							height: dp(300)
 							readOnly: true
 
 							text: pgp_key
 							textFormat: Text.PlainText
 							wrapMode: Text.WrapAnywhere
 							font.pixelSize: dp(12)
+							font.family: "Roboto"
+
+							selectedTextColor: "white"
+							selectionColor: Material.Theme.accentColor
+							selectByMouse: true
+							selectByKeyboard: true
 						}
 					}
 				}
@@ -454,7 +460,7 @@ Dialog {
 
 						height: dp(48)
 
-						secondaryItem: Switch {
+						secondaryItem: Material.Switch {
 							id: switchDirectTransfer
 
 							anchors.verticalCenter: parent.verticalCenter
@@ -474,7 +480,7 @@ Dialog {
 
 						height: dp(48)
 
-						secondaryItem: Switch {
+						secondaryItem: Material.Switch {
 							id: switchAllowPush
 
 							anchors.verticalCenter: parent.verticalCenter
@@ -494,7 +500,7 @@ Dialog {
 
 						height: dp(48)
 
-						secondaryItem: Switch {
+						secondaryItem: Material.Switch {
 							id: switchRequireWL
 
 							anchors.verticalCenter: parent.verticalCenter
@@ -515,7 +521,7 @@ Dialog {
 						height: dp(48)
 						interactive: false
 
-						secondaryItem: TextField {
+						secondaryItem: Material.TextField {
 							id: maxUploadSpeedTF
 							anchors.verticalCenter: parent.verticalCenter
 							width: dp(100)
@@ -537,7 +543,7 @@ Dialog {
 						height: dp(48)
 						interactive: false
 
-						secondaryItem: TextField {
+						secondaryItem: Material.TextField {
 							id: maxDownloadSpeedTF
 							anchors.verticalCenter: parent.verticalCenter
 							width: dp(100)
@@ -573,14 +579,14 @@ Dialog {
 							height: dp(48)
 							interactive: false
 
-							secondaryItem: Label {
+							secondaryItem: Material.Label {
 								anchors.centerIn: parent
 
 								text: locationsModel.count
 
 								elide: Text.ElideRight
 								style: "subheading"
-								color: Theme.light.textColor
+								color: Material.Theme.light.textColor
 							}
 						}
 
@@ -595,7 +601,7 @@ Dialog {
 								nodeDetailsDialog.showAccount(model.name, model.pgp_id, model.location, model.peer_id)
 							}
 
-							action: Icon {
+							action: Material.Icon {
 								anchors.centerIn: parent
 
 								width: dp(32)
@@ -603,7 +609,7 @@ Dialog {
 								size: dp(32)
 
 								name: "awesome/user"
-								color: Theme.light.iconColor
+								color: Material.Theme.light.iconColor
 							}
 
 							MouseArea {
@@ -615,7 +621,7 @@ Dialog {
 								onClicked: overflowMenu.open(nodeItem, mouse.x, mouse.y)
 							}
 
-							Dropdown {
+							Material.Dropdown {
 								id: overflowMenu
 								objectName: "overflowMenu"
 								width: dp(200)
@@ -658,7 +664,7 @@ Dialog {
 						}
 					}
 
-					Scrollbar {
+					Material.Scrollbar {
 						flickableItem: nodesListView
 					}
 				}
@@ -682,14 +688,14 @@ Dialog {
 							height: dp(48)
 							interactive: false
 
-							secondaryItem: Label {
+							secondaryItem: Material.Label {
 								anchors.centerIn: parent
 
 								text: gxsIdModel.count
 
 								elide: Text.ElideRight
 								style: "subheading"
-								color: Theme.light.textColor
+								color: Material.Theme.light.textColor
 							}
 						}
 
@@ -777,7 +783,7 @@ Dialog {
 									onImageLoaded:requestPaint()
 								}
 
-								Icon {
+								Material.Icon {
 									anchors.centerIn: parent
 
 									width: dp(32)
@@ -788,7 +794,7 @@ Dialog {
 									visible: identityAvatar.avatar == "none"
 
 									name: "awesome/user_o"
-									color: Theme.light.iconColor
+									color: Material.Theme.light.iconColor
 								}
 							}
 
@@ -799,7 +805,7 @@ Dialog {
 								onClicked: overflowMenu2.open(identityItem, mouse.x, mouse.y)
 							}
 
-							Dropdown {
+							Material.Dropdown {
 								id: overflowMenu2
 								objectName: "overflowMenu"
 								width: dp(200)
@@ -861,7 +867,7 @@ Dialog {
 						}
 					}
 
-					Scrollbar {
+					Material.Scrollbar {
 						flickableItem: identitiesListView
 					}
 				}

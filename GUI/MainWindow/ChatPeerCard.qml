@@ -21,6 +21,7 @@
  ****************************************************************/
 
 import QtQuick 2.5
+import QtQuick.Controls 2.2
 
 import Material 0.3 as Material
 import Material.ListItems 0.1 as ListItem
@@ -340,15 +341,8 @@ Card {
 				right: parent.right
 			}
 
-			height: (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(40)) : (msgBox.contentHeight+dp(32))) < dp(200)
-					    ? (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(40)) : (msgBox.contentHeight+dp(32)))
-						: dp(200)
-
+			height: msgBox.contentHeight+dp(40) < dp(200) ? msgBox.contentHeight+dp(40) : dp(200)
 			z: 1
-
-			Behavior on height {
-				ScriptAction {script: contentm.positionViewAtEnd()}
-			}
 
 			Material.View {
 				id: footerView
@@ -364,9 +358,7 @@ Card {
 				elevation: 1
 				backgroundColor: "white"
 
-				TextArea {
-					id: msgBox
-
+				ScrollView {
 					anchors {
 						left: parent.left
 						top: parent.top
@@ -378,49 +370,52 @@ Card {
 						rightMargin: dp(18)
 					}
 
-					placeholderText: footerView.width > dp(195) ? "Say hello to your friend" : "Say hello"
+					TextArea {
+						id: msgBox
 
-					font.pixelSize: dp(15)
+						placeholderText: "Say hello to your friend"
+						font.pixelSize: dp(15)
+						font.family: "Roboto"
+						wrapMode: Text.Wrap
+						focus: true
 
-					wrapMode: Text.WordWrap
-					frameVisible: false
-					focus: true
+						selectedTextColor: "white"
+						selectionColor: Material.Theme.accentColor
+						selectByMouse: true
 
-					horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
-					verticalScrollBarPolicy: Qt.ScrollBarAlwaysOff
-
-					onActiveFocusChanged: {
-						if(activeFocus)
-							footerView.elevation = 2
-						else
-							footerView.elevation = 1
-					}
-
-					onTextChanged: {
-						if(msgBox.text.length != 0 && (statusTimestamp == 0 || statusTimestamp+2000 < Date.now())) {
-							var jsonData = {
-								chat_id: chatId,
-								status: "is typing..."
-							}
-
-							rsApi.request("chat/send_status/", JSON.stringify(jsonData), function(){})
-							statusTimestamp = Date.now()
+						onActiveFocusChanged: {
+							if(activeFocus)
+								footerView.elevation = 2
+							else
+								footerView.elevation = 1
 						}
-					}
 
-					Keys.onPressed: {
-						if(event.key == Qt.Key_Return) {
-							event.accepted = true
-							if(msgBox.text.length > 0) {
+						onTextChanged: {
+							if(msgBox.text.length != 0 && (statusTimestamp == 0 || statusTimestamp+2000 < Date.now())) {
 								var jsonData = {
-									chat_id: chatCard.chatId,
-									msg: msgBox.text
+									chat_id: chatId,
+									status: "is typing..."
 								}
-								rsApi.request("chat/send_message/", JSON.stringify(jsonData), function(){})
-								chatCard.getChatMessages()
-								msgBox.text = ""
 
-								soundNotifier.playChatMessageSended()
+								rsApi.request("chat/send_status/", JSON.stringify(jsonData), function(){})
+								statusTimestamp = Date.now()
+							}
+						}
+
+						Keys.onPressed: {
+							if(event.key == Qt.Key_Return) {
+								event.accepted = true
+								if(msgBox.text.length > 0) {
+									var jsonData = {
+										chat_id: chatCard.chatId,
+										msg: msgBox.text
+									}
+									rsApi.request("chat/send_message/", JSON.stringify(jsonData), function(){})
+									chatCard.getChatMessages()
+									msgBox.text = ""
+
+									soundNotifier.playChatMessageSended()
+								}
 							}
 						}
 					}
