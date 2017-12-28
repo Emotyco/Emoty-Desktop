@@ -202,188 +202,185 @@ Card {
 					rightMargin: dp(15)
 				}
 
-				ListView {
-					id: contentm
-
-					property bool lastVisible: true
-					property bool complete: false
-					Component.onCompleted: complete = true
-
+				ScrollView {
 					anchors {
 						fill: parent
 						leftMargin: dp(5)
 						rightMargin: dp(5)
 					}
 
-					clip: true
-					snapMode: ListView.NoSnap
-					flickableDirection: Flickable.AutoFlickDirection
+					ListView {
+						id: contentm
 
-					model: messagesModel
-					delegate: RoomMsgDelegate{}
+						property bool lastVisible: true
+						property bool complete: false
+						Component.onCompleted: complete = true
 
-					header: Item{
-						width: 1
-						height: dp(5)
-					}
+						clip: true
+						snapMode: ListView.NoSnap
+						flickableDirection: Flickable.AutoFlickDirection
 
-					footer: Item{
-						width: 1
-						height: dp(10)
-					}
+						model: messagesModel
+						delegate: RoomMsgDelegate{}
 
-					add: Transition {
-						ParallelAnimation {
-							NumberAnimation {
-								property: "timeText.anchors.bottomMargin"
-								from: -dp(35)
-								to: dp(0)
-								easing.type: Easing.OutBounce
-								duration: Material.MaterialAnimation.pageTransitionDuration
-							}
+						header: Item{
+							width: 1
+							height: dp(5)
+						}
 
-							NumberAnimation {
-								property: "opacity"
-								from: 0
-								to: 1
-								easing.type: Easing.OutBounce
-								duration: Material.MaterialAnimation.pageTransitionDuration
-							}
+						footer: Item{
+							width: 1
+							height: dp(10)
+						}
 
-							ScriptAction {
-								script: {
-									if(contentm.complete) {
-										contentm.positionViewAtEnd()
-										contentm.lastVisible = true
+						add: Transition {
+							ParallelAnimation {
+								NumberAnimation {
+									property: "timeText.anchors.bottomMargin"
+									from: -dp(35)
+									to: dp(0)
+									easing.type: Easing.OutBounce
+									duration: Material.MaterialAnimation.pageTransitionDuration
+								}
+
+								NumberAnimation {
+									property: "opacity"
+									from: 0
+									to: 1
+									easing.type: Easing.OutBounce
+									duration: Material.MaterialAnimation.pageTransitionDuration
+								}
+
+								ScriptAction {
+									script: {
+										if(contentm.complete) {
+											contentm.positionViewAtEnd()
+											contentm.lastVisible = true
+										}
 									}
 								}
 							}
 						}
-					}
 
-					Material.View {
-						id: notiView
-						anchors {
-							bottom: parent.bottom
-							horizontalCenter: parent.horizontalCenter
-							bottomMargin: dp(15)
-						}
-
-						height: notiMsg.implicitHeight + dp(8)
-						width: parent.width*0.8
-
-						backgroundColor: Material.Theme.accentColor
-						elevation: 2
-						radius: 10
-
-						states: [
-							State {
-								name: "hide"; when: !(indicatorNumber > 0 && !contentm.lastVisible)
-								PropertyChanges {
-									target: notiView
-									visible: false
-								}
-							},
-							State {
-								name: "show"; when: indicatorNumber > 0 && !contentm.lastVisible
-								PropertyChanges {
-									target: notiView
-									visible: true
-								}
-							}
-						]
-
-						transitions: [
-							Transition {
-								from: "hide"; to: "show"
-
-								SequentialAnimation {
-									PropertyAction {
-										target: notiView
-										property: "visible"
-										value: true
-									}
-									ParallelAnimation {
-										NumberAnimation {
-											target: notiView
-											property: "opacity"
-											from: 0
-											to: 1
-											easing.type: Easing.InOutQuad;
-											duration: Material.MaterialAnimation.pageTransitionDuration
-										}
-										NumberAnimation {
-											target: notiView
-											property: "anchors.bottomMargin"
-											from: -notiView.height
-											to: dp(15)
-											easing.type: Easing.InOutQuad;
-											duration: Material.MaterialAnimation.pageTransitionDuration
-										}
-									}
-								}
-							},
-							Transition {
-								from: "show"; to: "hide"
-
-								SequentialAnimation {
-									ParallelAnimation {
-										NumberAnimation {
-											target: notiView
-											property: "opacity"
-											from: 1
-											to: 0
-											easing.type: Easing.InOutQuad
-											duration: Material.MaterialAnimation.pageTransitionDuration
-										}
-										NumberAnimation {
-											target: notiView
-											property: "anchors.bottomMargin"
-											from: dp(15)
-											to: -notiView.height
-											easing.type: Easing.InOutQuad
-											duration: Material.MaterialAnimation.pageTransitionDuration
-										}
-									}
-									PropertyAction {
-										target: notiView;
-										property: "visible";
-										value: false
-									}
-								}
-							}
-						]
-
-						MouseArea {
-							anchors.fill: parent
-							onClicked: contentm.positionViewAtEnd()
-						}
-
-						Text {
-							id: notiMsg
-
+						Material.View {
+							id: notiView
 							anchors {
-								top: parent.top
-								topMargin: dp(4)
-								left: parent.left
-								right: parent.right
+								bottom: parent.bottom
+								horizontalCenter: parent.horizontalCenter
+								bottomMargin: dp(15)
 							}
-							text: "New message arrived"
 
-							color: "white"
-							horizontalAlignment: TextEdit.AlignHCenter
+							height: notiMsg.implicitHeight + dp(8)
+							width: parent.width*0.8
 
-							font {
-								family: "Roboto"
-								pixelSize: dp(13)
+							backgroundColor: Material.Theme.accentColor
+							elevation: 2
+							radius: 10
+
+							states: [
+								State {
+									name: "hide"; when: !(indicatorNumber > 0 && !contentm.lastVisible)
+									PropertyChanges {
+										target: notiView
+										visible: false
+									}
+								},
+								State {
+									name: "show"; when: indicatorNumber > 0 && !contentm.lastVisible
+									PropertyChanges {
+										target: notiView
+										visible: true
+									}
+								}
+							]
+
+							transitions: [
+								Transition {
+									from: "hide"; to: "show"
+
+									SequentialAnimation {
+										PropertyAction {
+											target: notiView
+											property: "visible"
+											value: true
+										}
+										ParallelAnimation {
+											NumberAnimation {
+												target: notiView
+												property: "opacity"
+												from: 0
+												to: 1
+												easing.type: Easing.InOutQuad;
+												duration: Material.MaterialAnimation.pageTransitionDuration
+											}
+											NumberAnimation {
+												target: notiView
+												property: "anchors.bottomMargin"
+												from: -notiView.height
+												to: dp(15)
+												easing.type: Easing.InOutQuad;
+												duration: Material.MaterialAnimation.pageTransitionDuration
+											}
+										}
+									}
+								},
+								Transition {
+									from: "show"; to: "hide"
+
+									SequentialAnimation {
+										ParallelAnimation {
+											NumberAnimation {
+												target: notiView
+												property: "opacity"
+												from: 1
+												to: 0
+												easing.type: Easing.InOutQuad
+												duration: Material.MaterialAnimation.pageTransitionDuration
+											}
+											NumberAnimation {
+												target: notiView
+												property: "anchors.bottomMargin"
+												from: dp(15)
+												to: -notiView.height
+												easing.type: Easing.InOutQuad
+												duration: Material.MaterialAnimation.pageTransitionDuration
+											}
+										}
+										PropertyAction {
+											target: notiView;
+											property: "visible";
+											value: false
+										}
+									}
+								}
+							]
+
+							MouseArea {
+								anchors.fill: parent
+								onClicked: contentm.positionViewAtEnd()
+							}
+
+							Text {
+								id: notiMsg
+
+								anchors {
+									top: parent.top
+									topMargin: dp(4)
+									left: parent.left
+									right: parent.right
+								}
+								text: "New message arrived"
+
+								color: "white"
+								horizontalAlignment: TextEdit.AlignHCenter
+
+								font {
+									family: "Roboto"
+									pixelSize: dp(13)
+								}
 							}
 						}
 					}
-				}
-
-				Material.Scrollbar {
-					anchors.margins: 0
-					flickableItem: contentm
 				}
 			}
 
@@ -634,47 +631,45 @@ Card {
 									id: emojiPickerField
 									anchors.fill: parent
 
-									GridView {
-										id: emojiGridView
+									ScrollView {
 										anchors {
 											fill: parent
 											leftMargin: dp(13)
 											rightMargin: dp(13)
 										}
-										clip: true
 
-										property int idealCellHeight: dp(36)
-										property int idealCellWidth: dp(36)
+										GridView {
+											id: emojiGridView
+											clip: true
 
-										cellHeight: idealCellHeight
-										cellWidth: width / Math.floor(width / idealCellWidth)
+											property int idealCellHeight: dp(36)
+											property int idealCellWidth: dp(36)
 
-										model: Object.keys(EmojiOneJson.emojiAlphaCodes)
-										delegate: Item {
-											width: GridView.view.cellWidth
-											height: GridView.view.cellHeight
+											cellHeight: idealCellHeight
+											cellWidth: width / Math.floor(width / idealCellWidth)
 
-											Image {
-												width: dp(28)
-												height: dp(28)
-												source: "qrc:/32/"+ Object.keys(EmojiOneJson.emojiAlphaCodes)[index] +".png"
+											model: Object.keys(EmojiOneJson.emojiAlphaCodes)
+											delegate: Item {
+												width: GridView.view.cellWidth
+												height: GridView.view.cellHeight
 
-												MouseArea {
-													anchors.fill: parent
+												Image {
+													width: dp(28)
+													height: dp(28)
+													source: "qrc:/32/"+ Object.keys(EmojiOneJson.emojiAlphaCodes)[index] +".png"
 
-													onClicked: {
-														msgBox.insert(msgBox.cursorPosition, EmojiOneJson.emojiAlphaCodes[Object.keys(EmojiOneJson.emojiAlphaCodes)[index]]["alpha_code"])
-														emojiPicker.close()
-														msgBox.focus = true
+													MouseArea {
+														anchors.fill: parent
+
+														onClicked: {
+															msgBox.insert(msgBox.cursorPosition, EmojiOneJson.emojiAlphaCodes[Object.keys(EmojiOneJson.emojiAlphaCodes)[index]]["alpha_code"])
+															emojiPicker.close()
+															msgBox.focus = true
+														}
 													}
 												}
 											}
 										}
-									}
-
-									Material.Scrollbar {
-										anchors.margins: 0
-										flickableItem: emojiGridView
 									}
 								}
 							}
@@ -802,9 +797,7 @@ Card {
 				}
 			}
 
-			ListView {
-				id: roomFriendsList
-
+			ScrollView {
 				anchors {
 					top: chat.width < 6*dp(60) ? parent.top : filterItem.bottom
 					bottom: parent.bottom
@@ -812,166 +805,165 @@ Card {
 					right: parent.right
 				}
 
-				clip: true
-				snapMode: ListView.NoSnap
-				flickableDirection: Flickable.AutoFlickDirection
+				ListView {
+					id: roomFriendsList
 
-				model: roomParticipantsSortModel
+					clip: true
+					snapMode: ListView.NoSnap
+					flickableDirection: Flickable.AutoFlickDirection
 
-				delegate: RoomFriend {
-					id: roomFriend
-					property string avatar: (gxs_avatars.getAvatar(model.gxs_id) == "none"
-											 || gxs_avatars.getAvatar(model.gxs_id) == "")
-											? "none"
-											: gxs_avatars.getAvatar(model.gxs_id)
+					model: roomParticipantsSortModel
 
-					onAvatarChanged: {
-						imageSource = avatar
-						image.loadImage(avatar)
-					}
+					delegate: RoomFriend {
+						id: roomFriend
+						property string avatar: (gxs_avatars.getAvatar(model.gxs_id) == "none"
+												 || gxs_avatars.getAvatar(model.gxs_id) == "")
+												? "none"
+												: gxs_avatars.getAvatar(model.gxs_id)
 
-					width: parent.width
-
-					text: model.name
-					textColor: Material.Theme.light.textColor
-					itemLabel.style: "body1"
-
-					imageSource: avatar
-					isIcon: avatar == "none"
-					iconName: "awesome/user_o"
-					iconSize: dp(32)
-
-					Component.onCompleted: {
-						if(gxs_avatars.getAvatar(model.gxs_id) == "")
-							getIdentityAvatar()
-					}
-
-					function getIdentityAvatar() {
-						var jsonData = {
-							gxs_id: model.gxs_id
+						onAvatarChanged: {
+							imageSource = avatar
+							image.loadImage(avatar)
 						}
 
-						function callbackFn(par) {
-							var json = JSON.parse(par.response)
-							if(json.returncode == "fail") {
+						width: parent.width
+
+						text: model.name
+						textColor: Material.Theme.light.textColor
+						itemLabel.style: "body1"
+
+						imageSource: avatar
+						isIcon: avatar == "none"
+						iconName: "awesome/user_o"
+						iconSize: dp(32)
+
+						Component.onCompleted: {
+							if(gxs_avatars.getAvatar(model.gxs_id) == "")
 								getIdentityAvatar()
-								return
+						}
+
+						function getIdentityAvatar() {
+							var jsonData = {
+								gxs_id: model.gxs_id
 							}
 
-							gxs_avatars.storeAvatar(model.gxs_id, json.data.avatar)
-							if(gxs_avatars.getAvatar(model.gxs_id) != "none")
-								avatar = gxs_avatars.getAvatar(model.gxs_id)
+							function callbackFn(par) {
+								var json = JSON.parse(par.response)
+								if(json.returncode == "fail") {
+									getIdentityAvatar()
+									return
+								}
+
+								gxs_avatars.storeAvatar(model.gxs_id, json.data.avatar)
+								if(gxs_avatars.getAvatar(model.gxs_id) != "none")
+									avatar = gxs_avatars.getAvatar(model.gxs_id)
+							}
+
+							rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
 						}
 
-						rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+						MouseArea {
+							anchors.fill: parent
+							acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+							onClicked: {
+								if(mouse.button == Qt.RightButton)
+									if(mainGUIObject.advmode || !model.own)
+										overflowMenu2.open(roomFriend, mouse.x, mouse.y)
+							}
+
+							onDoubleClicked: {
+								if(mouse.button == Qt.LeftButton)
+									if(!model.own)
+										mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+							}
+						}
+
+						Material.Dropdown {
+							id: overflowMenu2
+							objectName: "overflowMenu"
+							overlayLayer: "dialogOverlayLayer"
+							width: dp(200)
+							height: (mainGUIObject.advmode
+									 ? (model.is_contact
+										? model.own ? dp(1*30) : dp(2*30)
+										: model.own ? dp(2*30) : dp(3*30))
+									 : (model.is_contact
+										? model.own ? dp(0) : dp(1*30)
+										: model.own ? dp(1*30) : dp(2*30)))
+							enabled: true
+							anchor: Item.TopLeft
+							durationSlow: 300
+							durationFast: 150
+
+							Column {
+								anchors.fill: parent
+
+								ListItem.Standard {
+									height: dp(30)
+									text: "Add to contacts"
+									itemLabel.style: "menu"
+
+									visible: !model.is_contact
+									enabled: !model.is_contact
+
+									onClicked: {
+										overflowMenu2.close()
+
+										var jsonData = {
+											gxs_id: model.gxs_id
+										}
+
+										rsApi.request("/identity/add_contact", JSON.stringify(jsonData), function(){})
+									}
+								}
+
+								ListItem.Standard {
+									height: dp(30)
+									text: "Chat"
+									itemLabel.style: "menu"
+
+									visible: !model.own
+									enabled: !model.own
+
+									onClicked: {
+										overflowMenu2.close()
+										mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+									}
+								}
+
+								ListItem.Standard {
+									height: dp(30)
+									text: "Details"
+									itemLabel.style: "menu"
+
+									enabled: mainGUIObject.advmode
+									visible: mainGUIObject.advmode
+
+									onClicked: {
+										overflowMenu2.close()
+										identityDetailsDialog.showIdentity(model.name, model.gxs_id)
+									}
+								}
+							}
+						}
 					}
 
-					MouseArea {
-						anchors.fill: parent
-						acceptedButtons: Qt.LeftButton | Qt.RightButton
+					footer: RoomFriend {
+						width: parent.width
+
+						text: "Invite to room"
+						textColor: Material.Theme.light.hintColor
+						itemLabel.style: "body1"
+
+						iconName: "awesome/plus"
+						iconColor: Material.Theme.light.hintColor
 
 						onClicked: {
-							if(mouse.button == Qt.RightButton)
-								if(mainGUIObject.advmode || !model.own)
-									overflowMenu2.open(roomFriend, mouse.x, mouse.y)
-						}
-
-						onDoubleClicked: {
-							if(mouse.button == Qt.LeftButton)
-								if(!model.own)
-									mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
-						}
-					}
-
-					Material.Dropdown {
-						id: overflowMenu2
-						objectName: "overflowMenu"
-						overlayLayer: "dialogOverlayLayer"
-						width: dp(200)
-						height: (mainGUIObject.advmode
-								 ? (model.is_contact
-									? model.own ? dp(1*30) : dp(2*30)
-									: model.own ? dp(2*30) : dp(3*30))
-								 : (model.is_contact
-									? model.own ? dp(0) : dp(1*30)
-									: model.own ? dp(1*30) : dp(2*30)))
-						enabled: true
-						anchor: Item.TopLeft
-						durationSlow: 300
-						durationFast: 150
-
-						Column {
-							anchors.fill: parent
-
-							ListItem.Standard {
-								height: dp(30)
-								text: "Add to contacts"
-								itemLabel.style: "menu"
-
-								visible: !model.is_contact
-								enabled: !model.is_contact
-
-								onClicked: {
-									overflowMenu2.close()
-
-									var jsonData = {
-										gxs_id: model.gxs_id
-									}
-
-									rsApi.request("/identity/add_contact", JSON.stringify(jsonData), function(){})
-								}
-							}
-
-							ListItem.Standard {
-								height: dp(30)
-								text: "Chat"
-								itemLabel.style: "menu"
-
-								visible: !model.own
-								enabled: !model.own
-
-								onClicked: {
-									overflowMenu2.close()
-									mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
-								}
-							}
-
-							ListItem.Standard {
-								height: dp(30)
-								text: "Details"
-								itemLabel.style: "menu"
-
-								enabled: mainGUIObject.advmode
-								visible: mainGUIObject.advmode
-
-								onClicked: {
-									overflowMenu2.close()
-									identityDetailsDialog.showIdentity(model.name, model.gxs_id)
-								}
-							}
+							addFriendRoom.show()
 						}
 					}
 				}
-
-				footer: RoomFriend {
-					width: parent.width
-
-					text: "Invite to room"
-					textColor: Material.Theme.light.hintColor
-					itemLabel.style: "body1"
-
-					iconName: "awesome/plus"
-					iconColor: Material.Theme.light.hintColor
-
-					onClicked: {
-						addFriendRoom.show()
-					}
-				}
-			}
-
-			Material.Scrollbar {
-				anchors.margins: 0
-				flickableItem: roomFriendsList
 			}
 		}
 
@@ -1075,91 +1067,88 @@ Card {
 					}
 				}
 
-				ListView {
-					id: addRoomFriendsList
-
+				ScrollView {
 					anchors {
 						fill: parent
 						topMargin: dp(25)
 					}
 
-					clip: true
-					snapMode: ListView.NoSnap
-					flickableDirection: Flickable.AutoFlickDirection
+					ListView {
+						id: addRoomFriendsList
 
-					model: roomInvitationSortModel
+						clip: true
+						snapMode: ListView.NoSnap
+						flickableDirection: Flickable.AutoFlickDirection
 
-					delegate: RoomFriend {
-						property string avatar: (gxs_avatars.getAvatar(model.gxs_id) == "none"
-												 || gxs_avatars.getAvatar(model.gxs_id) == "")
-												? "none"
-												: gxs_avatars.getAvatar(model.gxs_id)
+						model: roomInvitationSortModel
 
-						onAvatarChanged: {
-							imageSource = avatar
-							image.loadImage(avatar)
-						}
+						delegate: RoomFriend {
+							property string avatar: (gxs_avatars.getAvatar(model.gxs_id) == "none"
+													 || gxs_avatars.getAvatar(model.gxs_id) == "")
+													? "none"
+													: gxs_avatars.getAvatar(model.gxs_id)
 
-						width: parent.width
-
-						text: model.name
-						textColor: selected ? Material.Theme.primaryColor : Material.Theme.light.textColor
-						itemLabel.style: "body1"
-
-						imageSource: avatar
-						isIcon: avatar == "none"
-						iconName: "awesome/user_o"
-						iconSize: dp(32)
-
-						Connections {
-							target: addFriendRoom
-							onClosed: selected = false
-						}
-
-						Component.onCompleted: {
-							if(gxs_avatars.getAvatar(model.gxs_id) == "")
-								getIdentityAvatar()
-						}
-
-						function getIdentityAvatar() {
-							var jsonData = {
-								gxs_id: model.gxs_id
+							onAvatarChanged: {
+								imageSource = avatar
+								image.loadImage(avatar)
 							}
 
-							function callbackFn(par) {
-								var json = JSON.parse(par.response)
-								if(json.returncode == "fail") {
+							width: parent.width
+
+							text: model.name
+							textColor: selected ? Material.Theme.primaryColor : Material.Theme.light.textColor
+							itemLabel.style: "body1"
+
+							imageSource: avatar
+							isIcon: avatar == "none"
+							iconName: "awesome/user_o"
+							iconSize: dp(32)
+
+							Connections {
+								target: addFriendRoom
+								onClosed: selected = false
+							}
+
+							Component.onCompleted: {
+								if(gxs_avatars.getAvatar(model.gxs_id) == "")
 									getIdentityAvatar()
-									return
+							}
+
+							function getIdentityAvatar() {
+								var jsonData = {
+									gxs_id: model.gxs_id
 								}
 
-								gxs_avatars.storeAvatar(model.gxs_id, json.data.avatar)
-								if(gxs_avatars.getAvatar(model.gxs_id) != "none")
-									avatar = gxs_avatars.getAvatar(model.gxs_id)
+								function callbackFn(par) {
+									var json = JSON.parse(par.response)
+									if(json.returncode == "fail") {
+										getIdentityAvatar()
+										return
+									}
+
+									gxs_avatars.storeAvatar(model.gxs_id, json.data.avatar)
+									if(gxs_avatars.getAvatar(model.gxs_id) != "none")
+										avatar = gxs_avatars.getAvatar(model.gxs_id)
+								}
+
+								rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
 							}
 
-							rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+							onClicked: {
+								if(selected)
+									addFriendRoom.pgpsList.splice(addFriendRoom.pgpsList.indexOf(model.pgp_id), 1)
+								else
+									addFriendRoom.pgpsList.push(model.pgp_id)
+
+								selected = !selected
+							}
 						}
 
-						onClicked: {
-							if(selected)
-								addFriendRoom.pgpsList.splice(addFriendRoom.pgpsList.indexOf(model.pgp_id), 1)
-							else
-								addFriendRoom.pgpsList.push(model.pgp_id)
-
-							selected = !selected
+						header: Item {
+							height: dp(15)
+							width: parent.width
 						}
 					}
-
-					header: Item {
-						height: dp(15)
-						width: parent.width
-					}
-				}
-
-				Material.Scrollbar {
-					anchors.margins: 0
-					flickableItem: addRoomFriendsList
 				}
 			}
 		}

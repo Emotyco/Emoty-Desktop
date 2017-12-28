@@ -189,188 +189,185 @@ Card {
 				rightMargin: dp(15)
 			}
 
-			ListView {
-				id: contentm
-
-				property bool lastVisible: true
-				property bool complete: false
-				Component.onCompleted: complete = true
-
+			ScrollView {
 				anchors {
 					fill: parent
 					leftMargin: dp(5)
 					rightMargin: dp(5)
 				}
 
-				clip: true
-				snapMode: ListView.NoSnap
-				flickableDirection: Flickable.AutoFlickDirection
+				ListView {
+					id: contentm
 
-				model: messagesModel
-				delegate: ChatMsgDelegate{}
+					property bool lastVisible: true
+					property bool complete: false
+					Component.onCompleted: complete = true
 
-				header: Item {
-					width: 1
-					height: dp(5)
-				}
+					clip: true
+					snapMode: ListView.NoSnap
+					flickableDirection: Flickable.AutoFlickDirection
 
-				footer: Item{
-					width: 1
-					height: dp(15)
-				}
+					model: messagesModel
+					delegate: ChatMsgDelegate{}
 
-				add: Transition {
-					ParallelAnimation {
-						NumberAnimation {
-							property: "timeText.anchors.bottomMargin"
-							from: -dp(35)
-							to: dp(0)
-							easing.type: Easing.OutBounce
-							duration: Material.MaterialAnimation.pageTransitionDuration
-						}
+					header: Item {
+						width: 1
+						height: dp(5)
+					}
 
-						NumberAnimation {
-							property: "opacity"
-							from: 0
-							to: 1
-							easing.type: Easing.OutBounce
-							duration: Material.MaterialAnimation.pageTransitionDuration
-						}
+					footer: Item{
+						width: 1
+						height: dp(15)
+					}
 
-						ScriptAction {
-							script: {
-								if(contentm.complete) {
-									contentm.positionViewAtEnd()
-									contentm.lastVisible = true
+					add: Transition {
+						ParallelAnimation {
+							NumberAnimation {
+								property: "timeText.anchors.bottomMargin"
+								from: -dp(35)
+								to: dp(0)
+								easing.type: Easing.OutBounce
+								duration: Material.MaterialAnimation.pageTransitionDuration
+							}
+
+							NumberAnimation {
+								property: "opacity"
+								from: 0
+								to: 1
+								easing.type: Easing.OutBounce
+								duration: Material.MaterialAnimation.pageTransitionDuration
+							}
+
+							ScriptAction {
+								script: {
+									if(contentm.complete) {
+										contentm.positionViewAtEnd()
+										contentm.lastVisible = true
+									}
 								}
 							}
 						}
 					}
-				}
 
-				Material.View {
-					id: notiView
-					anchors {
-						bottom: parent.bottom
-						horizontalCenter: parent.horizontalCenter
-						bottomMargin: dp(15)
-					}
-
-					height: notiMsg.implicitHeight + dp(8)
-					width: parent.width*0.8
-
-					backgroundColor: Material.Theme.accentColor
-					elevation: 2
-					radius: 10
-
-					states: [
-						State {
-							name: "hide"; when: !(indicatorNumber > 0 && !contentm.lastVisible)
-							PropertyChanges {
-								target: notiView
-								visible: false
-							}
-						},
-						State {
-							name: "show"; when: indicatorNumber > 0 && !contentm.lastVisible
-							PropertyChanges {
-								target: notiView
-								visible: true
-							}
-						}
-					]
-
-					transitions: [
-						Transition {
-							from: "hide"; to: "show"
-
-							SequentialAnimation {
-								PropertyAction {
-									target: notiView
-									property: "visible"
-									value: true
-								}
-								ParallelAnimation {
-									NumberAnimation {
-										target: notiView
-										property: "opacity"
-										from: 0
-										to: 1
-										easing.type: Easing.InOutQuad;
-										duration: Material.MaterialAnimation.pageTransitionDuration
-									}
-									NumberAnimation {
-										target: notiView
-										property: "anchors.bottomMargin"
-										from: -notiView.height
-										to: dp(15)
-										easing.type: Easing.InOutQuad;
-										duration: Material.MaterialAnimation.pageTransitionDuration
-									}
-								}
-							}
-						},
-						Transition {
-							from: "show"; to: "hide"
-
-							SequentialAnimation {
-								ParallelAnimation {
-									NumberAnimation {
-										target: notiView
-										property: "opacity"
-										from: 1
-										to: 0
-										easing.type: Easing.InOutQuad
-										duration: Material.MaterialAnimation.pageTransitionDuration
-									}
-									NumberAnimation {
-										target: notiView
-										property: "anchors.bottomMargin"
-										from: dp(15)
-										to: -notiView.height
-										easing.type: Easing.InOutQuad
-										duration: Material.MaterialAnimation.pageTransitionDuration
-									}
-								}
-								PropertyAction {
-									target: notiView;
-									property: "visible";
-									value: false
-								}
-							}
-						}
-					]
-
-					MouseArea {
-						anchors.fill: parent
-						onClicked: contentm.positionViewAtEnd()
-					}
-
-					Text {
-						id: notiMsg
-
+					Material.View {
+						id: notiView
 						anchors {
-							top: parent.top
-							topMargin: dp(4)
-							left: parent.left
-							right: parent.right
+							bottom: parent.bottom
+							horizontalCenter: parent.horizontalCenter
+							bottomMargin: dp(15)
 						}
-						text: "New message arrived"
 
-						color: "white"
-						horizontalAlignment: TextEdit.AlignHCenter
+						height: notiMsg.implicitHeight + dp(8)
+						width: parent.width*0.8
 
-						font {
-							family: "Roboto"
-							pixelSize: dp(13)
+						backgroundColor: Material.Theme.accentColor
+						elevation: 2
+						radius: 10
+
+						states: [
+							State {
+								name: "hide"; when: !(indicatorNumber > 0 && !contentm.lastVisible)
+								PropertyChanges {
+									target: notiView
+									visible: false
+								}
+							},
+							State {
+								name: "show"; when: indicatorNumber > 0 && !contentm.lastVisible
+								PropertyChanges {
+									target: notiView
+									visible: true
+								}
+							}
+						]
+
+						transitions: [
+							Transition {
+								from: "hide"; to: "show"
+
+								SequentialAnimation {
+									PropertyAction {
+										target: notiView
+										property: "visible"
+										value: true
+									}
+									ParallelAnimation {
+										NumberAnimation {
+											target: notiView
+											property: "opacity"
+											from: 0
+											to: 1
+											easing.type: Easing.InOutQuad;
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+										NumberAnimation {
+											target: notiView
+											property: "anchors.bottomMargin"
+											from: -notiView.height
+											to: dp(15)
+											easing.type: Easing.InOutQuad;
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+									}
+								}
+							},
+							Transition {
+								from: "show"; to: "hide"
+
+								SequentialAnimation {
+									ParallelAnimation {
+										NumberAnimation {
+											target: notiView
+											property: "opacity"
+											from: 1
+											to: 0
+											easing.type: Easing.InOutQuad
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+										NumberAnimation {
+											target: notiView
+											property: "anchors.bottomMargin"
+											from: dp(15)
+											to: -notiView.height
+											easing.type: Easing.InOutQuad
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+									}
+									PropertyAction {
+										target: notiView;
+										property: "visible";
+										value: false
+									}
+								}
+							}
+						]
+
+						MouseArea {
+							anchors.fill: parent
+							onClicked: contentm.positionViewAtEnd()
+						}
+
+						Text {
+							id: notiMsg
+
+							anchors {
+								top: parent.top
+								topMargin: dp(4)
+								left: parent.left
+								right: parent.right
+							}
+							text: "New message arrived"
+
+							color: "white"
+							horizontalAlignment: TextEdit.AlignHCenter
+
+							font {
+								family: "Roboto"
+								pixelSize: dp(13)
+							}
 						}
 					}
 				}
-			}
-
-			Material.Scrollbar {
-				anchors.margins: 0
-				flickableItem: contentm
 			}
 		}
 
@@ -762,47 +759,46 @@ Card {
 								id: emojiPickerField
 								anchors.fill: parent
 
-								GridView {
-									id: emojiGridView
+								ScrollView {
 									anchors {
 										fill: parent
 										leftMargin: dp(13)
 										rightMargin: dp(13)
 									}
-									clip: true
 
-									property int idealCellHeight: dp(36)
-									property int idealCellWidth: dp(36)
+									GridView {
+										id: emojiGridView
 
-									cellHeight: idealCellHeight
-									cellWidth: width / Math.floor(width / idealCellWidth)
+										property int idealCellHeight: dp(36)
+										property int idealCellWidth: dp(36)
 
-									model: Object.keys(EmojiOneJson.emojiAlphaCodes)
-									delegate: Item {
-										width: GridView.view.cellWidth
-										height: GridView.view.cellHeight
+										clip: true
 
-										Image {
-											width: dp(28)
-											height: dp(28)
-											source: "qrc:/32/"+ Object.keys(EmojiOneJson.emojiAlphaCodes)[index] +".png"
+										cellHeight: idealCellHeight
+										cellWidth: width / Math.floor(width / idealCellWidth)
 
-											MouseArea {
-												anchors.fill: parent
+										model: Object.keys(EmojiOneJson.emojiAlphaCodes)
+										delegate: Item {
+											width: GridView.view.cellWidth
+											height: GridView.view.cellHeight
 
-												onClicked: {
-													msgBox.insert(msgBox.cursorPosition, EmojiOneJson.emojiAlphaCodes[Object.keys(EmojiOneJson.emojiAlphaCodes)[index]]["alpha_code"])
-													emojiPicker.close()
-													msgBox.focus = true
+											Image {
+												width: dp(28)
+												height: dp(28)
+												source: "qrc:/32/"+ Object.keys(EmojiOneJson.emojiAlphaCodes)[index] +".png"
+
+												MouseArea {
+													anchors.fill: parent
+
+													onClicked: {
+														msgBox.insert(msgBox.cursorPosition, EmojiOneJson.emojiAlphaCodes[Object.keys(EmojiOneJson.emojiAlphaCodes)[index]]["alpha_code"])
+														emojiPicker.close()
+														msgBox.focus = true
+													}
 												}
 											}
 										}
 									}
-								}
-
-								Material.Scrollbar {
-									anchors.margins: 0
-									flickableItem: emojiGridView
 								}
 							}
 						}
