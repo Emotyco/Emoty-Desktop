@@ -753,6 +753,20 @@ Card {
 					elevation: 1
 					backgroundColor: "white"
 
+					MouseArea {
+						anchors.fill: parent
+						hoverEnabled: true
+
+						onEntered: {
+							friendFilter.elevation = 2
+						}
+						onExited: {
+							if(msgBox2.activeFocus == false)
+								friendFilter.elevation = 1
+						}
+						onClicked: msgBox2.forceActiveFocus()
+					}
+
 					Material.TextField {
 						id: msgBox2
 
@@ -792,6 +806,16 @@ Card {
 
 							if(mainGUIObject.advmode)
 								roomParticipantsSortModel.setSearchText(text)
+						}
+
+						onHoveredChanged: {
+							if(hovered) {
+								friendFilter.elevation = 2
+							}
+							else {
+								if(msgBox2.activeFocus == false)
+									friendFilter.elevation = 1
+							}
 						}
 					}
 				}
