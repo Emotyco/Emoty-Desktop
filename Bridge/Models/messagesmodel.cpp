@@ -130,6 +130,13 @@ void MessagesModel::loadJSONMessages(QString json)
 	}
 }
 
+void MessagesModel::clear()
+{
+	beginRemoveRows(QModelIndex(), 0, messageData.size());
+	messageData.clear();
+	endRemoveRows();
+}
+
 int MessagesModel::rowCount(const QModelIndex &) const
 {
 	return messageData.size();

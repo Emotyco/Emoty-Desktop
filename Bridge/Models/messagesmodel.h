@@ -54,6 +54,7 @@ public:
 
 public slots:
 	void loadJSONMessages(QString json);
+	void clear();
 
 protected:
 	virtual QHash<int, QByteArray> roleNames() const;

@@ -29,6 +29,7 @@ DragTile {
 	id: dragTile
 
 	default property alias contentData: content.data
+	property alias headerData: additionalHeaderData.data
 	property string headerName
 	property int cardIndex
 	property int indicatorNumber: 0
@@ -180,6 +181,20 @@ DragTile {
 					}
 
 					Item {
+						id: additionalHeaderData
+
+						anchors {
+							left: headertext.right
+							right: closeItem.left
+							top: parent.top
+							bottom: parent.bottom
+							rightMargin: dp(18)
+							leftMargin: dp(18)
+						}
+					}
+
+					Item {
+						id: closeItem
 						anchors {
 							verticalCenter: parent.verticalCenter
 							right: parent.right
