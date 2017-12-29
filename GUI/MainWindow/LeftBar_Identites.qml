@@ -232,11 +232,7 @@ Rectangle {
 			selected: mainGUIObject.defaultGxsId === model.own_gxs_id
 			itemLabel.style: "body1"
 
-			onClicked: {
-				mainGUIObject.defaultGxsName = model.name
-				mainGUIObject.defaultGxsId = model.own_gxs_id
-				mainGUIObject.getDefaultAvatar()
-			}
+			onClicked: setDefaultIdentity(model.own_gxs_id)
 
 			MouseArea {
 				anchors.fill: parent

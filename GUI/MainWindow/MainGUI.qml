@@ -248,6 +248,38 @@ Rectangle {
 		rsApi.request("/chat/get_invitations_to_lobby", "", callbackFn)
 	}
 
+	function getDefaultIdentity() {
+		function callbackFn(par) {
+			var json = JSON.parse(par.response)
+			if(json.returncode == "fail") {
+				getDefaultIdentity()
+				return
+			}
+
+			defaultGxsId = json.data.gxs_id
+			for(var i = 0; i < ownGxsIdModel.count; i++) {
+				if(ownGxsIdModel.model.get(i).own_gxs_id == defaultGxsId)
+					defaultGxsName = ownGxsIdModel.model.get(i).name
+			}
+
+			getDefaultAvatar()
+		}
+
+		rsApi.request("/chat/get_default_identity_for_chat_lobby", "", callbackFn)
+	}
+
+	function setDefaultIdentity(gxs_id) {
+		var jsonData = {
+			gxs_id: gxs_id
+		}
+
+		function callbackFn(par) {
+			getDefaultIdentity()
+		}
+
+		rsApi.request("/chat/set_default_identity_for_chat_lobby", JSON.stringify(jsonData), callbackFn)
+	}
+
 	Connections {
 		target: view
 		onHeightChanged: gridLayout.reorder()
@@ -265,9 +297,7 @@ Rectangle {
 		query: "$.data[*]"
 
 		model.onCountChanged: {
-			defaultGxsName = ownGxsIdModel.model.get(0).name
-			defaultGxsId = ownGxsIdModel.model.get(0).own_gxs_id
-			getDefaultAvatar()
+			getDefaultIdentity()
 		}
 	}
 
