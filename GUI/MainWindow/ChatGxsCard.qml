@@ -77,7 +77,7 @@ Card {
 	}
 
 	function getChatAvatar(gxs_id) {
-		if(gxs_avatars.getAvatar(defaultGxsId) == "") {
+		if(gxs_avatars.getAvatar(gxs_id) == "") {
 			var jsonData = {
 				gxs_id: gxs_id
 			}
@@ -85,7 +85,7 @@ Card {
 			function callbackFn(par) {
 				var json = JSON.parse(par.response)
 				if(json.returncode == "fail") {
-					getChatAvatar()
+					getChatAvatar(gxs_id)
 					return
 				}
 
@@ -758,19 +758,17 @@ Card {
 				elevation: 1
 				radius: 10
 
-
-				TextEdit {
+				Text {
 					id: textMsg
 
 					anchors {
 						top: parent.top
 						topMargin: dp(6)
-						left: parent.left
-						right: parent.right
+						horizontalCenter: parent.horizontalCenter
 					}
 
 					text: chatCard.status == 0 ? "Something goes wrong..."
-						: chatCard.status == 1 ? "Tunnel is pending..."
+						: chatCard.status == 1 ? "Tunnel is pending"
 						: chatCard.status == 2 ? "Connection is established"
 						: chatCard.status == 3 ? "Your friend closed chat."
 						: "Something goes wrong..."
@@ -779,15 +777,47 @@ Card {
 					wrapMode: Text.WordWrap
 
 					color: "white"
-					readOnly: true
-
-					selectByMouse: false
-
 					horizontalAlignment: TextEdit.AlignHCenter
 
 					font {
 						family: "Roboto"
 						pixelSize: dp(13)
+					}
+
+					Text {
+						id: dots
+						anchors {
+							left: textMsg.right
+							top: parent.top
+						}
+
+						font {
+							family: "Roboto"
+							pixelSize: dp(13)
+						}
+
+						textFormat: Text.RichText
+						wrapMode: Text.WordWrap
+						color: "white"
+
+						visible: chatCard.status == 1
+						enabled: chatCard.status == 1
+
+						function addDot() {
+							if(dots.text != "...")
+								dots.text += "."
+							else
+								dots.text = ""
+						}
+
+						Timer {
+							running: chatCard.status == 1
+							repeat: chatCard.status == 1
+							interval: 500
+							onTriggered: {
+								dots.addDot()
+							}
+						}
 					}
 				}
 			}
