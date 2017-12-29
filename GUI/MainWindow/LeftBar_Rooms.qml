@@ -90,6 +90,7 @@ Rectangle {
 
 		function callbackFn(par) {
 			getLobbies()
+			setAutosubsribeLobby(chatId, true)
 		}
 
 		rsApi.request("/chat/subscribe_lobby/", JSON.stringify(jsonData), callbackFn)

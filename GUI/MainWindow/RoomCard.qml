@@ -37,6 +37,9 @@ Card {
 	property var chatId
 	property int statusTimestamp: 0
 
+	property string ownGxsId
+	property string ownAvatar
+
 	property string typingIdentityName: ""
 	property int typingTimestamp: 0
 	property bool isTyping: false
@@ -139,7 +142,59 @@ Card {
 		rsApi.request("/chat/receive_status/"+chatId, "", callbackFn)
 	}
 
+	function getChatAvatar(gxs_id) {
+		if(gxs_avatars.getAvatar(gxs_id) == "") {
+			var jsonData = {
+				gxs_id: gxs_id
+			}
+
+			function callbackFn(par) {
+				var json = JSON.parse(par.response)
+				if(json.returncode == "fail") {
+					getChatAvatar(gxs_id)
+					return
+				}
+
+				gxs_avatars.storeAvatar(gxs_id, json.data.avatar)
+				ownAvatar = gxs_avatars.getAvatar(gxs_id)
+			}
+
+			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+		}
+		else
+			ownAvatar = gxs_avatars.getAvatar(gxs_id)
+	}
+
+	function getLobbyIdentity() {
+		var jsonData = {
+			chat_id: roomCard.chatId
+		}
+
+		function callbackFn(par) {
+			var json = JSON.parse(par.response)
+			ownGxsId = json.data.gxs_id
+			getChatAvatar(ownGxsId)
+		}
+
+		rsApi.request("/chat/get_identity_for_chat_lobby", JSON.stringify(jsonData), callbackFn)
+	}
+
+	function setLobbyIdentity(gxs_id) {
+		var jsonData = {
+			chat_id: chatId,
+			gxs_id: gxs_id
+		}
+
+		function callbackFn(par) {
+			getLobbyIdentity()
+		}
+
+		rsApi.request("/chat/set_identity_for_chat_lobby", JSON.stringify(jsonData), callbackFn)
+	}
+
 	Component.onCompleted: {
+		getLobbyIdentity()
+
 		getLobbyMessages();
 		getLobbyParticipants()
 		getContacts()
@@ -170,6 +225,254 @@ Card {
 
 	MessagesModel {
 		id: messagesModel
+	}
+
+	headerData: Item {
+		id: changeIdItem
+		anchors {
+			right: parent.right
+			verticalCenter: parent.verticalCenter
+		}
+
+		width: dp(24)
+		height: dp(24)
+
+		Canvas {
+			id: image
+			anchors.fill: parent
+
+			Connections {
+				target: roomCard
+				onOwnAvatarChanged: {
+					if(ownAvatar != "none")
+						image.loadImage(ownAvatar)
+				}
+			}
+
+			visible: ownAvatar != "none"
+			enabled: ownAvatar != "none"
+			onPaint: {
+				var ctx = getContext("2d");
+				if (image.isImageLoaded(ownAvatar)) {
+					var profile = Qt.createQmlObject('
+                        import QtQuick 2.5;
+                        Image{
+                            source: "'+ownAvatar+'";
+                            visible:false;
+                            /*fillMode: Image.PreserveAspectCrop*/
+                        }', image);
+
+					var centreX = width/2;
+					var centreY = height/2;
+
+					ctx.save()
+					ctx.beginPath();
+					ctx.moveTo(centreX, centreY);
+					ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
+					ctx.clip();
+					ctx.drawImage(profile, 0, 0, image.width, image.height);
+					ctx.restore()
+				}
+			}
+			onImageLoaded:requestPaint()
+
+			Rectangle {
+				id: shaderMask
+				anchors.fill: parent
+				color: Qt.rgba(0,0,0,0.2)
+				opacity: 0
+				radius: width/2
+
+				Behavior on opacity {
+					NumberAnimation {
+						duration: Material.MaterialAnimation.pageTransitionDuration
+					}
+				}
+			}
+
+			Material.Ink {
+				anchors.fill: parent
+				circular:true
+
+				onEntered: shaderMask.opacity = 1
+				onExited: shaderMask.opacity = 0
+				onClicked: changeIdentity.open(changeIdItem, 0, changeIdItem.height)
+			}
+		}
+
+		Material.Icon {
+			id: icon
+			anchors.fill: parent
+
+			name: "awesome/user_o"
+			color: Material.Theme.light.iconColor
+
+			size: dp(width)
+
+			visible: ownAvatar == "none"
+			enabled: ownAvatar == "none"
+
+			Material.Ink {
+				anchors.fill: parent
+				circular:true
+
+				onEntered: icon.color = Material.Theme.primaryColor
+				onExited: icon.color = Material.Theme.light.iconColor
+				onClicked: changeIdentity.open(changeIdItem, 0, changeIdItem.height)
+			}
+		}
+
+		Material.Dropdown {
+			id: changeIdentity
+			objectName: "overflowMenu"
+			overlayLayer: "dialogOverlayLayer"
+
+			anchor: Item.TopLeft
+
+			width: dp(200)
+			height: dp(ownGxsIdModel.count*35)
+
+			enabled: true
+
+			durationSlow: 300
+			durationFast: 150
+			internalView.radius: dp(10)
+			internalView.clipContent: true
+
+			ListView {
+				anchors.fill: parent
+				model: ownGxsIdModel.model
+				clip: true
+				delegate: Item {
+					id: gxsIdentityItem
+					property string avatarSrc: ""
+					height: dp(35)
+					width: parent.width
+
+					function getAvatar() {
+						if(gxs_avatars.getAvatar(model.own_gxs_id) == "") {
+							var jsonData = {
+								gxs_id: model.own_gxs_id
+							}
+
+							function callbackFn(par) {
+								var json = JSON.parse(par.response)
+								if(json.returncode == "fail") {
+									getAvatar()
+									return
+								}
+
+								gxs_avatars.storeAvatar(model.own_gxs_id, json.data.avatar)
+								avatarSrc = gxs_avatars.getAvatar(model.own_gxs_id)
+							}
+
+							rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+						}
+						else
+							avatarSrc = gxs_avatars.getAvatar(model.own_gxs_id)
+					}
+
+					Component.onCompleted: {
+						getAvatar()
+					}
+
+					Canvas {
+						id: canvasAvatar
+						anchors {
+							left: parent.left
+							verticalCenter: parent.verticalCenter
+							leftMargin: dp(10)
+						}
+
+						width: dp(24)
+						height: dp(24)
+
+						Connections {
+							target: gxsIdentityItem
+							onAvatarSrcChanged: {
+								if(avatarSrc != "none" && avatarSrc != "")
+									canvasAvatar.loadImage(avatarSrc)
+							}
+						}
+
+						visible: avatarSrc != "none" && avatarSrc != ""
+						enabled: avatarSrc != "none" && avatarSrc != ""
+						onPaint: {
+							var ctx = getContext("2d");
+							if (canvasAvatar.isImageLoaded(ownAvatar)) {
+								var profile = Qt.createQmlObject('
+                                    import QtQuick 2.5;
+                                    Image{
+                                        source: "'+avatarSrc+'";
+                                        visible:false;
+                                        /*fillMode: Image.PreserveAspectCrop*/
+                                    }', canvasAvatar);
+
+								var centreX = width/2;
+								var centreY = height/2;
+
+								ctx.save()
+								ctx.beginPath();
+								ctx.moveTo(centreX, centreY);
+								ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
+								ctx.clip();
+								ctx.drawImage(profile, 0, 0, canvasAvatar.width, canvasAvatar.height);
+								ctx.restore()
+							}
+						}
+						onImageLoaded:requestPaint()
+					}
+
+					Material.Icon {
+						anchors {
+							left: parent.left
+							verticalCenter: parent.verticalCenter
+							leftMargin: dp(10)
+						}
+
+						name: "awesome/user_o"
+						color: Material.Theme.light.iconColor
+
+						size: dp(24)
+
+						visible: avatarSrc == "none" || avatarSrc == ""
+						enabled: avatarSrc == "none" || avatarSrc == ""
+					}
+
+					Text {
+						id: identityName
+						anchors {
+							left: canvasAvatar.right
+							right: parent.right
+							verticalCenter: parent.verticalCenter
+							leftMargin: dp(10)
+						}
+
+						text: model.name
+						font.pixelSize: dp(12)
+						font.family: "Roboto"
+						color: model.own_gxs_id == roomCard.ownGxsId ? Material.Theme.primaryColor : Material.Theme.light.textColor
+					}
+
+					Material.Ink {
+						anchors.fill: parent
+						circular:true
+
+						onEntered: cursor.changeCursor(Qt.PointingHandCursor)
+						onExited: cursor.changeCursor(Qt.ArrowCursor)
+						onClicked: {
+							if(model.own_gxs_id != roomCard.ownGxsId) {
+								setLobbyIdentity(model.own_gxs_id)
+							//	closeChat()
+							//	initiateChat(model.own_gxs_id)
+							}
+
+							changeIdentity.close()
+						}
+					}
+				}
+			}
+		}
 	}
 
 	Item {
