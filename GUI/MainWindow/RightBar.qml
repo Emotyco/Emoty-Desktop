@@ -180,14 +180,6 @@ View {
 	}
 
 	ListModel {
-		id: gxsIdModel
-	}
-
-	ListModel {
-		id: allGxsIdModel
-	}
-
-	ListModel {
 		id: pgpIdModel
 	}
 
