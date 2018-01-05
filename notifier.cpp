@@ -87,25 +87,25 @@ void Notifier::handleChatMessages(QString receivedMsg)
 		{
 			if(broadcast_msgs != unreaded_msgs[BROADCAST_CHAT])
 			{
-				if(broadcast_msgs)
+				if(broadcast_msgs > unreaded_msgs[BROADCAST_CHAT])
 					emit chatMessage("broadcast");
 				unreaded_msgs[BROADCAST_CHAT] = broadcast_msgs;
 			}
 			else if(distant_msgs != unreaded_msgs[DISTANT_CHAT])
 			{
-				if(distant_msgs)
+				if(distant_msgs > unreaded_msgs[DISTANT_CHAT])
 					emit chatMessage("distant_chat");
 				unreaded_msgs[DISTANT_CHAT] = distant_msgs;
 			}
 			else if(direct_msgs != unreaded_msgs[DIRECT_CHAT])
 			{
-				if(direct_msgs)
+				if(direct_msgs > unreaded_msgs[DIRECT_CHAT])
 					emit chatMessage("direct_chat");
 				unreaded_msgs[DIRECT_CHAT] = direct_msgs;
 			}
 			else if(lobby_msgs != unreaded_msgs[LOBBY])
 			{
-				if(lobby_msgs)
+				if(lobby_msgs > unreaded_msgs[LOBBY])
 					emit chatMessage("lobby");
 				unreaded_msgs[LOBBY] = lobby_msgs;
 			}
