@@ -806,8 +806,6 @@ Card {
 
 										getLobbyMessages()
 										msgBox.text = "";
-
-										soundNotifier.playChatMessageSended()
 									}
 								}
 							}
