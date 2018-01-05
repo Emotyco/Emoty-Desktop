@@ -171,7 +171,7 @@ View {
 	Component.onDestruction: {
 		mainGUIObject.unregisterToken(stateToken_gxsContacts)
 		mainGUIObject.unregisterToken(stateToken_pgp)
-		mainGUIObject.unregisterToken(stateToken_unreadMsgs)
+		mainGUIObject.unregisterToken(stateToken_unreadedMsgs)
 	}
 
 	WorkerScript {
