@@ -93,7 +93,7 @@ void ContactsModel::loadJSONContacts(QString json)
 				                              jsonContact.value("gxs_id").toString(),
 				                              jsonContact.value("pgp_id").toString(),
 				                              "undefined",
-				                              "0",
+				                              0,
 				                              "",
 				                              jsonContact.value("is_contact").toBool(),
 				                              jsonContact.value("pgp_linked").toBool(),
@@ -139,7 +139,7 @@ void ContactsModel::loadJSONContacts(QString json)
 					                              jsonContact.value("gxs_id").toString(),
 					                              jsonContact.value("pgp_id").toString(),
 					                              "undefined",
-					                              "0",
+					                              0,
 					                              "",
 					                              jsonContact.value("is_contact").toBool(),
 					                              jsonContact.value("pgp_linked").toBool(),
@@ -261,7 +261,7 @@ void ContactsModel::loadJSONStatus(QString json)
 				                              "",
 				                              jsonPGP.value("pgp_id").toString(),
 				                              "undefined",
-				                              "0",
+				                              0,
 				                              "",
 				                              true,
 				                              true,
@@ -303,11 +303,6 @@ void ContactsModel::loadJSONUnread(QString json)
 {
 	QJsonObject qJsonObject = QJsonDocument::fromJson(json.toUtf8()).object();
 
-	if(unreadStateToken == qJsonObject.value("statetoken").toInt())
-		return;
-
-	unreadStateToken = qJsonObject.value("statetoken").toInt();
-
 	QJsonValue jsData = qJsonObject.value("data");
 	if(!jsData.isNull() && jsData.isArray())
 	{
@@ -317,6 +312,7 @@ void ContactsModel::loadJSONUnread(QString json)
 		for(std::list<Contact>::iterator vit = contactsData.begin(); vit != contactsData.end(); ++vit)
 		{
 			bool clear = true;
+			bool firstChat = true;
 			for(QJsonArray::iterator it = jsDataArray.begin(); it != jsDataArray.end(); it++)
 			{
 				QJsonObject jsonStatus = (*it).toObject();
@@ -324,13 +320,24 @@ void ContactsModel::loadJSONUnread(QString json)
 				if(jsonStatus.value("is_distant_chat_id").toBool()
 				        && (*vit).gxs_id == jsonStatus.value("remote_author_id").toString())
 				{
-					(*vit).unread_count = jsonStatus.value("unread_count").toString();
+					if(firstChat) {
+						(*vit).unread_count = jsonStatus.value("unread_count").toString().toInt();
+						(*vit).chatList.clear();
+					}
+					else
+						(*vit).unread_count += jsonStatus.value("unread_count").toString().toInt();
+
+					(*vit).chatList.append(jsonStatus.value("chat_id").toString());
+
+					firstChat = false;
 					clear = false;
 				}
 			}
 
-			if(clear)
-				(*vit).unread_count = "0";
+			if(clear) {
+				(*vit).unread_count = 0;
+				(*vit).chatList.clear();
+			}
 
 			emit dataChanged(index(i),index(i));
 			i++;
@@ -399,6 +406,8 @@ QVariant ContactsModel::data(const QModelIndex & index, int role) const
 		return (*vit).avatar;
 	else if(role == IsOnlyOneRole)
 		return (*vit).is_only;
+	else if(role == ChatListRole)
+		return (*vit).chatList;
 
 	return QVariant();
 }
@@ -416,6 +425,7 @@ QHash<int, QByteArray> ContactsModel::roleNames() const
 	roles[PgpLinkedRole] = "pgp_linked";
 	roles[AvatarRole] = "avatar";
 	roles[IsOnlyOneRole] = "is_only";
+	roles[ChatListRole] = "chat_list";
 
 	return roles;
 }

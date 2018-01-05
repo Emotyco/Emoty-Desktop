@@ -115,6 +115,7 @@ Rectangle {
 		getAdvancedMode()
 		getFlickableGridMode()
 		getRoomInvitations()
+		getUnreadedMessages()
 	}
 
 	onDefaultGxsIdChanged: mainGUIObject.getDefaultAvatar()
@@ -123,6 +124,18 @@ Rectangle {
 	property int stateToken_ownGxs: 0
 	property int stateToken_unreadMsgs: 0
 	property int stateToken_invitations: 0
+
+	function getUnreadedMessages() {
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
+			stateToken_unreadMsgs = jsonResp.statetoken
+			mainGUIObject.registerToken(stateToken_unreadMsgs, getUnreadedMessages)
+
+			notifier.handleChatMessages(par.response)
+		}
+
+		rsApi.request("/chat/unread_msgs/", "", callbackFn)
+	}
 
 	function getOwnIdentities() {
 		var jsonData = {
@@ -830,12 +843,13 @@ Rectangle {
 		}
 	}
 
-	function createChatGxsCard(friendname, gxsid, objectName) {
+	function createChatGxsCard(chatId, friendname, gxsid, objectName) {
 		var component = Qt.createComponent(objectName, gridLayout);
 		if (component.status === Component.Ready) {
 			var chat = component.createObject(gridLayout,
 											  {"headerName": friendname,
-												"gxsId": gxsid});
+												"gxsId": gxsid,
+												"chatId": chatId});
 
 			var avatar = gxs_avatars.getAvatar(gxsid)
 			chat.cardIndex = cardsModel.storeCard(chat, friendname, avatar == "none", avatar == "none" ? "awesome/user_o" : avatar, chat.indicatorNumber)

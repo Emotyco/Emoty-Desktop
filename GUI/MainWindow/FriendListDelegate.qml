@@ -108,8 +108,12 @@ Component {
 			onClicked: {
 				if(mouse.button == Qt.RightButton)
 					overflowMenu.open(friendroot, mouse.x, mouse.y)
-				else if(mouse.button == Qt.LeftButton)
-					mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+				else if(mouse.button == Qt.LeftButton) {
+					if(typeof model.chat_list[0] !== 'undefined')
+						mainGUIObject.createChatGxsCard(model.chat_list[0], model.name, model.gxs_id, "ChatGxsCard.qml")
+					else
+						mainGUIObject.createChatGxsCard("", model.name, model.gxs_id, "ChatGxsCard.qml")
+				}
 			}
 
 			states: [
@@ -174,7 +178,11 @@ Component {
 
 						onClicked: {
 							overflowMenu.close()
-							mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+
+							if(typeof model.chat_list[0] !== 'undefined')
+								mainGUIObject.createChatGxsCard(model.chat_list[0], model.name, model.gxs_id, "ChatGxsCard.qml")
+							else
+								mainGUIObject.createChatGxsCard("", model.name, model.gxs_id, "ChatGxsCard.qml")
 						}
 					}
 

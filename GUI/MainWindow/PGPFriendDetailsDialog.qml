@@ -845,7 +845,7 @@ Material.Dialog {
 										onClicked: {
 											overflowMenu2.close()
 
-											mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+											mainGUIObject.createChatGxsCard("", model.name, model.gxs_id, "ChatGxsCard.qml")
 
 											scrollingDialog.close()
 										}

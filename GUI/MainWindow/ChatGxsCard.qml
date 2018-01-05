@@ -179,12 +179,35 @@ Card {
 		rsApi.request("/chat/unread_msgs/", "", callbackFn)
 	}
 
-	Component.onCompleted: chatCard.initiateChat(mainGUIObject.defaultGxsId)
+	function getChatInfo() {
+		if (chatCard.chatId == "")
+			return
+
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
+			ownGxsId = jsonResp.data.own_author_id
+			getChatAvatar(ownGxsId)
+		}
+
+		rsApi.request("/chat/info/"+chatCard.chatId, "", callbackFn)
+	}
+
+	Component.onCompleted: {
+		if(chatId == "")
+			chatCard.initiateChat(mainGUIObject.defaultGxsId)
+		else {
+			getChatInfo()
+			getUnreadMsgs()
+			getChatStatus()
+			getChatMessages()
+			timer.running = true
+		}
+	}
 	Component.onDestruction: {
 		mainGUIObject.unregisterTokenWithIndex(stateToken, cardIndex)
 		mainGUIObject.unregisterTokenWithIndex(stateToken_unreadMsgs, cardIndex)
 		mainGUIObject.unregisterTokenWithIndex(stateToken_status, cardIndex)
-		closeChat()
+		//closeChat()
 	}
 
 	Timer {

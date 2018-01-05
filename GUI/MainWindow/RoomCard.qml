@@ -1200,7 +1200,7 @@ Card {
 							onDoubleClicked: {
 								if(mouse.button == Qt.LeftButton)
 									if(!model.own)
-										mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+										mainGUIObject.createChatGxsCard("", model.name, model.gxs_id, "ChatGxsCard.qml")
 							}
 						}
 
@@ -1253,7 +1253,7 @@ Card {
 
 									onClicked: {
 										overflowMenu2.close()
-										mainGUIObject.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+										mainGUIObject.createChatGxsCard("", model.name, model.gxs_id, "ChatGxsCard.qml")
 									}
 								}
 
