@@ -938,8 +938,6 @@ Card {
 									rsApi.request("chat/send_message/", JSON.stringify(jsonData), function(){})
 									chatCard.getChatMessages()
 									msgBox.text = ""
-
-									soundNotifier.playChatMessageSended()
 								}
 							}
 						}
