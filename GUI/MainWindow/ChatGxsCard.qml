@@ -21,61 +21,99 @@
  ****************************************************************/
 
 import QtQuick 2.5
-import QtQuick.Layouts 1.3
-import QtGraphicalEffects 1.0
+import QtQuick.Controls 2.2
 
-import Material 0.3
+import Material 0.3 as Material
 import Material.ListItems 0.1 as ListItem
 
-DragTile {
-	id: drag
+import MessagesModel 0.2
 
+import "qrc:/eojson.js" as EmojiOneJson
+
+Card {
+	id: chatCard
+
+	property string ownGxsId
+	property string ownAvatar
 	property string gxsId
 	property string chatId
-	property string name
 	property alias contentm: contentm
+	property int statusTimestamp: 0
+
+	property string typingIdentityName: ""
+	property int typingTimestamp: 0
+	property bool isTyping: false
 
 	property int status: 1
 
 	// For handling tokens
 	property int stateToken: 0
+	property int stateToken_unreadMsgs: 0
+	property int stateToken_status: 0
 
-	// Just for "restore" option
-	property int tmpCol
-	property int tmpRow
-	property int tmpGridX: 0   // Numbering starts from 0
-	property int tmpGridY: 0   // Numbering starts from 0
-	property bool maximized: false
-	//
-
-	Layout.alignment: Qt.AlignBottom
-	Layout.maximumWidth: 0
-	Layout.maximumHeight: 0
-
-	width: 0
-	height: 0
-
-	col: 5
-	row: 3
-
-	opacity: 0
-
-	Behavior on gridX {
-		ScriptAction { script: {drag.refresh()} }
-	}
-
-	Behavior on row {
+	Behavior on height {
 		ScriptAction { script: {contentm.positionViewAtEnd()} }
 	}
 
-	function initiateChat() {
+	function getChatStatus() {
+		function callbackFn(par) {
+			stateToken_status = JSON.parse(par.response).statetoken
+			mainGUIObject.registerTokenWithIndex(stateToken_status, getChatStatus, cardIndex)
+
+			var jsonResp = JSON.parse(par.response)
+			if(jsonResp.data.status_string == "is typing...") {
+				chatCard.typingIdentityName = jsonResp.data.author_name
+
+				if(chatCard.typingIdentityName != ""
+						&& Date.now()/1000 < parseInt(jsonResp.data.timestamp)+4) {
+					typingTimer.start()
+					chatCard.isTyping = true
+					chatCard.typingTimestamp = jsonResp.data.timestamp
+				}
+			}
+		}
+
+		rsApi.request("/chat/receive_status/"+chatId, "", callbackFn)
+	}
+
+	function getChatAvatar(gxs_id) {
+		if(gxs_avatars.getAvatar(gxs_id) == "") {
+			var jsonData = {
+				gxs_id: gxs_id
+			}
+
+			function callbackFn(par) {
+				var json = JSON.parse(par.response)
+				if(json.returncode == "fail") {
+					getChatAvatar(gxs_id)
+					return
+				}
+
+				gxs_avatars.storeAvatar(gxs_id, json.data.avatar)
+				ownAvatar = gxs_avatars.getAvatar(gxs_id)
+			}
+
+			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+		}
+		else
+			ownAvatar = gxs_avatars.getAvatar(gxs_id)
+	}
+
+	function initiateChat(gxs_id) {
+		ownGxsId = gxs_id
+		getChatAvatar(gxs_id)
+		messagesModel.clear()
+
 		var jsonData = {
-			own_gxs_hex: main.defaultGxsId,
-			remote_gxs_hex: drag.gxsId
+			own_gxs_hex: gxs_id,
+			remote_gxs_hex: chatCard.gxsId
 		}
 
 		function callbackFn(par) {
 			chatId = String(JSON.parse(par.response).data.chat_id)
+			getUnreadMsgs()
+			getChatStatus()
+			getChatMessages()
 			timer.running = true
 		}
 
@@ -84,16 +122,15 @@ DragTile {
 
 	function checkChatStatus() {
 		var jsonData = {
-			chat_id: drag.chatId
+			chat_id: chatCard.chatId
 		}
 
 		function callbackFn(par) {
 			if(status != String(JSON.parse(par.response).data.status)) {
 				status = String(JSON.parse(par.response).data.status)
 				if(status == 2)
-					drag.getChatMessages()
+					chatCard.getChatMessages()
 			}
-
 		}
 
 		rsApi.request("/chat/distant_chat_status/", JSON.stringify(jsonData), callbackFn)
@@ -101,292 +138,535 @@ DragTile {
 
 	function closeChat() {
 		var jsonData = {
-			distant_chat_hex: drag.chatId
+			distant_chat_hex: chatCard.chatId
 		}
 
 		rsApi.request("/chat/close_distant_chat/", JSON.stringify(jsonData), function(){})
 	}
 
 	function getChatMessages() {
-		if (drag.chatId == "")
+		if (chatCard.chatId == "")
 			return
 
 		function callbackFn(par) {
 			stateToken = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken, getChatMessages)
-
-			msgWorker.sendMessage({
-				'action' : 'refreshMessages',
-				'response' : par.response,
-				'query' : '$.data[*]',
-				'model' : msgModel
-			})
+			mainGUIObject.registerTokenWithIndex(stateToken, getChatMessages, cardIndex)
+			messagesModel.loadJSONMessages(par.response)
 		}
 
-		rsApi.request("/chat/messages/"+drag.chatId, "", callbackFn)
+		rsApi.request("/chat/messages/"+chatCard.chatId, "", callbackFn)
 	}
 
-	Component.onCompleted: drag.initiateChat()
-	Component.onDestruction: {
-		main.unregisterToken(stateToken)
-		closeChat()
-	}
+	function getUnreadMsgs() {
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
 
-
-	WorkerScript {
-		id: msgWorker
-		source: "qrc:/MessagesUpdater.js"
-		onMessage: contentm.positionViewAtEnd()
-	}
-
-	ListModel {
-		id: msgModel
-	}
-
-	View {
-		id: chat
-
-		anchors.fill: parent
-
-		elevation: 2
-		backgroundColor: Palette.colors["grey"]["50"]
-
-		Behavior on anchors.topMargin {
-			NumberAnimation { duration: MaterialAnimation.pageTransitionDuration }
-		}
-
-		Rectangle {
-			id: chatHeader
-
-			anchors {
-				top: parent.top
-				left: parent.left
-				right: parent.right
+			var found = false
+			for (var i = 0; i<jsonResp.data.length; i++) {
+				if(jsonResp.data[i].chat_id == chatId) {
+					indicatorNumber = jsonResp.data[i].unread_count
+					found = true
+				}
 			}
 
-			height: dp(35)
+			if(!found)
+				indicatorNumber = 0
 
-			color: Palette.colors["grey"]["50"]
-			z: 2
+			stateToken_unreadMsgs = jsonResp.statetoken
+			mainGUIObject.registerTokenWithIndex(stateToken_unreadMsgs, getUnreadMsgs, cardIndex)
+		}
 
-			MouseArea {
+		rsApi.request("/chat/unread_msgs/", "", callbackFn)
+	}
+
+	function getChatInfo() {
+		if (chatCard.chatId == "")
+			return
+
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
+			ownGxsId = jsonResp.data.own_author_id
+			getChatAvatar(ownGxsId)
+		}
+
+		rsApi.request("/chat/info/"+chatCard.chatId, "", callbackFn)
+	}
+
+	Component.onCompleted: {
+		if(chatId == "")
+			chatCard.initiateChat(mainGUIObject.defaultGxsId)
+		else {
+			getChatInfo()
+			getUnreadMsgs()
+			getChatStatus()
+			getChatMessages()
+			timer.running = true
+		}
+	}
+	Component.onDestruction: {
+		mainGUIObject.unregisterTokenWithIndex(stateToken, cardIndex)
+		mainGUIObject.unregisterTokenWithIndex(stateToken_unreadMsgs, cardIndex)
+		mainGUIObject.unregisterTokenWithIndex(stateToken_status, cardIndex)
+		//closeChat()
+	}
+
+	Timer {
+		id: typingTimer
+		running: false
+		repeat: true
+		interval: 1000
+		onTriggered: {
+			if(Date.now()/1000 > chatCard.typingTimestamp+4
+					|| chatCard.typingTimestamp == 0) {
+				chatCard.isTyping = false
+				typingTimer.stop()
+			}
+		}
+	}
+
+	MessagesModel {
+		id: messagesModel
+	}
+
+	headerData: Item {
+		id: changeIdItem
+		anchors {
+			right: parent.right
+			verticalCenter: parent.verticalCenter
+		}
+
+		width: dp(24)
+		height: dp(24)
+
+		Canvas {
+			id: image
+			anchors.fill: parent
+
+			Connections {
+				target: chatCard
+				onOwnAvatarChanged: {
+					if(ownAvatar != "none")
+						image.loadImage(ownAvatar)
+				}
+			}
+
+			visible: ownAvatar != "none"
+			enabled: ownAvatar != "none"
+			onPaint: {
+				var ctx = getContext("2d");
+				if (image.isImageLoaded(ownAvatar)) {
+					var profile = Qt.createQmlObject('
+                        import QtQuick 2.5;
+                        Image{
+                            source: "'+ownAvatar+'";
+                            visible:false;
+                            /*fillMode: Image.PreserveAspectCrop*/
+                        }', image);
+
+					var centreX = width/2;
+					var centreY = height/2;
+
+					ctx.save()
+					ctx.beginPath();
+					ctx.moveTo(centreX, centreY);
+					ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
+					ctx.clip();
+					ctx.drawImage(profile, 0, 0, image.width, image.height);
+					ctx.restore()
+				}
+			}
+			onImageLoaded:requestPaint()
+
+			Rectangle {
+				id: shaderMask
 				anchors.fill: parent
+				color: Qt.rgba(0,0,0,0.2)
+				opacity: 0
+				radius: width/2
 
-				acceptedButtons: Qt.RightButton
-				onClicked: overflowMenu5.open(drag, mouse.x, mouse.y);
+				Behavior on opacity {
+					NumberAnimation {
+						duration: Material.MaterialAnimation.pageTransitionDuration
+					}
+				}
+			}
 
-				Item {
-					anchors {
-						bottom: parent.bottom
-						top: parent.top
-						horizontalCenter: parent.horizontalCenter
+			Material.Ink {
+				anchors.fill: parent
+				circular:true
+
+				onEntered: shaderMask.opacity = 1
+				onExited: shaderMask.opacity = 0
+				onClicked: changeIdentity.open(changeIdItem, 0, changeIdItem.height)
+			}
+		}
+
+		Material.Icon {
+			id: icon
+			anchors.fill: parent
+
+			name: "awesome/user_o"
+			color: Material.Theme.light.iconColor
+
+			size: dp(width)
+
+			visible: ownAvatar == "none"
+			enabled: ownAvatar == "none"
+
+			Material.Ink {
+				anchors.fill: parent
+				circular:true
+
+				onEntered: icon.color = Material.Theme.primaryColor
+				onExited: icon.color = Material.Theme.light.iconColor
+				onClicked: changeIdentity.open(changeIdItem, 0, changeIdItem.height)
+			}
+		}
+
+		Material.Dropdown {
+			id: changeIdentity
+			objectName: "overflowMenu"
+			overlayLayer: "dialogOverlayLayer"
+
+			anchor: Item.TopLeft
+
+			width: dp(200)
+			height: dp(ownGxsIdModel.count*35)
+
+			enabled: true
+
+			durationSlow: 300
+			durationFast: 150
+			internalView.radius: dp(10)
+			internalView.clipContent: true
+
+			ListView {
+				anchors.fill: parent
+				model: ownGxsIdModel.model
+				clip: true
+				delegate: Item {
+					id: gxsIdentityItem
+					property string avatarSrc: ""
+					height: dp(35)
+					width: parent.width
+
+					function getAvatar() {
+						if(gxs_avatars.getAvatar(model.own_gxs_id) == "") {
+							var jsonData = {
+								gxs_id: model.own_gxs_id
+							}
+
+							function callbackFn(par) {
+								var json = JSON.parse(par.response)
+								if(json.returncode == "fail") {
+									getAvatar()
+									return
+								}
+
+								gxs_avatars.storeAvatar(model.own_gxs_id, json.data.avatar)
+								avatarSrc = gxs_avatars.getAvatar(model.own_gxs_id)
+							}
+
+							rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+						}
+						else
+							avatarSrc = gxs_avatars.getAvatar(model.own_gxs_id)
 					}
 
-					width: parent.width > dp(9*60+(30)) ? dp(9*60) : (parent.width-dp(30))
+					Component.onCompleted: {
+						getAvatar()
+					}
 
-					Rectangle {
+					Canvas {
+						id: canvasAvatar
 						anchors {
 							left: parent.left
-							right: parent.right
-							bottom: parent.bottom
+							verticalCenter: parent.verticalCenter
+							leftMargin: dp(10)
 						}
 
-						height: dp(1)
+						width: dp(24)
+						height: dp(24)
 
-						color: Palette.colors["grey"]["200"]
+						Connections {
+							target: gxsIdentityItem
+							onAvatarSrcChanged: {
+								if(avatarSrc != "none" && avatarSrc != "")
+									canvasAvatar.loadImage(avatarSrc)
+							}
+						}
+
+						visible: avatarSrc != "none" && avatarSrc != ""
+						enabled: avatarSrc != "none" && avatarSrc != ""
+						onPaint: {
+							var ctx = getContext("2d");
+							if (canvasAvatar.isImageLoaded(ownAvatar)) {
+								var profile = Qt.createQmlObject('
+                                    import QtQuick 2.5;
+                                    Image{
+                                        source: "'+avatarSrc+'";
+                                        visible:false;
+                                        /*fillMode: Image.PreserveAspectCrop*/
+                                    }', canvasAvatar);
+
+								var centreX = width/2;
+								var centreY = height/2;
+
+								ctx.save()
+								ctx.beginPath();
+								ctx.moveTo(centreX, centreY);
+								ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
+								ctx.clip();
+								ctx.drawImage(profile, 0, 0, canvasAvatar.width, canvasAvatar.height);
+								ctx.restore()
+							}
+						}
+						onImageLoaded:requestPaint()
+					}
+
+					Material.Icon {
+						anchors {
+							left: parent.left
+							verticalCenter: parent.verticalCenter
+							leftMargin: dp(10)
+						}
+
+						name: "awesome/user_o"
+						color: Material.Theme.light.iconColor
+
+						size: dp(24)
+
+						visible: avatarSrc == "none" || avatarSrc == ""
+						enabled: avatarSrc == "none" || avatarSrc == ""
 					}
 
 					Text {
-						id: headertext
-
+						id: identityName
 						anchors {
-							verticalCenter: parent.verticalCenter
-							left: parent.left
-							leftMargin: dp(20)
-						}
-
-						font {
-							family: "Roboto"
-							pixelSize: dp(17)
-						}
-
-						text: name
-
-						color: Theme.primaryColor
-					}
-
-					Item {
-						anchors {
-							verticalCenter: parent.verticalCenter
+							left: canvasAvatar.right
 							right: parent.right
-							rightMargin: dp(18)
+							verticalCenter: parent.verticalCenter
+							leftMargin: dp(10)
 						}
 
-						width: dp(23)
-						height: dp(23)
-
-						Rectangle {
-							id: closeButton
-
-							anchors.centerIn: parent
-
-							width: dp(20)
-							height: dp(2.5)
-
-							rotation: 45
-							color: Palette.colors["grey"]["500"]
-						}
-
-						Rectangle {
-							id: closeButton2
-
-							anchors.centerIn: parent
-
-							width: dp(20)
-							height: dp(2.5)
-
-							rotation: -45
-							color: Palette.colors["grey"]["500"]
-						}
-
-						MouseArea {
-							anchors.fill: parent
-
-							hoverEnabled: true
-
-							onEntered: {
-								closeButton.color = Theme.accentColor
-								closeButton2.color = Theme.accentColor
-							}
-							onExited: {
-								closeButton.color = Palette.colors["grey"]["500"]
-								closeButton2.color = Palette.colors["grey"]["500"]
-							}
-							onClicked: drag.destroy()
-						}
+						text: model.name
+						font.pixelSize: dp(12)
+						font.family: "Roboto"
+						color: model.own_gxs_id == chatCard.ownGxsId ? Material.Theme.primaryColor : Material.Theme.light.textColor
 					}
-				}
 
-				Dropdown {
-					id: overflowMenu5
-					objectName: "overflowMenu5"
-					overlayLayer: "dialogOverlayLayer"
-
-					anchor: Item.TopLeft
-
-					width: dp(200)
-					height: dp(2*30)
-
-					enabled: true
-
-					durationSlow: 300
-					durationFast: 150
-
-					Column {
+					Material.Ink {
 						anchors.fill: parent
+						circular:true
 
-						ListItem.Standard {
-							height: dp(30)
-
-							text: maximized ? "Restore" : "Maximize"
-							itemLabel.style: "menu"
-
-							onClicked: {
-								overflowMenu5.close()
-
-								if(!maximized) {
-									drag.tmpGridX = drag.gridX
-									drag.tmpGridY = drag.gridY
-									drag.tmpCol = drag.col
-									drag.tmpRow = drag.row
-									drag.gridX = 0
-									drag.gridY = 0
-									drag.col = Qt.binding(function() {
-										return parseInt(gridLayout.width / dp(60))>= 11
-												? 11
-												: parseInt(gridLayout.width / dp(60)) || 1
-									})
-									drag.row = Qt.binding(function() {
-										return main.visibleRows
-									})
-									maximized = true
-								}
-								else if(maximized) {
-									drag.gridX = drag.tmpGridX
-									drag.gridY = drag.tmpGridY
-									drag.col = drag.tmpCol
-									drag.row = drag.tmpRow
-									maximized = false
-								}
-
-								drag.refresh()
+						onEntered: cursor.changeCursor(Qt.PointingHandCursor)
+						onExited: cursor.changeCursor(Qt.ArrowCursor)
+						onClicked: {
+							if(model.own_gxs_id != chatCard.ownGxsId) {
+								closeChat()
+								initiateChat(model.own_gxs_id)
 							}
-						}
 
-						ListItem.Standard {
-							height: dp(30)
-
-							text: "Close"
-
-							itemLabel.style: "menu"
-
-							onClicked: {
-								overflowMenu5.close()
-								drag.destroy()
-							}
+							changeIdentity.close()
 						}
 					}
 				}
 			}
 		}
+	}
 
-		DropShadow {
-			anchors.fill: chatHeader
-
-			verticalOffset: dp(5)
-			radius: 30
-			samples: 61
-
-			color: Palette.colors["grey"]["50"]
-			source: chatHeader
-			z: 1
-		}
+	Item {
+		id: chat
+		anchors.fill: parent
 
 		Item {
 			anchors {
-				top: chatHeader.bottom
+				top: parent.top
 				bottom: itemInfo.top
-				horizontalCenter: parent.horizontalCenter
+				left: parent.left
+				right: parent.right
+				leftMargin: dp(15)
+				rightMargin: dp(15)
 			}
 
-			width: parent.width > dp(9*60+(30)) ? dp(9*60) : (parent.width-dp(30))
-
-			Item {
+			ScrollView {
 				anchors {
 					fill: parent
-					margins: dp(2)
+					leftMargin: dp(5)
+					rightMargin: dp(5)
 				}
 
 				ListView {
 					id: contentm
 
-					anchors {
-						fill: parent
-						leftMargin: dp(5)
-						rightMargin: dp(5)
-					}
+					property bool lastVisible: true
+					property bool complete: false
+					Component.onCompleted: complete = true
 
 					clip: true
 					snapMode: ListView.NoSnap
 					flickableDirection: Flickable.AutoFlickDirection
 
-					model: msgModel
+					model: messagesModel
 					delegate: ChatMsgDelegate{}
-				}
 
-				Scrollbar {
-					anchors.margins: 0
-					flickableItem: contentm
+					header: Item {
+						width: 1
+						height: dp(5)
+					}
+
+					footer: Item{
+						width: 1
+						height: dp(15)
+					}
+
+					add: Transition {
+						ParallelAnimation {
+							NumberAnimation {
+								property: "timeText.anchors.bottomMargin"
+								from: -dp(35)
+								to: dp(0)
+								easing.type: Easing.OutBounce
+								duration: Material.MaterialAnimation.pageTransitionDuration
+							}
+
+							NumberAnimation {
+								property: "opacity"
+								from: 0
+								to: 1
+								easing.type: Easing.OutBounce
+								duration: Material.MaterialAnimation.pageTransitionDuration
+							}
+
+							ScriptAction {
+								script: {
+									if(contentm.complete) {
+										contentm.positionViewAtEnd()
+										contentm.lastVisible = true
+									}
+								}
+							}
+						}
+					}
+
+					Material.View {
+						id: notiView
+						anchors {
+							bottom: parent.bottom
+							horizontalCenter: parent.horizontalCenter
+							bottomMargin: dp(15)
+						}
+
+						height: notiMsg.implicitHeight + dp(8)
+						width: parent.width*0.8
+
+						backgroundColor: Material.Theme.accentColor
+						elevation: 2
+						radius: 10
+
+						states: [
+							State {
+								name: "hide"; when: !(indicatorNumber > 0 && !contentm.lastVisible)
+								PropertyChanges {
+									target: notiView
+									visible: false
+								}
+							},
+							State {
+								name: "show"; when: indicatorNumber > 0 && !contentm.lastVisible
+								PropertyChanges {
+									target: notiView
+									visible: true
+								}
+							}
+						]
+
+						transitions: [
+							Transition {
+								from: "hide"; to: "show"
+
+								SequentialAnimation {
+									PropertyAction {
+										target: notiView
+										property: "visible"
+										value: true
+									}
+									ParallelAnimation {
+										NumberAnimation {
+											target: notiView
+											property: "opacity"
+											from: 0
+											to: 1
+											easing.type: Easing.InOutQuad;
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+										NumberAnimation {
+											target: notiView
+											property: "anchors.bottomMargin"
+											from: -notiView.height
+											to: dp(15)
+											easing.type: Easing.InOutQuad;
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+									}
+								}
+							},
+							Transition {
+								from: "show"; to: "hide"
+
+								SequentialAnimation {
+									ParallelAnimation {
+										NumberAnimation {
+											target: notiView
+											property: "opacity"
+											from: 1
+											to: 0
+											easing.type: Easing.InOutQuad
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+										NumberAnimation {
+											target: notiView
+											property: "anchors.bottomMargin"
+											from: dp(15)
+											to: -notiView.height
+											easing.type: Easing.InOutQuad
+											duration: Material.MaterialAnimation.pageTransitionDuration
+										}
+									}
+									PropertyAction {
+										target: notiView;
+										property: "visible";
+										value: false
+									}
+								}
+							}
+						]
+
+						MouseArea {
+							anchors.fill: parent
+							onClicked: contentm.positionViewAtEnd()
+						}
+
+						Text {
+							id: notiMsg
+
+							anchors {
+								top: parent.top
+								topMargin: dp(4)
+								left: parent.left
+								right: parent.right
+							}
+							text: "New message arrived"
+
+							color: "white"
+							horizontalAlignment: TextEdit.AlignHCenter
+
+							font {
+								family: "Roboto"
+								pixelSize: dp(13)
+							}
+						}
+					}
 				}
 			}
 		}
@@ -395,22 +675,24 @@ DragTile {
 			id: itemInfo
 			anchors {
 				bottom: chatFooter.top
-				horizontalCenter: parent.horizontalCenter
+				left: parent.left
+				right: parent.right
+				leftMargin: dp(15)
+				rightMargin: dp(15)
 			}
 
-			width: parent.width > dp(9*60+(30)) ? dp(9*60) : (parent.width-dp(30))
 			height: viewInfo.height + dp(5)
 
 			states: [
 				State {
-					name: "hide"; when: drag.status == 2
+					name: "hide"; when: chatCard.status == 2
 					PropertyChanges {
 						target: itemInfo
 						visible: false
 					}
 				},
 				State {
-					name: "show"; when: drag.status != 2
+					name: "show"; when: chatCard.status != 2
 					PropertyChanges {
 						target: itemInfo
 						visible: true
@@ -435,7 +717,7 @@ DragTile {
 								from: 0
 								to: 1
 								easing.type: Easing.InOutQuad;
-								duration: MaterialAnimation.pageTransitionDuration
+								duration: Material.MaterialAnimation.pageTransitionDuration
 							}
 							NumberAnimation {
 								target: itemInfo
@@ -443,7 +725,7 @@ DragTile {
 								from: -itemInfo.height
 								to: 0
 								easing.type: Easing.InOutQuad;
-								duration: MaterialAnimation.pageTransitionDuration
+								duration: Material.MaterialAnimation.pageTransitionDuration
 							}
 						}
 					}
@@ -462,7 +744,7 @@ DragTile {
 								from: 1
 								to: 0
 								easing.type: Easing.InOutQuad
-								duration: MaterialAnimation.pageTransitionDuration
+								duration: Material.MaterialAnimation.pageTransitionDuration
 							}
 							NumberAnimation {
 								target: itemInfo
@@ -470,7 +752,7 @@ DragTile {
 								from: 0
 								to: -itemInfo.height
 								easing.type: Easing.InOutQuad
-								duration: MaterialAnimation.pageTransitionDuration
+								duration: Material.MaterialAnimation.pageTransitionDuration
 							}
 						}
 						PropertyAction {
@@ -482,7 +764,7 @@ DragTile {
 				}
 			]
 
-			View {
+			Material.View {
 				id: viewInfo
 				anchors {
 					right: parent.right
@@ -495,40 +777,70 @@ DragTile {
 				height: textMsg.implicitHeight + dp(12)
 				width: (parent.width*0.8)
 
-				backgroundColor: Theme.accentColor
+				backgroundColor: Material.Theme.accentColor
 				elevation: 1
 				radius: 10
 
-
-				TextEdit {
+				Text {
 					id: textMsg
 
 					anchors {
 						top: parent.top
 						topMargin: dp(6)
-						left: parent.left
-						right: parent.right
+						horizontalCenter: parent.horizontalCenter
 					}
 
-					text: drag.status == 0 ? "Something goes wrong..."
-						: drag.status == 1 ? "Tunnel is pending..."
-						: drag.status == 2 ? "Connection is established"
-						: drag.status == 3 ? "Your friend closed chat."
+					text: chatCard.status == 0 ? "Something goes wrong..."
+						: chatCard.status == 1 ? "Tunnel is pending"
+						: chatCard.status == 2 ? "Connection is established"
+						: chatCard.status == 3 ? "Your friend closed chat."
 						: "Something goes wrong..."
 
 					textFormat: Text.RichText
 					wrapMode: Text.WordWrap
 
 					color: "white"
-					readOnly: true
-
-					selectByMouse: false
-
 					horizontalAlignment: TextEdit.AlignHCenter
 
 					font {
 						family: "Roboto"
 						pixelSize: dp(13)
+					}
+
+					Text {
+						id: dots
+						anchors {
+							left: textMsg.right
+							top: parent.top
+						}
+
+						font {
+							family: "Roboto"
+							pixelSize: dp(13)
+						}
+
+						textFormat: Text.RichText
+						wrapMode: Text.WordWrap
+						color: "white"
+
+						visible: chatCard.status == 1
+						enabled: chatCard.status == 1
+
+						function addDot() {
+							if(dots.text != "...")
+								dots.text += "."
+							else
+								dots.text = ""
+						}
+
+						Timer {
+							running: chatCard.status == 1
+							repeat: chatCard.status == 1
+							interval: 500
+							onTriggered: {
+								dots.addDot()
+							}
+						}
 					}
 				}
 			}
@@ -543,79 +855,316 @@ DragTile {
 				right: parent.right
 			}
 
-			height: (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(30)) : (msgBox.contentHeight+dp(22))) < dp(200)
-					    ? (msgBox.contentHeight < dp(20) ? (msgBox.contentHeight+dp(30)) : (msgBox.contentHeight+dp(22)))
-						: dp(200)
-
+			height: msgBox.contentHeight+dp(40) < dp(200) ? msgBox.contentHeight+dp(40) : dp(200)
 			z: 1
 
-			Behavior on height {
-				ScriptAction {script: contentm.positionViewAtEnd()}
-			}
-
-			View {
+			Material.View {
 				id: footerView
 
 				anchors {
-					bottom: parent.bottom
-					top: parent.top
-					horizontalCenter: parent.horizontalCenter
-					bottomMargin: dp(10)
+					fill: parent
+					bottomMargin: dp(20)
+					leftMargin: dp(15)
+					rightMargin: dp(15)
 				}
-
-				width: parent.width > dp(9*60+(30)) ? dp(9*60) : (parent.width-dp(30))
 
 				radius: 10
 				elevation: 1
 				backgroundColor: "white"
 
-				TextArea {
-					id: msgBox
+				MouseArea {
+					id: searchHoverMA
+					anchors.fill: parent
+					hoverEnabled: true
 
+					onEntered: {
+						footerView.elevation = 2
+						emojiButton.state = "color"
+					}
+					onExited: {
+						emojiButton.state = "grey"
+
+						if(msgBox.activeFocus == false)
+							footerView.elevation = 1
+					}
+					onClicked: msgBox.forceActiveFocus()
+				}
+
+				ScrollView {
 					anchors {
-						fill: parent
-						verticalCenter: parent.verticalCenter
+						left: parent.left
+						top: parent.top
+						bottom: parent.bottom
+						right: emojiButton.left
 						topMargin: dp(5)
 						bottomMargin: dp(5)
 						leftMargin: dp(18)
 						rightMargin: dp(18)
 					}
 
-					placeholderText: footerView.width > dp(195) ? "Say hello to your friend" : "Say hello"
-
-					font.pixelSize: dp(15)
-
-					wrapMode: Text.WordWrap
-					frameVisible: false
-					focus: true
-
-					horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
-					verticalScrollBarPolicy: Qt.ScrollBarAlwaysOff
-
-					onActiveFocusChanged: {
-						if(activeFocus) {
-							if(drag.chatId.length > 0)
-								rsApi.request("/chat/mark_chat_as_read/"+drag.chatId, "", function(){})
-
+					hoverEnabled: true
+					onHoveredChanged: {
+						if(hovered) {
 							footerView.elevation = 2
+							emojiButton.state = "color"
 						}
-						else
-							footerView.elevation = 1
+						else {
+							emojiButton.state = "grey"
+
+							if(msgBox.activeFocus == false)
+								footerView.elevation = 1
+						}
 					}
 
-					Keys.onPressed: {
-						if(event.key == Qt.Key_Return) {
-							var jsonData = {
-								chat_id: drag.chatId,
-								msg: msgBox.text
-							}
-							rsApi.request("chat/send_message/", JSON.stringify(jsonData), function(){})
-							drag.getChatMessages()
-							msgBox.text = ""
-							event.accepted = true
+					ScrollBar.vertical.visible: msgBox.contentHeight+dp(40) >= dp(200)
 
-							soundNotifier.playChatMessageSended()
+					TextArea {
+						id: msgBox
+
+						placeholderText: "Say hello to your friend"
+						font.pixelSize: dp(15)
+						font.family: "Roboto"
+						wrapMode: Text.Wrap
+						focus: true
+
+						selectedTextColor: "white"
+						selectionColor: Material.Theme.accentColor
+						selectByMouse: true
+
+						onActiveFocusChanged: {
+							if(activeFocus)
+								footerView.elevation = 2
+							else
+								footerView.elevation = 1
 						}
+
+						onTextChanged: {
+							if(msgBox.text.length != 0 && (statusTimestamp == 0 || statusTimestamp+2000 < Date.now())) {
+								var jsonData = {
+									chat_id: chatId,
+									status: "is typing..."
+								}
+
+								rsApi.request("chat/send_status/", JSON.stringify(jsonData), function(){})
+								statusTimestamp = Date.now()
+							}
+						}
+
+						Keys.onPressed: {
+							if(event.key == Qt.Key_Return) {
+								event.accepted = true
+								if(msgBox.text.length > 0 && chatCard.status == 2) {
+									var jsonData = {
+										chat_id: chatCard.chatId,
+										msg: msgBox.text
+									}
+									rsApi.request("chat/send_message/", JSON.stringify(jsonData), function(){})
+									chatCard.getChatMessages()
+									msgBox.text = ""
+								}
+							}
+						}
+					}
+				}
+
+				Item {
+					id: emojiButton
+					anchors {
+						verticalCenter: parent.verticalCenter
+						right: parent.right
+						rightMargin: dp(13)
+					}
+
+					width: dp(26)
+					height: dp(26)
+
+					property bool colorized: emojiPicker.showing || mA.containsMouse
+
+					states: [
+						State{
+							name: "grey"; when: !(emojiPicker.showing || mA.containsMouse)
+							PropertyChanges {
+								target: emojiColor
+								opacity: 0
+							}
+							PropertyChanges {
+								target: emojiGrey
+								opacity: 0.7
+							}
+						},
+						State {
+							name: "color"; when: (emojiPicker.showing || mA.containsMouse)
+							PropertyChanges {
+								target: emojiColor
+								opacity: 1
+							}
+							PropertyChanges {
+								target: emojiGrey
+								opacity: 0
+							}
+						}
+					]
+
+					Image {
+						id: emojiColor
+						anchors.fill: parent
+
+						sourceSize {
+							width: dp(26)
+							height: dp(26)
+						}
+						source: "qrc:/32/1f601.png"
+						opacity: 0
+
+						Behavior on opacity {
+							NumberAnimation {
+								duration: Material.MaterialAnimation.pageTransitionDuration
+							}
+						}
+					}
+
+					ShaderEffect {
+						id: emojiGrey
+						anchors.fill: parent
+						property variant src: emojiColor
+
+						Behavior on opacity {
+							NumberAnimation {
+								duration: Material.MaterialAnimation.pageTransitionDuration
+							}
+						}
+
+						vertexShader: "
+                            uniform highp mat4 qt_Matrix;
+                            attribute highp vec4 qt_Vertex;
+                            attribute highp vec2 qt_MultiTexCoord0;
+                            varying highp vec2 coord;
+                            void main() {
+                                coord = qt_MultiTexCoord0;
+                                gl_Position = qt_Matrix * qt_Vertex;
+                            }"
+						fragmentShader: "
+                            varying highp vec2 coord;
+                            uniform sampler2D src;
+                            uniform lowp float qt_Opacity;
+                            void main() {
+                                lowp vec4 tex = texture2D(src, coord);
+                                gl_FragColor = vec4(vec3(dot(tex.rgb,
+                                                    vec3(0.344, 0.5, 0.156))),
+                                                         tex.a) * qt_Opacity;
+                            }"
+					}
+
+					MouseArea {
+						id: mA
+						anchors.fill: parent
+						hoverEnabled: true
+
+						onEntered: {
+							footerView.elevation = 2
+							emojiButton.state = "color"
+						}
+						onExited: {
+							emojiButton.state = "grey"
+
+							if(msgBox.activeFocus == false)
+								footerView.elevation = 1
+						}
+
+						onClicked: emojiPicker.open(contentm, 0, contentm.height-emojiPicker.height-dp(10))
+
+						Material.Dropdown {
+							id: emojiPicker
+							objectName: "overflowMenu"
+							overlayLayer: "dialogOverlayLayer"
+							width: dp(400)
+							height: dp(400)
+							durationSlow: 300
+							durationFast: 150
+							internalView.radius: dp(10)
+
+							Item {
+								id: emojiPickerField
+								anchors.fill: parent
+
+								ScrollView {
+									anchors {
+										fill: parent
+										leftMargin: dp(13)
+										rightMargin: dp(13)
+									}
+
+									GridView {
+										id: emojiGridView
+
+										property int idealCellHeight: dp(36)
+										property int idealCellWidth: dp(36)
+
+										clip: true
+
+										cellHeight: idealCellHeight
+										cellWidth: width / Math.floor(width / idealCellWidth)
+
+										model: Object.keys(EmojiOneJson.emojiAlphaCodes)
+										delegate: Item {
+											width: GridView.view.cellWidth
+											height: GridView.view.cellHeight
+
+											Image {
+												width: dp(28)
+												height: dp(28)
+												source: "qrc:/32/"+ Object.keys(EmojiOneJson.emojiAlphaCodes)[index] +".png"
+
+												MouseArea {
+													anchors.fill: parent
+
+													onClicked: {
+														msgBox.insert(msgBox.cursorPosition, EmojiOneJson.emojiAlphaCodes[Object.keys(EmojiOneJson.emojiAlphaCodes)[index]]["alpha_code"])
+														emojiPicker.close()
+														msgBox.focus = true
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			Material.Label {
+				id: infoLabel
+				anchors {
+					top: footerView.bottom
+					topMargin: dp(2)
+					left: footerView.left
+					leftMargin: dp(21)
+				}
+
+				visible: chatCard.isTyping
+
+				style: "caption"
+				font.pixelSize: dp(11)
+				font.weight: Font.DemiBold
+
+				color: Material.Theme.light.subTextColor
+				text: chatCard.typingIdentityName + " is typing..."
+
+				function addDot() {
+					if(infoLabel.text.charAt(infoLabel.text.length-3) != ".")
+						infoLabel.text += "."
+					else
+						infoLabel.text = infoLabel.text.slice(0, infoLabel.text.length-2)
+				}
+
+				Timer {
+					running: infoLabel.visible
+					repeat: infoLabel.visible
+					interval: 500
+					onTriggered: {
+						infoLabel.addDot()
 					}
 				}
 			}
@@ -627,24 +1176,7 @@ DragTile {
 			repeat: true
 			running: false
 
-			onTriggered: drag.checkChatStatus()
-		}
-	}
-
-	ParallelAnimation {
-		running: true
-		SequentialAnimation {
-			NumberAnimation {
-				duration: 50
-			}
-			NumberAnimation {
-				target: drag
-				property: "opacity"
-				from: 0
-				to: 1
-				easing.type: Easing.InOutQuad;
-				duration: MaterialAnimation.pageTransitionDuration/2
-			}
+			onTriggered: chatCard.checkChatStatus()
 		}
 	}
 }

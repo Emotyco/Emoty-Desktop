@@ -30,8 +30,8 @@ import Material.ListItems 0.1 as ListItem
 Dialog {
 	id: scrollingDialog
 
-	property bool advmode: main.advmode
-	property bool flickablemode: main.flickablemode
+	property bool advmode: mainGUIObject.advmode
+	property bool flickablemode: mainGUIObject.flickablemode
 
 	property real approximationSize: Units.multiplier
 
@@ -77,8 +77,8 @@ Dialog {
 
 		rsApi.request("/settings/set_flickable_grid_mode/", JSON.stringify(jsonData2), function(){})
 
-		main.advmode = scrollingDialog.advmode
-		main.flickablemode = scrollingDialog.flickablemode
+		mainGUIObject.advmode = scrollingDialog.advmode
+		mainGUIObject.flickablemode = scrollingDialog.flickablemode
 		notifier.setAdvMode(scrollingDialog.advmode)
 
 		if(approximationSize != Units.multiplier) {
@@ -91,8 +91,8 @@ Dialog {
 	}
 
 	onOpened: {
-		scrollingDialog.advmode = main.advmode
-		scrollingDialog.flickablemode = main.flickablemode
+		scrollingDialog.advmode = mainGUIObject.advmode
+		scrollingDialog.flickablemode = mainGUIObject.flickablemode
 		scrollingDialog.approximationSize = Units.multiplier
 	}
 
@@ -207,8 +207,8 @@ Dialog {
 	}
 
 	Item {
-		width: main.width < dp(900) ? main.width - dp(100) : dp(600)
-		height: main.width < dp(450) ? main.width - dp(100) : dp(300)
+		width: mainGUIObject.width < dp(900) ? mainGUIObject.width - dp(100) : dp(700)
+		height: mainGUIObject.width < dp(450) ? mainGUIObject.width - dp(100) : dp(350)
 
 		Column {
 			anchors {

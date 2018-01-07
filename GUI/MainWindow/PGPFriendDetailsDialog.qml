@@ -20,14 +20,14 @@
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
 
-import QtQuick 2.5
+import QtQuick 2.7
+import QtQuick.Controls 2.2
 import QtQuick.Controls 1.4 as QtControls
 
-import Material 0.3
-import Material.Extras 0.1
+import Material 0.3 as Material
 import Material.ListItems 0.1 as ListItem
 
-Dialog {
+Material.Dialog {
 	id: scrollingDialog
 
 	property string name: ""
@@ -37,8 +37,8 @@ Dialog {
 	property int stateToken_pgp: 0
 
 	Component.onDestruction: {
-		main.unregisterToken(stateToken_gxs)
-		main.unregisterToken(stateToken_pgp)
+		mainGUIObject.unregisterToken(stateToken_gxs)
+		mainGUIObject.unregisterToken(stateToken_pgp)
 	}
 
 	property string pgp_key
@@ -87,7 +87,7 @@ Dialog {
 			gxsIdModel.json = par.response
 
 			stateToken_gxs = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_gxs, refreshGxsIdModel)
+			mainGUIObject.registerToken(stateToken_gxs, refreshGxsIdModel)
 		}
 
 		rsApi.request("/identity/*/", "", callbackFn)
@@ -98,7 +98,7 @@ Dialog {
 			locationsModel.json = par.response
 
 			stateToken_pgp = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_pgp, refreshPgpIdModel)
+			mainGUIObject.registerToken(stateToken_pgp, refreshPgpIdModel)
 		}
 
 		rsApi.request("/peers/*", "", callbackFn)
@@ -174,7 +174,7 @@ Dialog {
 		query: "$.data.gpg_signers[*]"
 	}
 
-	Label {
+	Material.Label {
 		id: titleLabel
 
 		anchors {
@@ -188,12 +188,12 @@ Dialog {
 		wrapMode: Text.Wrap
 		text: name + "'s details"
 		style: "title"
-		color: Theme.accentColor
+		color: Material.Theme.accentColor
 	}
 
 	Item {
-		width: main.width < dp(900) ? main.width - dp(100) : dp(600)
-		height: main.width < dp(450) ? main.width - dp(100) : dp(300)
+		width: mainGUIObject.width < dp(900) ? mainGUIObject.width - dp(100) : dp(600)
+		height: mainGUIObject.width < dp(450) ? mainGUIObject.width - dp(100) : dp(300)
 
 		Column {
 			anchors {
@@ -284,7 +284,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: TextField {
+								secondaryItem: Material.TextField {
 									anchors.verticalCenter: parent.verticalCenter
 									width: fingerprint.width*0.7
 
@@ -302,7 +302,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: MenuField {
+								secondaryItem: Material.MenuField {
 									id: selection
 									z: 2
 									model: ["Unset", "Unknown", "No trust", "Marginal", "Full", "Ultimate"]
@@ -330,7 +330,7 @@ Dialog {
 						}
 					}
 
-					Scrollbar {
+					Material.Scrollbar {
 						flickableItem: generalListView
 					}
 				}
@@ -369,7 +369,7 @@ Dialog {
 							height: dp(48)
 							interactive: !own_sign
 
-							secondaryItem: Switch {
+							secondaryItem: Material.Switch {
 								id: switchSignKey
 								anchors.verticalCenter: parent.verticalCenter
 								enabled: !own_sign
@@ -392,19 +392,25 @@ Dialog {
 						}
 
 						TextArea {
+							id: pgpTextArea
 							anchors {
 								left: parent.left
 								right: parent.right
 								leftMargin: dp(16)
 								rightMargin: dp(16)
 							}
-							height: dp(300)
 							readOnly: true
 
 							text: pgp_key
 							textFormat: Text.PlainText
 							wrapMode: Text.WrapAnywhere
 							font.pixelSize: dp(12)
+							font.family: "Roboto"
+
+							selectedTextColor: "white"
+							selectionColor: Material.Theme.accentColor
+							selectByMouse: true
+							selectByKeyboard: true
 						}
 					}
 				}
@@ -454,7 +460,7 @@ Dialog {
 
 						height: dp(48)
 
-						secondaryItem: Switch {
+						secondaryItem: Material.Switch {
 							id: switchDirectTransfer
 
 							anchors.verticalCenter: parent.verticalCenter
@@ -474,7 +480,7 @@ Dialog {
 
 						height: dp(48)
 
-						secondaryItem: Switch {
+						secondaryItem: Material.Switch {
 							id: switchAllowPush
 
 							anchors.verticalCenter: parent.verticalCenter
@@ -494,7 +500,7 @@ Dialog {
 
 						height: dp(48)
 
-						secondaryItem: Switch {
+						secondaryItem: Material.Switch {
 							id: switchRequireWL
 
 							anchors.verticalCenter: parent.verticalCenter
@@ -515,7 +521,7 @@ Dialog {
 						height: dp(48)
 						interactive: false
 
-						secondaryItem: TextField {
+						secondaryItem: Material.TextField {
 							id: maxUploadSpeedTF
 							anchors.verticalCenter: parent.verticalCenter
 							width: dp(100)
@@ -537,7 +543,7 @@ Dialog {
 						height: dp(48)
 						interactive: false
 
-						secondaryItem: TextField {
+						secondaryItem: Material.TextField {
 							id: maxDownloadSpeedTF
 							anchors.verticalCenter: parent.verticalCenter
 							width: dp(100)
@@ -573,14 +579,14 @@ Dialog {
 							height: dp(48)
 							interactive: false
 
-							secondaryItem: Label {
+							secondaryItem: Material.Label {
 								anchors.centerIn: parent
 
 								text: locationsModel.count
 
 								elide: Text.ElideRight
 								style: "subheading"
-								color: Theme.light.textColor
+								color: Material.Theme.light.textColor
 							}
 						}
 
@@ -595,37 +601,15 @@ Dialog {
 								nodeDetailsDialog.showAccount(model.name, model.pgp_id, model.location, model.peer_id)
 							}
 
-							action: Canvas {
-								id: canvas
+							action: Material.Icon {
 								anchors.centerIn: parent
 
 								width: dp(32)
 								height: dp(32)
+								size: dp(32)
 
-								Component.onCompleted:loadImage("avatar.png")
-								onPaint: {
-									var ctx = getContext("2d");
-									if (canvas.isImageLoaded("avatar.png")) {
-										var profile = Qt.createQmlObject('
-                                            import QtQuick 2.5
-                                            Image {
-                                                source: "avatar.png"
-                                                visible:false
-                                            }', canvas);
-
-										var centreX = width/2;
-										var centreY = height/2;
-
-										ctx.save()
-										ctx.beginPath();
-										ctx.moveTo(centreX, centreY);
-										ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
-										ctx.clip();
-										ctx.drawImage(profile, 0, 0, canvas.width, canvas.height)
-										ctx.restore()
-									}
-								}
-								onImageLoaded:requestPaint()
+								name: "awesome/user"
+								color: Material.Theme.light.iconColor
 							}
 
 							MouseArea {
@@ -637,7 +621,7 @@ Dialog {
 								onClicked: overflowMenu.open(nodeItem, mouse.x, mouse.y)
 							}
 
-							Dropdown {
+							Material.Dropdown {
 								id: overflowMenu
 								objectName: "overflowMenu"
 								width: dp(200)
@@ -659,9 +643,7 @@ Dialog {
 										onClicked: {
 											overflowMenu.close()
 
-											main.createChatCardPeer(model.name, model.location, model.peer_id, model.chat_id, "ChatCardPeer.qml")
-											rsApi.request("/chat/mark_chat_as_read/"+model.chat_id, "", function(){})
-
+											mainGUIObject.createChatPeerCard(model.name, model.location, model.peer_id, model.chat_id, "ChatPeerCard.qml")
 											scrollingDialog.close()
 										}
 									}
@@ -682,7 +664,7 @@ Dialog {
 						}
 					}
 
-					Scrollbar {
+					Material.Scrollbar {
 						flickableItem: nodesListView
 					}
 				}
@@ -706,14 +688,14 @@ Dialog {
 							height: dp(48)
 							interactive: false
 
-							secondaryItem: Label {
+							secondaryItem: Material.Label {
 								anchors.centerIn: parent
 
 								text: gxsIdModel.count
 
 								elide: Text.ElideRight
 								style: "subheading"
-								color: Theme.light.textColor
+								color: Material.Theme.light.textColor
 							}
 						}
 
@@ -729,37 +711,91 @@ Dialog {
 								identityDetailsDialog.showIdentity(model.name, model.gxs_id)
 							}
 
-							action: Canvas {
-								id: canvas2
+							action: Item {
+								id: identityAvatar
 								anchors.centerIn: parent
-
 								width: dp(32)
 								height: dp(32)
 
-								Component.onCompleted:loadImage("avatar.png")
-								onPaint: {
-									var ctx = getContext("2d");
-									if (canvas2.isImageLoaded("avatar.png")) {
-										var profile = Qt.createQmlObject('
-                                            import QtQuick 2.5
-                                            Image {
-                                                source: "avatar.png"
-                                                visible:false
-                                            }', canvas2);
+								property string avatar: (gxs_avatars.getAvatar(model.gxs_id) == "none"
+														 || gxs_avatars.getAvatar(model.gxs_id) == "")
+														? "none"
+														: gxs_avatars.getAvatar(model.gxs_id)
 
-										var centreX = width/2;
-										var centreY = height/2;
+								onAvatarChanged: canvas.loadImage(identityAvatar.avatar)
 
-										ctx.save()
-										ctx.beginPath();
-										ctx.moveTo(centreX, centreY);
-										ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
-										ctx.clip();
-										ctx.drawImage(profile, 0, 0, canvas2.width, canvas2.height)
-										ctx.restore()
-									}
+								Component.onCompleted: {
+									if(gxs_avatars.getAvatar(model.gxs_id) == "")
+										getIdentityAvatar()
 								}
-								onImageLoaded:requestPaint()
+
+								function getIdentityAvatar() {
+									var jsonData = {
+										gxs_id: model.gxs_id
+									}
+
+									function callbackFn(par) {
+										var json = JSON.parse(par.response)
+										if(json.returncode == "fail") {
+											getIdentityAvatar()
+											return
+										}
+
+										gxs_avatars.storeAvatar(model.gxs_id, json.data.avatar)
+										if(gxs_avatars.getAvatar(model.gxs_id) != "none")
+											identityAvatar.avatar = gxs_avatars.getAvatar(model.gxs_id)
+									}
+
+									rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+								}
+
+								Canvas {
+									id: canvas
+
+									anchors.centerIn: parent
+									width: dp(32)
+									height: dp(32)
+
+									enabled: identityAvatar.avatar != "none"
+									visible: identityAvatar.avatar != "none"
+
+									onPaint: {
+										var ctx = getContext("2d");
+										if (canvas.isImageLoaded(identityAvatar.avatar)) {
+											var profile = Qt.createQmlObject('
+                                                import QtQuick 2.5
+                                                Image {
+                                                    source: identityAvatar.avatar
+                                                    visible:false
+                                                }', canvas);
+											var centreX = width/2;
+											var centreY = height/2;
+
+											ctx.save()
+											ctx.beginPath();
+											ctx.moveTo(centreX, centreY);
+											ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
+											ctx.clip();
+											ctx.drawImage(profile, 0, 0, canvas.width, canvas.height);
+											ctx.restore()
+										}
+									}
+									onImageLoaded:requestPaint()
+								}
+
+								Material.Icon {
+									anchors.centerIn: parent
+
+									width: dp(32)
+									height: dp(32)
+									size: dp(32)
+
+									enabled: identityAvatar.avatar == "none"
+									visible: identityAvatar.avatar == "none"
+
+									name: "awesome/user_o"
+									color: Material.Theme.light.iconColor
+								}
 							}
 
 							MouseArea {
@@ -769,7 +805,7 @@ Dialog {
 								onClicked: overflowMenu2.open(identityItem, mouse.x, mouse.y)
 							}
 
-							Dropdown {
+							Material.Dropdown {
 								id: overflowMenu2
 								objectName: "overflowMenu"
 								width: dp(200)
@@ -809,7 +845,7 @@ Dialog {
 										onClicked: {
 											overflowMenu2.close()
 
-											main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+											mainGUIObject.createChatGxsCard("", model.name, model.gxs_id, "ChatGxsCard.qml")
 
 											scrollingDialog.close()
 										}
@@ -831,7 +867,7 @@ Dialog {
 						}
 					}
 
-					Scrollbar {
+					Material.Scrollbar {
 						flickableItem: identitiesListView
 					}
 				}

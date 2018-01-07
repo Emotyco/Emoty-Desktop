@@ -28,7 +28,7 @@
 #include "Bridge/Windows/qwinview.h"
 #include "libresapilocalclient.h"
 #include "Util/base64.h"
-
+#include "Util/gxsavatars.h"
 #include "Bridge/Models/contactssortmodel.h"
 #include "Bridge/Models/identitiessortmodel.h"
 
@@ -57,6 +57,7 @@ private:
 	HWND windowHandle;
 	LibresapiLocalClient *rsApi;
 	Base64 *base64;
+	GXSAvatars *gxs_avatars;
 
 	ContactsSortModel *contactsModel;
 	IdentitiesSortModel *identitiesModel;

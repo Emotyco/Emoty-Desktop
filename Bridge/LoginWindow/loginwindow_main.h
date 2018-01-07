@@ -23,6 +23,6 @@
 #define LOGINWINDOW_MAIN_H
 
 
-int loginwindow_main(int argc, char **argv);
+int loginwindow_main();
 
 #endif

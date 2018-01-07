@@ -34,6 +34,7 @@ Item {
 	property bool activated: true
 
 	signal refresh
+	signal pressedTile
 
 	Drag.active: mouseArea.drag.active || leftMA.drag.active || rightMA.drag.active || topMA.drag.active || botMA.drag.active
 	Drag.hotSpot.x: 0
@@ -83,7 +84,7 @@ Item {
 	}
 
 	Component.onCompleted: {
-		main.gridChanged.connect(refresh)
+		mainGUIObject.gridChanged.connect(refresh)
 	}
 
 	states: [
@@ -394,7 +395,10 @@ Item {
 
 		drag.target: root
 
-		onPressed: cursor.changeCursor(Qt.ClosedHandCursor)
+		onPressed: {
+			pressedTile()
+			cursor.changeCursor(Qt.ClosedHandCursor)
+		}
 		onReleased: {
 			if(root.Drag.target !== null) {
 				if(!(((root.Drag.target.index+root.col-1)%gridLayout.columns)<(root.col-1))) {

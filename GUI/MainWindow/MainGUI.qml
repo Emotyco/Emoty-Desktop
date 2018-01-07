@@ -21,16 +21,16 @@
  *  Boston, MA  02110-1301, USA.
  ****************************************************************/
 
-import QtQuick 2.5
+import QtQuick 2.7
 import QtQuick.Layouts 1.3
+import QtQuick.Controls 2.2
 
-import Material 0.3
-import Material.Extras 0.1
+import Material 0.3 as Material
 
-import QtQuick.Controls 1.3 as Controls
+import CardsModel 0.2
 
 Rectangle {
-	id: main
+	id: mainGUIObject
 
 	property bool borderless: false
 	property bool haveOwnIdFirstTime: true
@@ -42,20 +42,17 @@ Rectangle {
 
 	property string defaultGxsName
 	property string defaultGxsId
-	property string defaultAvatar: "avatar.png"
+	property string defaultAvatar: "none"
 
 	property int unreadMsgsLobbies: 0
-	property Item controls: controlView
 
-	property int visibleRows: Math.round((main.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
-
-	property alias pageStack: __pageStack
+	property int visibleRows: Math.round((mainGUIObject.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
 	property alias gridLayout: gridLayout
-	property alias content: content
+	property alias cardsModel: cardsModel
 
 	signal gridChanged
 
-	color: Palette.colors["grey"]["200"]
+	color: Material.Palette.colors["grey"]["200"]
 
 	states:[
 		State {
@@ -114,19 +111,31 @@ Rectangle {
 	Component.onCompleted: {
 		updateVisibleRows()
 		getOwnIdentities()
-		getUnreadMsgs()
 		getRunState()
 		getAdvancedMode()
 		getFlickableGridMode()
 		getRoomInvitations()
+		getUnreadedMessages()
 	}
 
-	onDefaultGxsIdChanged: main.getDefaultAvatar()
+	onDefaultGxsIdChanged: mainGUIObject.getDefaultAvatar()
 
 	// For handling tokens
 	property int stateToken_ownGxs: 0
 	property int stateToken_unreadMsgs: 0
 	property int stateToken_invitations: 0
+
+	function getUnreadedMessages() {
+		function callbackFn(par) {
+			var jsonResp = JSON.parse(par.response)
+			stateToken_unreadMsgs = jsonResp.statetoken
+			mainGUIObject.registerToken(stateToken_unreadMsgs, getUnreadedMessages)
+
+			notifier.handleChatMessages(par.response)
+		}
+
+		rsApi.request("/chat/unread_msgs/", "", callbackFn)
+	}
 
 	function getOwnIdentities() {
 		var jsonData = {
@@ -137,29 +146,10 @@ Rectangle {
 			ownGxsIdModel.json = par.response; haveOwnId()
 
 			stateToken_ownGxs = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken_ownGxs, getOwnIdentities)
+			mainGUIObject.registerToken(stateToken_ownGxs, getOwnIdentities)
 		}
 
 		rsApi.request("/identity/own_ids/", JSON.stringify(jsonData), callbackFn)
-	}
-
-	function getUnreadMsgs() {
-		function callbackFn(par) {
-			notifier.handleChatMessages(par.response)
-			var jsonResp = JSON.parse(par.response)
-
-			var count = 0
-			for (var i = 0; i<jsonResp.data.length; i++) {
-				if(jsonResp.data[i].is_lobby == true)
-					count++
-			}
-			main.unreadMsgsLobbies = count
-
-			stateToken_unreadMsgs = jsonResp.statetoken
-			main.registerToken(stateToken_unreadMsgs, getUnreadMsgs)
-		}
-
-		rsApi.request("/chat/unread_msgs/", "", callbackFn)
 	}
 
 	function getRunState() {
@@ -168,12 +158,12 @@ Rectangle {
 		};
 
 		function callbackFn(par) {
-			main.state = String(JSON.parse(par.response).data.runstate)
+			mainGUIObject.state = String(JSON.parse(par.response).data.runstate)
 		}
 
 		var ret = rsApi.request("/control/runstate/", JSON.stringify(jsonData), callbackFn)
 		if(ret < 1)
-			main.state = "fatal_error"
+			mainGUIObject.state = "fatal_error"
 	}
 
 	function getAdvancedMode() {
@@ -182,7 +172,7 @@ Rectangle {
 		};
 
 		function callbackFn(par) {
-			main.advmode = Boolean(JSON.parse(par.response).data.advanced_mode)
+			mainGUIObject.advmode = Boolean(JSON.parse(par.response).data.advanced_mode)
 			notifier.setAdvMode(Boolean(JSON.parse(par.response).data.advanced_mode))
 		}
 
@@ -195,7 +185,7 @@ Rectangle {
 		};
 
 		function callbackFn(par) {
-			main.flickablemode = Boolean(JSON.parse(par.response).data.flickable_grid_mode)
+			mainGUIObject.flickablemode = Boolean(JSON.parse(par.response).data.flickable_grid_mode)
 		}
 
 		rsApi.request("/settings/get_flickable_grid_mode/", JSON.stringify(jsonData), callbackFn)
@@ -205,7 +195,7 @@ Rectangle {
 		if (ownGxsIdModel.count === 0 && haveOwnIdFirstTime) {
 			var component = Qt.createComponent("CreateIdentity.qml");
 			if (component.status === Component.Ready) {
-				var createId = component.createObject(main);
+				var createId = component.createObject(mainGUIObject);
 				createId.show();
 			}
 			haveOwnIdFirstTime = false;
@@ -213,29 +203,33 @@ Rectangle {
 	}
 
 	function getDefaultAvatar() {
-		var jsonData = {
-			gxs_id: defaultGxsId
+		if(gxs_avatars.getAvatar(defaultGxsId) == "") {
+			var jsonData = {
+				gxs_id: defaultGxsId
+			}
+
+			function callbackFn(par) {
+				var json = JSON.parse(par.response)
+				if(json.returncode == "fail") {
+					getDefaultAvatar()
+					return
+				}
+
+				gxs_avatars.storeAvatar(defaultGxsId, json.data.avatar)
+				defaultAvatar = gxs_avatars.getAvatar(defaultGxsId)
+			}
+
+			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
 		}
-
-		function callbackFn(par) {
-			var json = JSON.parse(par.response)
-			if(json.data.avatar.length > 0)
-				defaultAvatar = "data:image/png;base64," + json.data.avatar
-			else
-				defaultAvatar = "avatar.png"
-
-			if(json.returncode == "fail")
-				getDefaultAvatar()
-		}
-
-		rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
+		else
+			defaultAvatar = gxs_avatars.getAvatar(defaultGxsId)
 	}
 
 	function getRoomInvitations() {
 		function callbackFn(par) {
 			var jsonResp = JSON.parse(par.response)
 			stateToken_invitations = jsonResp.statetoken
-			main.registerToken(stateToken_invitations, getRoomInvitations)
+			mainGUIObject.registerToken(stateToken_invitations, getRoomInvitations)
 
 			if(jsonResp.data.length > 0)
 				for(var i = 0; i < jsonResp.data.length; i++)
@@ -267,6 +261,38 @@ Rectangle {
 		rsApi.request("/chat/get_invitations_to_lobby", "", callbackFn)
 	}
 
+	function getDefaultIdentity() {
+		function callbackFn(par) {
+			var json = JSON.parse(par.response)
+			if(json.returncode == "fail") {
+				getDefaultIdentity()
+				return
+			}
+
+			defaultGxsId = json.data.gxs_id
+			for(var i = 0; i < ownGxsIdModel.count; i++) {
+				if(ownGxsIdModel.model.get(i).own_gxs_id == defaultGxsId)
+					defaultGxsName = ownGxsIdModel.model.get(i).name
+			}
+
+			getDefaultAvatar()
+		}
+
+		rsApi.request("/chat/get_default_identity_for_chat_lobby", "", callbackFn)
+	}
+
+	function setDefaultIdentity(gxs_id) {
+		var jsonData = {
+			gxs_id: gxs_id
+		}
+
+		function callbackFn(par) {
+			getDefaultIdentity()
+		}
+
+		rsApi.request("/chat/set_default_identity_for_chat_lobby", JSON.stringify(jsonData), callbackFn)
+	}
+
 	Connections {
 		target: view
 		onHeightChanged: gridLayout.reorder()
@@ -284,15 +310,13 @@ Rectangle {
 		query: "$.data[*]"
 
 		model.onCountChanged: {
-			defaultGxsName = ownGxsIdModel.model.get(0).name
-			defaultGxsId = ownGxsIdModel.model.get(0).own_gxs_id
-			getDefaultAvatar()
+			getDefaultIdentity()
 		}
 	}
 
-	AppTheme {
-		primaryColor: Palette.colors["green"]["500"]
-		accentColor: Palette.colors["deepOrange"]["500"]
+	Material.AppTheme {
+		primaryColor: Material.Palette.colors["green"]["500"]
+		accentColor: Material.Palette.colors["deepOrange"]["500"]
 		tabHighlightColor: "white"
 	}
 
@@ -304,7 +328,7 @@ Rectangle {
 		color: Qt.rgba(0,0,0,0.4)
 		z: 20
 
-		state: main.loadMask ? "visible" : "invisible"
+		state: mainGUIObject.loadMask ? "visible" : "invisible"
 
 		states:[
 			State {
@@ -339,13 +363,12 @@ Rectangle {
 			anchors.fill: parent
 
 			hoverEnabled: true
-
 			onClicked: {
-				if(mouse.button == Qt.LeftButton)
+				if(mouse.button == Qt.LeftButton && borderless)
 					qMainPanel.mouseLPressed()
 			}
 			onPressed: {
-				if(mouse.button == Qt.LeftButton)
+				if(mouse.button == Qt.LeftButton && borderless)
 					qMainPanel.mouseLPressed()
 			}
 		}
@@ -367,7 +390,7 @@ Rectangle {
 				mipmap: true
 			}
 
-			ProgressCircle {
+			Material.ProgressCircle {
 				anchors {
 					top: logoMask.bottom
 					horizontalCenter: parent.horizontalCenter
@@ -377,7 +400,7 @@ Rectangle {
 				height: dp(35)
 				dashThickness: dp(5)
 
-				color: Theme.primaryColor
+				color: Material.Theme.primaryColor
 			}
 		}
 	}
@@ -485,7 +508,7 @@ Rectangle {
 						target: mainGUImask;
 						property: "opacity";
 						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
+						duration: Material.MaterialAnimation.pageTransitionDuration
 					}
 					PropertyAction {
 						target: mainGUImask;
@@ -506,7 +529,7 @@ Rectangle {
 						target: mainGUImask;
 						property: "opacity";
 						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
+						duration: Material.MaterialAnimation.pageTransitionDuration
 					}
 				}
 			}
@@ -537,174 +560,6 @@ Rectangle {
 		width: dp(50)
 	}
 
-	View {
-		id: controlView
-
-		anchors {
-			top: parent.top
-			right: parent.right
-		}
-
-		height: dp(50)
-		width: dp(210)
-
-		enabled: borderless
-
-		backgroundColor: "white"
-		elevation: 2
-		z: 1
-
-		ParallelAnimation {
-			running: true
-			NumberAnimation {
-				target: controlView;
-				property: "anchors.rightMargin";
-				from: -dp(50);
-				to: 0;
-				easing.type: Easing.InOutQuad;
-				duration: MaterialAnimation.pageTransitionDuration
-			}
-			NumberAnimation {
-				target: controlView;
-				property: "opacity";
-				from: 0;
-				to: 1;
-				easing.type: Easing.InOutQuad;
-				duration: MaterialAnimation.pageTransitionDuration
-			}
-		}
-
-		Component.onCompleted: {
-			if(borderless)
-				Qt.createQmlObject('
-                import QtQuick 2.5
-                import Material 0.3
-                import QtQuick.Layouts 1.3
-
-                Row {
-                    anchors {
-                        top: parent.top
-                        right: parent.right
-                        rightMargin: dp(11)
-                        topMargin: dp(13)
-                    }
-
-                    spacing: dp(5)
-                    z: 30
-
-                    Item {
-                        width: dp(24)
-                        height: dp(24)
-
-                        Rectangle {
-                            id: minimizeButton
-
-                            anchors {
-                                bottom: parent.bottom
-                                margins: dp(4)
-                            }
-
-                            width: parent.width-dp(6)
-                            height: dp(2)
-
-                            color: Palette.colors["grey"]["500"]
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-
-                            hoverEnabled: true
-
-                            onEntered: minimizeButton.color = Theme.accentColor
-                            onExited: minimizeButton.color = Palette.colors["grey"]["500"]
-                            onClicked: qMainPanel.pushButtonMinimizeClicked();
-                        }
-                    }
-
-                    Item {
-                        width: dp(24)
-                        height: dp(24)
-
-                        Rectangle {
-                            id: maximizeButton
-
-                            anchors {
-                                fill: parent
-                                margins: dp(4)
-                            }
-
-                            color: Palette.colors["grey"]["500"]
-
-                            Rectangle {
-                                anchors {
-                                    fill: parent
-                                    margins: dp(2)
-                                }
-
-                                color: "white"
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-
-                            hoverEnabled: true
-
-                            onEntered: maximizeButton.color = Theme.accentColor
-                            onExited: maximizeButton.color = Palette.colors["grey"]["500"]
-                            onClicked: qMainPanel.pushButtonMaximizeClicked()
-                        }
-                    }
-
-                    Item {
-                        width: dp(24)
-                        height: dp(24)
-
-                        Rectangle {
-                            id: closeButton
-
-                            anchors.centerIn: parent
-
-                            width: dp(22)
-                            height: dp(2.5)
-
-                            rotation: 45
-                            color: Palette.colors["grey"]["500"]
-                        }
-
-                        Rectangle {
-                            id: closeButton2
-
-                            anchors.centerIn: parent
-
-                            width: dp(22)
-                            height: dp(2.5)
-
-                            rotation: -45
-                            color: Palette.colors["grey"]["500"]
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-
-                            hoverEnabled: true
-
-                            onEntered: {
-                                closeButton.color = Theme.accentColor
-                                closeButton2.color = Theme.accentColor
-                            }
-                            onExited: {
-                                closeButton.color = Palette.colors["grey"]["500"]
-                                closeButton2.color = Palette.colors["grey"]["500"]
-                            }
-                            onClicked: view.hide()
-                        }
-                    }
-                }
-                ', controlView);
-		}
-	}
-
 	RightBar {
 		id: rightBar
 		z:1
@@ -727,7 +582,7 @@ Rectangle {
 		GridLayout {
 			id: gridLayout
 
-			property int h: (main.height-dp(30))
+			property int h: (mainGUIObject.height-dp(30))
 			property int rowspace: parseInt(h/dp(50))
 
 			property alias gridRepeater: gridRepeater
@@ -748,7 +603,7 @@ Rectangle {
 			rowSpacing: h<dp(650) ? (h-((rowspace-1)*dp(50)))/(rowspace-2)
 							  : (h-((rowspace-2)*dp(50)))/(rowspace-3)
 
-			onColumnsChanged: main.gridChanged()
+			onColumnsChanged: mainGUIObject.gridChanged()
 
 			Repeater {
 				id: gridRepeater
@@ -761,67 +616,26 @@ Rectangle {
 
 				Layout.alignment: Qt.AlignTop
 			}
-
-			DragTile {
-				id: content
-
-				Layout.alignment: Qt.AlignBottom
-				Layout.maximumWidth: 0
-				Layout.maximumHeight: 0
-
-				width: 0
-				height: 0
-
-				col: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 14
-					    ? 14
-						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))
-
-				row: main.visibleRows
-
-				gridX: Math.floor(((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-content.col)/2)
-
-				Behavior on col {
-					ScriptAction {
-						script: {
-							content.refresh()
-							gridLayout.reorder()
-						}
-					}
-				}
-
-				Behavior on row {
-					ScriptAction { script: {content.refresh()} }
-				}
-
-				Controls.StackView {
-					id: __pageStack
-					anchors.fill: parent
-
-					initialItem:	Content{}
-				}
-
-				Component.onCompleted: {main.content.activated = false}
-			}
 		}
 	}
 
-	Scrollbar {
+	Material.Scrollbar {
 		flickableItem: flickable
 	}
 
-	OverlayLayer {
+	Material.OverlayLayer {
 		id: dialogOverlayLayer
 		objectName: "dialogOverlayLayer"
 		z: 10
 	}
 
-	OverlayLayer {
+	Material.OverlayLayer {
 		id: tooltipOverlayLayer
 		objectName: "tooltipOverlayLayer"
 		z:5
 	}
 
-	OverlayLayer {
+	Material.OverlayLayer {
 		id: overlayLayer
 		z: 11
 	}
@@ -878,8 +692,8 @@ Rectangle {
 	}
 
 	function updateVisibleRows() {
-		main.visibleRows = Qt.binding(function() {
-			return Math.round((main.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
+		mainGUIObject.visibleRows = Qt.binding(function() {
+			return Math.round((mainGUIObject.height-dp(30))/(dp(50) + gridLayout.rowSpacing))
 		});
 	}
 
@@ -897,22 +711,6 @@ Rectangle {
 			tokens[token] = [callback]
 	}
 
-	function tokenExpire(token)
-	{
-		if(Array.isArray(tokens[token]))
-		{
-			var arrLen = tokens[token].length
-			for(var i=0; i<arrLen; ++i)
-			{
-				var tokCallback = tokens[token][i]
-				if (typeof tokCallback == 'function')
-					tokCallback()
-			}
-		}
-
-		delete tokens[token]
-	}
-
 	function isTokenValid(token) {
 		return Array.isArray(tokens[token])
 	}
@@ -922,14 +720,53 @@ Rectangle {
 		var jsonData = JSON.parse(par.response).data
 		var arrayLength = jsonData.length;
 		for (var i = 0; i < arrayLength; i++)
-			main.tokenExpire(jsonData[i])
+			mainGUIObject.tokenExpire(jsonData[i])
 	}
 
 	//
 	//////
 
+	function tokenExpire(token) {
+		if(Array.isArray(tokens[token]))
+		{
+			tokens[token].forEach(function(tok) {
+				if (typeof tok == 'function')
+					tok()
+				else {
+					if(Array.isArray(tok)) {
+						tok.forEach(function(cardFunc) {
+							if (typeof cardFunc == 'function')
+								cardFunc()
+						});
+					}
+				}
+			});
+		}
+
+		delete tokens[token]
+	}
+
+	function registerTokenWithIndex(token, callback, cardIndex) {
+		if(!Array.isArray(tokens[token]))
+			tokens[token] = new Array(cardIndex)
+
+		if (Array.isArray(tokens[token][cardIndex]))
+			tokens[token][cardIndex].push(callback)
+		else
+			tokens[token][cardIndex] = [callback]
+	}
+
 	function unregisterToken(token) {
 		delete tokens[token]
+	}
+
+	function unregisterTokenWithIndex(token, cardIndex) {
+		try {
+			if(typeof tokens[token][cardIndex] !== 'undefined')
+				delete tokens[token][cardIndex]
+		} catch (e) {
+			console.log(e.stack);
+		}
 	}
 
 	/*
@@ -939,58 +776,104 @@ Rectangle {
 	  (We couldn't e.g. click on mousearea in new created objects)
 	  */
 
-	function createChatGxsCard(friendname, gxsid, objectName) {
-		var component = Qt.createComponent(objectName, gridLayout);
+	CardsModel {
+		id: cardsModel
+	}
+	signal cardCreated
+
+	function raiseCard(index) {
+		for(var i = 0; i != cardsModel.rowCount(); i++)
+		{
+			var card = cardsModel.getCardByListIndex(i);
+			if(card.cardIndex == index) {
+				card.z = 20
+				card.isRaised = true
+			}
+			else{
+				card.z = card.z == 0 ? 0 : --card.z
+				card.isRaised = false
+			}
+		}
+	}
+
+	function removeCard(index) {
+		cardsModel.removeCard(index)
+
+		if(cardsModel.rowCount() != 0) {
+			var highestCard = cardsModel.getCardByListIndex(0)
+			for(var i = 0; i != cardsModel.rowCount(); i++)
+			{
+				var card = cardsModel.getCardByListIndex(i);
+				if(card.z > highestCard.z) {
+					highestCard = card
+				}
+			}
+			raiseCard(highestCard.cardIndex)
+		}
+	}
+
+	function createRoomCard(roomName, chatId) {
+		var component = Qt.createComponent("RoomCard.qml", gridLayout);
 		if (component.status === Component.Ready) {
-			var chat = component.createObject(gridLayout,
-											  {"name": friendname,
-												"gxsId": gxsid});
+			var roomCard = component.createObject(gridLayout,
+											  {"headerName": roomName,
+												"chatId": chatId});
+
+			roomCard.cardIndex = cardsModel.storeCard(roomCard, roomName, true, "awesome/comments_o", roomCard.indicatorNumber)
+			raiseCard(roomCard.cardIndex)
+			cardCreated()
+
 			updateVisibleRows()
-
-			chat.col = Qt.binding(function() {
-				return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 11
-						? 11
-						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)) || 1
-			})
-			chat.row = Qt.binding(function() {
-				return main.visibleRows
-			})
-			chat.gridY = 0
-			chat.gridX = Qt.binding(function() {
-				return Math.floor(
-							((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-chat.col)/2
-						)
-			})
-
 			gridLayout.reorder()
 		}
 	}
 
-	function createChatCardPeer(friendname, location, rspeerid, chat_id, objectName) {
+	function createFileSharingCard() {
+		var component = Qt.createComponent("FileSharingCard.qml", gridLayout);
+		if (component.status === Component.Ready) {
+			var fsCard = component.createObject(gridLayout,
+											  {"headerName": "File Sharing"});
+
+			fsCard.cardIndex = cardsModel.storeCard(fsCard, "File Sharing", true, "awesome/folder_o", fsCard.indicatorNumber)
+			raiseCard(fsCard.cardIndex)
+			cardCreated()
+
+			updateVisibleRows()
+			gridLayout.reorder()
+		}
+	}
+
+	function createChatGxsCard(chatId, friendname, gxsid, objectName) {
 		var component = Qt.createComponent(objectName, gridLayout);
 		if (component.status === Component.Ready) {
 			var chat = component.createObject(gridLayout,
-											  {"name": friendname,
-											   "location": location,
+											  {"headerName": friendname,
+												"gxsId": gxsid,
+												"chatId": chatId});
+
+			var avatar = gxs_avatars.getAvatar(gxsid)
+			chat.cardIndex = cardsModel.storeCard(chat, friendname, avatar == "none", avatar == "none" ? "awesome/user_o" : avatar, chat.indicatorNumber)
+			raiseCard(chat.cardIndex)
+			cardCreated()
+
+			updateVisibleRows()
+			gridLayout.reorder()
+		}
+	}
+
+	function createChatPeerCard(friendname, location, rspeerid, chat_id, objectName) {
+		var component = Qt.createComponent(objectName, gridLayout);
+		if (component.status === Component.Ready) {
+			var chat = component.createObject(gridLayout,
+											  {"headerName": friendname + "@" + location,
 											   "chatId": chat_id,
 											   "rsPeerId": rspeerid});
+
+			chat.cardIndex = cardsModel.storeCard(chat, friendname + "@" + location, true, "awesome/user", chat.indicatorNumber)
+			raiseCard(chat.cardIndex)
+			cardCreated()
+
 			updateVisibleRows()
-
-			chat.col = Qt.binding(function() {
-				return parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing))>= 11
-						? 11
-						: parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)) || 1
-			})
-			chat.row = Qt.binding(function() {
-				return main.visibleRows
-			})
-			chat.gridY = 0
-			chat.gridX = Qt.binding(function() {
-				return Math.floor(
-							((parseInt(gridLayout.width / (dp(50) + gridLayout.columnSpacing)))-chat.col)/2
-						)
-			})
-
 			gridLayout.reorder()
 		}
 	}
@@ -1009,20 +892,20 @@ Rectangle {
 		running: true
 		repeat: true
 		onTriggered: {
-			rsApi.request("/statetokenservice/*", '['+Object.keys(main.tokens)+']', checkTokens)
+			rsApi.request("/statetokenservice/*", '['+Object.keys(mainGUIObject.tokens)+']', checkTokens)
 		}
 	}
 
 	// Units
 	function dp(dp) {
-		return dp * Units.dp
+		return dp * Material.Units.dp
 	}
 
 	function gu(gu) {
 		return units.gu(gu)
 	}
 
-	UnitsHelper {
+	Material.UnitsHelper {
 		id: units
 	}
 }

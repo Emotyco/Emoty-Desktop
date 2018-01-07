@@ -34,20 +34,8 @@ QWinView::QWinView(HWND hParentWnd, QObject *parent)
 		QObject::setParent(parent);
 
 	Q_ASSERT(hParent);
-
 	if(hParent)
-	{
-		SetWindowLong((HWND)winId(), GWL_STYLE, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-
-		this->setProperty("_q_embedded_native_parent_handle", (WId)hParent);
-		HWND h = static_cast<HWND>(QGuiApplication::platformNativeInterface()->
-		                        nativeResourceForWindow("handle", this));
-		SetParent(h, hParent);
-		this->setFlags(Qt::FramelessWindowHint);
-
-		QEvent e(QEvent::EmbeddingControl);
-		QApplication::sendEvent(this, &e);
-	}
+		this->setParent(QWindow::fromWinId((WId)hParent));
 }
 
 HWND QWinView::parentWindow() const

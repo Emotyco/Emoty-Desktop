@@ -1,0 +1,1 @@
+Emoji icons provided free by EmojiOne (https://www.emojione.com/)

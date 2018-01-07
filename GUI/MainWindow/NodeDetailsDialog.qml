@@ -22,13 +22,13 @@
 
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
+import QtQuick.Controls 2.2
 import QtQuick.Controls 1.4 as QtControls
 
-import Material 0.3
-import Material.Extras 0.1
+import Material 0.3 as Material
 import Material.ListItems 0.1 as ListItem
 
-Dialog {
+Material.Dialog {
 	id: scrollingDialog
 
 	property string name_pgp: ""
@@ -131,7 +131,7 @@ Dialog {
 		query: "$.data.ip_addresses[*]"
 	}
 
-	Label {
+	Material.Label {
 		id: titleLabel
 
 		anchors {
@@ -145,12 +145,12 @@ Dialog {
 		wrapMode: Text.Wrap
 		text: name_peer + "'s details"
 		style: "title"
-		color: Theme.accentColor
+		color: Material.Theme.accentColor
 	}
 
 	Item {
-		width: main.width < dp(900) ? main.width - dp(100) : dp(600)
-		height: main.width < dp(450) ? main.width - dp(100) : dp(300)
+		width: mainGUIObject.width < dp(900) ? mainGUIObject.width - dp(100) : dp(600)
+		height: mainGUIObject.width < dp(450) ? mainGUIObject.width - dp(100) : dp(300)
 
 		Column {
 			anchors {
@@ -219,7 +219,7 @@ Dialog {
 								height: dp(48)
 								interactive: true
 
-								secondaryItem: Label {
+								secondaryItem: Material.Label {
 									anchors.verticalCenter: parent.verticalCenter
 
 									text: name_pgp + "@" + pgp
@@ -237,7 +237,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: Label {
+								secondaryItem: Material.Label {
 									anchors.verticalCenter: parent.verticalCenter
 
 									text: name_peer
@@ -250,7 +250,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: Label {
+								secondaryItem: Material.Label {
 									anchors.verticalCenter: parent.verticalCenter
 
 									text: peer_id
@@ -263,7 +263,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: Label {
+								secondaryItem: Material.Label {
 									anchors.verticalCenter: parent.verticalCenter
 
 									text: last_contact.toTimeString() + " " + last_contact.toDateString()
@@ -276,7 +276,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: Label {
+								secondaryItem: Material.Label {
 									anchors.verticalCenter: parent.verticalCenter
 
 									text: status_message
@@ -289,7 +289,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: Label {
+								secondaryItem: Material.Label {
 									anchors.verticalCenter: parent.verticalCenter
 
 									text: connection_status
@@ -302,7 +302,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: Label {
+								secondaryItem: Material.Label {
 									anchors.verticalCenter: parent.verticalCenter
 
 									text: is_hidden_node ? "Yes" : "No"
@@ -315,7 +315,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: Label {
+								secondaryItem: Material.Label {
 									anchors.verticalCenter: parent.verticalCenter
 
 									text: encryption
@@ -324,7 +324,7 @@ Dialog {
 						}
 					}
 
-					Scrollbar {
+					Material.Scrollbar {
 						flickableItem: flick
 					}
 				}
@@ -378,7 +378,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: TextField {
+								secondaryItem: Material.TextField {
 									id: localAddressTF
 									anchors.verticalCenter: parent.verticalCenter
 
@@ -399,7 +399,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: TextField {
+								secondaryItem: Material.TextField {
 									id: localPortTF
 									anchors.verticalCenter: parent.verticalCenter
 
@@ -421,7 +421,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: TextField {
+								secondaryItem: Material.TextField {
 									id: extAddressTF
 									anchors.verticalCenter: parent.verticalCenter
 
@@ -442,7 +442,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: TextField {
+								secondaryItem: Material.TextField {
 									id: extPortTF
 									anchors.verticalCenter: parent.verticalCenter
 
@@ -464,7 +464,7 @@ Dialog {
 								height: dp(48)
 								interactive: false
 
-								secondaryItem: TextField {
+								secondaryItem: Material.TextField {
 									id: dynDNSTF
 									anchors.verticalCenter: parent.verticalCenter
 
@@ -498,31 +498,31 @@ Dialog {
 								Layout.fillWidth: true
 								Layout.column: 2
 
-								spacing: 3 * Units.dp
+								spacing: 3 * Material.Units.dp
 
-								Label {
+								Material.Label {
 									Layout.alignment: Qt.AlignRight
 
 									elide: Text.ElideRight
 									horizontalAlignment: Qt.AlignRight
 
 									style: "caption"
-									color: Theme.light.subTextColor
+									color: Material.Theme.light.subTextColor
 								}
 
-								Label {
+								Material.Label {
 									Layout.alignment: Qt.AlignRight
 
 									elide: Text.ElideRight
 									horizontalAlignment: Qt.AlignRight
 
-									color: Theme.light.textColor
+									color: Material.Theme.light.textColor
 								}
 							}
 						}
 					}
 
-					Scrollbar {
+					Material.Scrollbar {
 						flickableItem: connectivityListView
 					}
 				}
@@ -541,9 +541,13 @@ Dialog {
 
 					text: certificate.replace(/(\r\n|\n|\r)/gm,"")
 					textFormat: Text.PlainText
-
 					wrapMode: Text.WrapAnywhere
 					font.pixelSize: dp(12)
+					font.family: "Roboto"
+
+					selectedTextColor: "white"
+					selectionColor: Material.Theme.accentColor
+					selectByMouse: true
 				}
 			}
 		}

@@ -43,7 +43,8 @@ public:
 		IsContactRole,
 		PgpLinkedRole,
 		AvatarRole,
-		IsOnlyOneRole
+		IsOnlyOneRole,
+		ChatListRole
 	};
 	static ContactsModel *Create ();
 	static void Destroy();
@@ -68,7 +69,7 @@ protected:
 private:
 	struct Contact {
 		Contact(QString name, QString gxs_id, QString pgp_id,
-		        QString state_string, QString unread_count, QString avatar,
+		        QString state_string, int unread_count, QString avatar,
 		        bool is_contact, bool pgp_linked, bool is_only)
 		    : name(name), gxs_id(gxs_id), pgp_id(pgp_id),
 		      state_string(state_string), unread_count(unread_count),
@@ -80,12 +81,14 @@ private:
 		QString gxs_id;
 		QString pgp_id;
 		QString state_string;
-		QString unread_count;
+		int unread_count;
 		QString avatar;
 
 		bool is_contact;
 		bool pgp_linked;
 		bool is_only;
+
+		QStringList chatList;
 	};
 
 	ContactsModel(QObject *parent = 0);
@@ -95,7 +98,6 @@ private:
 
 	int contactsStateToken;
 	int statusStateToken;
-	int unreadStateToken;
 	std::list<Contact> contactsData;
 };
 

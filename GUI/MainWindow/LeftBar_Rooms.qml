@@ -1,3 +1,24 @@
+/****************************************************************
+ *  This file is part of Emoty.
+ *  Emoty is distributed under the following license:
+ *
+ *  Copyright (C) 2017, Konrad Dębiec
+ *
+ *  Emoty is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 3
+ *  of the License, or (at your option) any later version.
+ *
+ *  Emoty is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ *  Boston, MA  02110-1301, USA.
+ ****************************************************************/
 import QtQuick 2.5
 
 import Material 0.3
@@ -6,10 +27,11 @@ import Material.ListItems 0.1 as ListItem
 Rectangle {
 	color: "#f2f2f2"
 
+	property string resp
 	// For handling tokens
 	property int stateToken: 0
 
-	Component.onDestruction: main.unregisterToken(stateToken)
+	Component.onDestruction: mainGUIObject.unregisterToken(stateToken)
 
 	property bool firstTime: true
 
@@ -18,25 +40,57 @@ Rectangle {
 			if(firstTime)
 				firstTime = false
 
+			resp = par.response
+
 			privateLobbiesModel.json = par.response
 			subscribedPublicLobbiesModel.json = par.response
 			unsubscribedPublicLobbiesModel.json = par.response
 
 			stateToken = JSON.parse(par.response).statetoken
-			main.registerToken(stateToken, getLobbies)
+			mainGUIObject.registerToken(stateToken, getLobbies)
+
+			updateUnreadCount()
 		}
 
 		rsApi.request("/chat/lobbies/", "", callbackFn)
 	}
 
+	Connections {
+		target: mainGUIObject
+		onCardCreated: updateUnreadCount()
+	}
+
+	function updateUnreadCount() {
+		var jsonResp = JSON.parse(resp)
+		var count = 0
+		for (var i = 0; i<jsonResp.data.length; i++) {
+			if(jsonResp.data[i].is_broadcast == false && jsonResp.data[i].unread_msg_count != 0) {
+				var found = false
+				for(var ii = 0; ii != cardsModel.rowCount(); ii++)
+				{
+					var card = cardsModel.getCardByListIndex(ii);
+					if(card.chatId == jsonResp.data[i].chat_id){
+						found = true
+						break;
+					}
+				}
+
+				if(!found)
+					count++
+			}
+		}
+		mainGUIObject.unreadMsgsLobbies = count
+	}
+
 	function subscribeLobby(chatId) {
 		var jsonData = {
 			id: chatId,
-			gxs_id: main.defaultGxsId
+			gxs_id: mainGUIObject.defaultGxsId
 		}
 
 		function callbackFn(par) {
 			getLobbies()
+			setAutosubsribeLobby(chatId, true)
 		}
 
 		rsApi.request("/chat/subscribe_lobby/", JSON.stringify(jsonData), callbackFn)
@@ -125,11 +179,7 @@ Rectangle {
 					itemLabel.style: "body1"
 
 					onClicked: {
-						main.content.activated = true;
-						pageStack.push({item: Qt.resolvedUrl("RoomPage.qml"), immediate: true, replace: true,
-										   properties: {roomName: model.name, chatId: model.chat_id}})
-
-						main.content.refresh()
+						mainGUIObject.createRoomCard(model.name, model.chat_id)
 						leftBar.state = "narrow"
 					}
 
@@ -154,6 +204,7 @@ Rectangle {
 							text: model.unread_msg_count
 							color: "white"
 							font.family: "Roboto"
+							font.pixelSize: dp(13)
 							verticalAlignment: Text.AlignVCenter
 							horizontalAlignment: Text.AlignHCenter
 						}
@@ -161,7 +212,7 @@ Rectangle {
 
 					Tooltip {
 						text: "Topic: " + model.topic
-							  + (main.advmode
+							  + (mainGUIObject.advmode
 								   ? "\n" + "Chat Id: " + model.chat_id
 								   : "")
 						mouseArea: ink
@@ -223,7 +274,7 @@ Rectangle {
 					leftBar.state = "narrow"
 					var component = Qt.createComponent("CreateLobby.qml");
 					if (component.status === Component.Ready) {
-						var createId = component.createObject(main, {"isPrivate": true});
+						var createId = component.createObject(mainGUIObject, {"isPrivate": true});
 						createId.show();
 					}
 				}
@@ -248,11 +299,7 @@ Rectangle {
 					itemLabel.style: "body1"
 
 					onClicked: {
-						main.content.activated = true;
-						pageStack.push({item: Qt.resolvedUrl("RoomPage.qml"), immediate: true, replace: true,
-										   properties: {roomName: model.name, chatId: model.chat_id}})
-
-						main.content.refresh()
+						mainGUIObject.createRoomCard(model.name, model.chat_id)
 						leftBar.state = "narrow"
 					}
 
@@ -277,6 +324,7 @@ Rectangle {
 							text: model.unread_msg_count
 							color: "white"
 							font.family: "Roboto"
+							font.pixelSize: dp(13)
 							verticalAlignment: Text.AlignVCenter
 							horizontalAlignment: Text.AlignHCenter
 						}
@@ -284,7 +332,7 @@ Rectangle {
 
 					Tooltip {
 						text: "Topic: " + model.topic
-							  + (main.advmode
+							  + (mainGUIObject.advmode
 								   ? "\n" + "Chat Id: " + model.chat_id
 								   : "")
 						mouseArea: ink
@@ -346,7 +394,7 @@ Rectangle {
 					leftBar.state = "narrow"
 					var component = Qt.createComponent("CreateLobby.qml");
 					if (component.status === Component.Ready) {
-						var createId = component.createObject(main, {"isPrivate": false});
+						var createId = component.createObject(mainGUIObject, {"isPrivate": false});
 						createId.show();
 					}
 				}
@@ -373,11 +421,8 @@ Rectangle {
 					function openUnsubscribedPublicLobby() {
 						subscribeLobby(model.id)
 						setAutosubsribeLobby(model.id, true)
-						main.content.activated = true;
-						pageStack.push({item: Qt.resolvedUrl("RoomPage.qml"), immediate: true, replace: true,
-										   properties: {roomName: model.name, chatId: model.chat_id}})
 
-						main.content.refresh()
+						mainGUIObject.createRoomCard(model.name, model.chat_id)
 						leftBar.state = "narrow"
 					}
 
@@ -404,6 +449,7 @@ Rectangle {
 							text: model.unread_msg_count
 							color: "white"
 							font.family: "Roboto"
+							font.pixelSize: dp(13)
 							verticalAlignment: Text.AlignVCenter
 							horizontalAlignment: Text.AlignHCenter
 						}
@@ -411,7 +457,7 @@ Rectangle {
 
 					Tooltip {
 						text: "Topic: " + model.topic
-							  + (main.advmode
+							  + (mainGUIObject.advmode
 								   ? "\n" + "Chat Id: " + model.chat_id
 								   : "")
 						mouseArea: ink

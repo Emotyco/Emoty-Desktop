@@ -45,7 +45,7 @@
     #include "Util/runstatehelper.h"
 #endif
 
-int loginwindow_main(int argc, char **argv)
+int loginwindow_main()
 {
 	QEventLoop app;
 

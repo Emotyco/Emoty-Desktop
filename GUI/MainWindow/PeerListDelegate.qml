@@ -39,7 +39,6 @@ Component {
 																  "#9E9E9E"		// grey
 
 		height: dp(50)
-		clip: true
 		width: parent.width
 
 		state: "hidden"
@@ -54,102 +53,21 @@ Component {
 			}
 		]
 
-		transitions: [
-			Transition {
-				from: "hidden"; to: "entered"
-
-				SequentialAnimation {
-					NumberAnimation {
-						duration: 100
-					}
-
-					ParallelAnimation {
-						NumberAnimation {
-							target: icons
-							property: "y"
-							from: dp(40)
-							to: 0
-							easing.type: Easing.InOutQuad
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-						NumberAnimation {
-							target: icons
-							property: "opacity"
-							from: 0
-							to: 1
-							easing.type: Easing.InOutQuad
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-
-						NumberAnimation {
-							target: text
-							property: "y"
-							from: 0
-							to: -dp(40)
-							easing.type: Easing.InOutQuad
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-						NumberAnimation {
-							target: text
-							property: "opacity"
-							from: 1
-							to: 0
-							easing.type: Easing.InOutQuad
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-					}
-				}
-			},
-			Transition {
-				from: "entered"; to: "hidden"
-
-				ParallelAnimation {
-					NumberAnimation {
-						target: text
-						property: "y"
-						from: -dp(40)
-						to: 0
-						easing.type: Easing.InOutQuad
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-					NumberAnimation {
-						target: text
-						property: "opacity"
-						from: 0
-						to: 1
-						easing.type: Easing.InOutQuad
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-
-					NumberAnimation {
-						target: icons
-						property: "y"
-						from: 0
-						to: dp(40)
-						easing.type: Easing.InOutQuad
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-					NumberAnimation {
-						target: icons
-						property: "opacity"
-						from: 1
-						to: 0
-						easing.type: Easing.InOutQuad
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-				}
-			}
-		]
-
 		MouseArea{
 			anchors.fill: parent
 
-			acceptedButtons: Qt.RightButton
+			acceptedButtons: Qt.RightButton | Qt.LeftButton
 			hoverEnabled: true
 
 			onEntered: friendroot.state = "entered"
 			onExited: friendroot.state = "hidden"
-			onClicked: overflowMenu.open(friendroot, mouse.x, mouse.y);
+			onClicked: {
+				if(mouse.button == Qt.RightButton)
+					overflowMenu.open(friendroot, mouse.x, mouse.y)
+				else if(mouse.button == Qt.LeftButton) {
+					mainGUIObject.createChatPeerCard(model.name, model.location, model.peer_id, model.chat_id, "ChatPeerCard.qml")
+				}
+			}
 
 			states: [
 				State {
@@ -175,7 +93,10 @@ Component {
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
 				width: dp(200)
-				height: dp(2*30)
+				height: state_string === "online"
+						|| state_string === "busy"
+						|| state_string === "away" ? dp(2*30)
+												   : dp(3*30)
 				enabled: true
 				anchor: Item.TopLeft
 				durationSlow: 300
@@ -191,8 +112,7 @@ Component {
 						onClicked: {
 							overflowMenu.close()
 
-							main.createChatCardPeer(model.name, model.location, model.peer_id, model.chat_id, "ChatCardPeer.qml")
-							rsApi.request("/chat/mark_chat_as_read/"+model.chat_id, "", function(){})
+							mainGUIObject.createChatPeerCard(model.name, model.location, model.peer_id, model.chat_id, "ChatPeerCard.qml")
 						}
 					}
 
@@ -206,42 +126,44 @@ Component {
 							nodeDetailsDialog.showAccount(model.name, model.pgp_id, model.location, model.peer_id)
 						}
 					}
+
+					ListItem.Standard {
+						height: dp(30)
+						text: "Attempt Connection"
+						itemLabel.style: "menu"
+
+						enabled: !(state_string === "online"
+								 || state_string === "busy"
+								 || state_string === "away")
+						visible: !(state_string === "online"
+								 || state_string === "busy"
+								 || state_string === "away")
+
+						onClicked: {
+							overflowMenu.close()
+
+							var jsonData = {
+								peer_id: model.peer_id
+							}
+							rsApi.request("/peers/attempt_connection", JSON.stringify(jsonData), function(){})
+						}
+					}
 				}
 			}
 
-			Canvas {
-				id: canvas
-
+			Icon {
 				anchors.verticalCenter: parent.verticalCenter
 
 				x: dp(14)
 				width: dp(32)
 				height: dp(32)
 
-				Component.onCompleted:loadImage("avatar.png")
-				onPaint: {
-					var ctx = getContext("2d");
-					if (canvas.isImageLoaded("avatar.png")) {
-						var profile = Qt.createQmlObject('
-                            import QtQuick 2.5
-                            Image {
-                                source: "avatar.png"
-                                visible:false
-                            }', canvas);
+				size: dp(32)
 
-						var centreX = width/2;
-						var centreY = height/2;
-
-						ctx.save()
-						ctx.beginPath();
-						ctx.moveTo(centreX, centreY);
-						ctx.arc(centreX, centreY, width / 2, 0, Math.PI * 2, false);
-						ctx.clip();
-						ctx.drawImage(profile, 0, 0, canvas.width, canvas.height)
-						ctx.restore()
-					}
-				}
-				onImageLoaded:requestPaint()
+				name: "awesome/user"
+				color: friendroot.state != "entered"
+					    ? Theme.light.iconColor
+						: Theme.primaryColor
 			}
 
 			Item {
@@ -282,103 +204,6 @@ Component {
 
 					verticalAlignment: Text.AlignTop
 					horizontalAlignment: Text.AlignLeft
-				}
-			}
-
-			Item {
-				id: icons
-
-				height: parent.height
-				x: dp(60)
-				y: dp(50)
-
-				Icon {
-					id: circle1
-
-					anchors.verticalCenter: parent.verticalCenter
-
-					height: parent.height
-
-					name: "awesome/comment"
-					visible: true
-					color: Theme.light.iconColor
-
-					size: dp(31)
-
-					Rectangle {
-						anchors {
-							top: circle1.top
-							right: circle1.right
-							topMargin: dp(10)
-						}
-
-						width: dp(14)
-						height: dp(14)
-
-						radius: width/2
-						color: statuscolor
-
-						visible: model.unread_msgs > 0 ? true : false
-
-						Text {
-							anchors.fill: parent
-
-							text: model.unread_msgs
-							color: "white"
-							font.family: "Roboto"
-
-							verticalAlignment: Text.AlignVCenter
-							horizontalAlignment: Text.AlignHCenter
-						}
-					}
-
-					MouseArea {
-						anchors.fill: parent
-
-						onClicked: {
-							main.createChatCardPeer(model.name, model.location, model.peer_id, model.chat_id, "ChatCardPeer.qml")
-							rsApi.request("/chat/mark_chat_as_read/"+model.chat_id, "", function(){})
-						}
-					}
-				}
-
-				Icon {
-					id: circle2
-
-					anchors.verticalCenter: parent.verticalCenter
-
-					x: dp(40)
-					height: parent.height
-
-					name: "awesome/phone"
-					visible: true
-					color: Theme.light.hintColor
-
-					size: dp(31)
-
-					MouseArea {
-						anchors.fill: parent
-					}
-				}
-
-				Icon {
-					id: circle3
-
-					anchors.verticalCenter: parent.verticalCenter
-
-					x: dp(80)
-					height: parent.height
-
-					name: "awesome/video_camera"
-					visible: true
-					color: Theme.light.hintColor
-
-					size: dp(31)
-
-					MouseArea {
-						anchors.fill: parent
-						onClicked: {}
-					}
 				}
 			}
 

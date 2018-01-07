@@ -151,8 +151,8 @@ Dialog {
 	}
 
 	Item {
-		width: main.width < dp(900) ? main.width - dp(100) : dp(600)
-		height: main.width < dp(450) ? main.width - dp(100) : dp(300)
+		width: mainGUIObject.width < dp(900) ? mainGUIObject.width - dp(100) : dp(600)
+		height: mainGUIObject.width < dp(450) ? mainGUIObject.width - dp(100) : dp(300)
 
 		Column {
 			anchors {

@@ -23,14 +23,80 @@
 import QtQuick 2.5
 import Material 0.3
 
+import "qrc:/emojione.js" as EmojiOne
+
 Component {
 	Item {
-		property string avatar: "avatar.png"
+		property string avatar: (gxs_avatars.getAvatar(model.author_id) == "none"
+								 || gxs_avatars.getAvatar(model.author_id) == "")
+								? "none"
+								: gxs_avatars.getAvatar(model.author_id)
+
+		onAvatarChanged: {
+			image.loadImage(avatar)
+		}
+
+		property bool previous_author_same: model.author_id == author_id_previous
+		property alias timeText: timeText
 
 		width: parent.width
-		height: model.incoming ? view.height + dp(15) + label.height : view.height + dp(15)
+		height: previous_author_same ?
+					(model.last_from_author ? msgView.height + dp(8) : msgView.height + dp(5))
+				  : (model.incoming ?
+						 model.last_from_author ?
+							 msgView.height + dp(23) + label.height
+						   : msgView.height + dp(20) + label.height
+					   : model.last_from_author ?
+						     msgView.height + dp(23)
+					       : msgView.height + dp(20)
+					 )
 
-		Component.onCompleted: getIdentityAvatar()
+		property int yOff: Math.round(y - contentm.contentY)
+		property bool isFullyVisible: (yOff > contentm.y
+									   && yOff + height < contentm.y + contentm.height)
+
+		Behavior on isFullyVisible {
+			ScriptAction {
+				script: {
+					if(model.message_index+1 == messagesModel.rowCount()) {
+						contentm.lastVisible = Qt.binding(function() {
+							return yOff + height < contentm.y + contentm.height
+						})
+					}
+				}
+			}
+		}
+
+		Component.onCompleted: {
+			if(gxs_avatars.getAvatar(model.author_id) == "" && model.incoming == true)
+				getIdentityAvatar()
+		}
+
+		SequentialAnimation {
+			running: !model.read && isFullyVisible && view.active && isRaised
+
+			PauseAnimation {
+				duration: 1000
+			}
+			NumberAnimation {
+				target: readNot
+				property: "opacity"
+				from: 1
+				to: 0
+				easing.type: Easing.InOutQuad
+				duration: MaterialAnimation.pageTransitionDuration*4
+			}
+			ScriptAction {
+				script: {
+					var jsonData = {
+						chat_id: roomCard.chatId,
+						msg_id: model.msg_id
+					}
+
+					rsApi.request("/chat/mark_message_as_read/", JSON.stringify(jsonData), function(){})
+				}
+			}
+		}
 
 		function getIdentityAvatar() {
 			var jsonData = {
@@ -39,11 +105,14 @@ Component {
 
 			function callbackFn(par) {
 				var json = JSON.parse(par.response)
-				if(json.data.avatar.length > 0)
-					avatar = "data:image/png;base64," + json.data.avatar
-
-				if(json.returncode == "fail")
+				if(json.returncode == "fail") {
 					getIdentityAvatar()
+					return
+				}
+
+				gxs_avatars.storeAvatar(model.author_id, json.data.avatar)
+				if(gxs_avatars.getAvatar(model.author_id) != "none")
+					avatar = gxs_avatars.getAvatar(model.author_id)
 			}
 
 			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
@@ -54,14 +123,15 @@ Component {
 
 			anchors {
 				left: parent.left
-				bottom: view.bottom
+				top: label.top
+				topMargin: dp(15)
 			}
 
-			width: dp(32)
-			height: dp(32)
+			width: dp(36)
+			height: dp(36)
 
-			visible: model.incoming
-			enabled: model.incoming
+			visible: model.incoming && !previous_author_same && avatar != "none"
+			enabled: model.incoming && !previous_author_same && avatar != "none"
 
 			Component.onCompleted:loadImage(avatar)
 			onPaint: {
@@ -90,16 +160,37 @@ Component {
 			onImageLoaded:requestPaint()
 		}
 
+		Icon {
+			id: icon
+
+			anchors {
+				left: parent.left
+				top: label.top
+				topMargin: dp(15)
+			}
+
+			width: dp(36)
+			height: dp(36)
+
+			name: "awesome/user_o"
+			visible: model.incoming && !previous_author_same && avatar == "none"
+			color: Theme.light.iconColor
+
+			size: dp(30)
+		}
+
 		Label {
 			id: label
 			anchors {
-				top: parent.top
 				left: image.right
-				leftMargin: parent.width*0.03 + dp(10)
+				leftMargin: dp(24)
+				topMargin: dp(5)
+				bottom: msgView.top
+				bottomMargin: dp(3)
 			}
 
-			visible: model.incoming
-			enabled: model.incoming
+			visible: model.incoming && !previous_author_same
+			enabled: model.incoming && !previous_author_same
 
 			style: "caption"
 			text: model.author_name
@@ -108,24 +199,26 @@ Component {
 		}
 
 		View {
-			id: view
+			id: msgView
 
 			anchors {
-				top: model.incoming ? label.bottom : undefined
 				right: model.incoming === false ? parent.right : undefined
 				left: model.incoming === false ?  undefined : image.right
 				rightMargin: parent.width*0.03
-				leftMargin: parent.width*0.03
-				topMargin: dp(3)
+				leftMargin: dp(17)
+				bottom: timeText.top
+				bottomMargin: model.last_from_author ? dp(3) : 0
 			}
 
 			height: textMsg.implicitHeight + dp(12)
-			width: (model.msg.length>45) ? (parent.width*0.8)
-										 :  textMsg.implicitWidth + dp(20)
+			width: (textMsg.implicitWidth + dp(20)) > (parent.width*0.8)
+				    ? (parent.width*0.8)
+					: textMsg.implicitWidth + dp(20)
 
 			backgroundColor: model.incoming === false ? Theme.primaryColor : "white"
 			elevation: 1
 			radius: 10
+			clipContent: false
 
 			TextEdit {
 				id: textMsg
@@ -134,12 +227,14 @@ Component {
 					top: parent.top
 					topMargin: dp(6)
 					left: parent.left
+					leftMargin: dp(10)
 					right: parent.right
+					rightMargin: dp(10)
 				}
 
-				text: model.msg
-				textFormat: Text.RichText
-				wrapMode: Text.WordWrap
+				text: EmojiOne.emojione.toImage(model.msg_content)
+				textFormat: Text.AutoText
+				wrapMode: Text.Wrap
 
 				color: model.incoming === false ? "white" : Theme.light.textColor
 				readOnly: true
@@ -147,13 +242,60 @@ Component {
 				selectByMouse: true
 				selectionColor: Theme.accentColor
 
-				horizontalAlignment: TextEdit.AlignHCenter
+				horizontalAlignment: TextEdit.AlignLeft
 
 				font {
 					family: "Roboto"
 					pixelSize: dp(13)
 				}
 			}
+
+			View {
+				id: readNot
+				anchors {
+					top: parent.top
+					right: parent.right
+					topMargin: -dp(3)
+					rightMargin: -dp(3)
+				}
+
+				width: dp(10)
+				height: dp(10)
+				radius: width/2
+
+				elevation: 2
+				backgroundColor: Theme.accentColor
+
+				visible: !model.read && model.incoming
+			}
+		}
+
+		Label {
+			id: timeText
+			anchors {
+				right: model.incoming === false ? msgView.right : undefined
+				left: model.incoming === false ?  undefined : msgView.left
+				bottom: parent.bottom
+				leftMargin: dp(7)
+				rightMargin: dp(7)
+			}
+
+			visible: model.last_from_author
+			enabled: model.last_from_author
+
+			style: "caption"
+			font.pixelSize: dp(10)
+			text: {
+				var now = Date.now()
+				var time = new Date(1000 * model.send_time)
+
+				if(((now - time) / (24 * 3600 * 1000)) >= 1)
+					return time.getDate()+"."+time.getMonth()+"."+time.getFullYear()+" "+time.toLocaleTimeString("en-GB")
+
+				return time.toLocaleTimeString("en-GB")
+			}
+
+			color: Theme.light.subTextColor
 		}
 	}
 }

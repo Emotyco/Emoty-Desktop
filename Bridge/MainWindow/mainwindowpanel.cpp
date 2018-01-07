@@ -72,6 +72,8 @@ MainWindowPanel::MainWindowPanel(HWND hWnd) : QWinView(hWnd)
 	ctxt->setContextProperty("base64", base64);
 
 	ctxt->setContextProperty("gxsModel", ContactsModel::getInstance());
+	gxs_avatars = new GXSAvatars();
+	ctxt->setContextProperty("gxs_avatars", gxs_avatars);
 
 	contactsModel = new ContactsSortModel();
 	contactsModel->setSourceModel(ContactsModel::getInstance());
@@ -98,6 +100,10 @@ MainWindowPanel::~MainWindowPanel()
 	if(identitiesModel != NULL)
 		delete identitiesModel;
 	identitiesModel = NULL;
+
+	if(gxs_avatars != NULL)
+		delete gxs_avatars;
+	gxs_avatars = NULL;
 }
 
 // Button events

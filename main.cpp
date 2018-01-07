@@ -45,6 +45,7 @@
     #include "Util/cursorshape.h"
     #include "Util/qquickviewhelper.h"
     #include "Util/base64.h"
+    #include "Util/gxsavatars.h"
 
     #include "Bridge/Models/contactssortmodel.h"
     #include "Bridge/Models/identitiessortmodel.h"
@@ -55,9 +56,21 @@
 
 #include "Bridge/Models/roomparticipantssortmodel.h"
 #include "Bridge/Models/roominvitationsortmodel.h"
+#include "Bridge/Models/transferfilessortmodel.h"
+#include "Bridge/Models/sharedfilesmodel.h"
+#include "Bridge/Models/searchfilemodel.h"
+#include "Bridge/Models/searchfilesortmodel.h"
+#include "Bridge/Models/cardsmodel.h"
+#include "Bridge/Models/messagesmodel.h"
 
 Q_COREAPP_STARTUP_FUNCTION(registerRoomParticipantsSortModelTypes)
 Q_COREAPP_STARTUP_FUNCTION(registerRoomInvitationSortModelTypes)
+Q_COREAPP_STARTUP_FUNCTION(registerTransferFilesSortModelTypes)
+Q_COREAPP_STARTUP_FUNCTION(registerSharedFilesModelTypes)
+Q_COREAPP_STARTUP_FUNCTION(registerSearchFileModelTypes)
+Q_COREAPP_STARTUP_FUNCTION(registerSearchFileSortModelTypes)
+Q_COREAPP_STARTUP_FUNCTION(registerCardsModelTypes)
+Q_COREAPP_STARTUP_FUNCTION(registerMessagesModelTypes)
 
 int main(int argc, char *argv[])
 {
@@ -70,17 +83,17 @@ int main(int argc, char *argv[])
 
 #ifndef QT_DEBUG
 	QProcess process;
-	QString file = QCoreApplication::applicationDirPath() + "/RS-Core";
+	QString file = QStringLiteral("\"") + QCoreApplication::applicationDirPath() + "/RS-Core";
 
     #ifdef WINDOWS_SYS
 	    file += ".exe";
     #endif
 
-	process.start(file);
+	process.start(file + QString("\""));
 	QObject::connect(qApp, SIGNAL(aboutToQuit()), &process, SLOT(kill()));
 #endif
 
-	loginwindow_main(argc, argv);
+	loginwindow_main();
 
 	if(RunStateHelper::getInstance()->getRunState() != "running_ok" && RunStateHelper::getInstance()->getRunState() != "waiting_startup")
 	{
@@ -147,13 +160,16 @@ int main(int argc, char *argv[])
 	identitiesModel->setSourceModel(ContactsModel::getInstance());
 	ctxt->setContextProperty("identitiesModel", identitiesModel);
 
+	GXSAvatars gxs_avatars;
+	ctxt->setContextProperty("gxs_avatars", &gxs_avatars);
+
 	view->setSource(QUrl("qrc:/MainGUI.qml"));
 	// Create window
 	ScreenSize screenSize;
-	view->setWidth(screenSize.width()/2);
-	view->setHeight(screenSize.height()/2);
+	view->setWidth(screenSize.width()*0.75);
+	view->setHeight(screenSize.height()*0.75);
 	view->setMinimumWidth(600);
-	view->setMinimumHeight(300);
+	view->setMinimumHeight(350);
 	view->show();
 
 	QObject::connect(&trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), &helper, SLOT(showViaSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
@@ -164,8 +180,8 @@ int main(int argc, char *argv[])
 
 	// Create window
 	ScreenSize screenSize;
-	MainWindow window( windowBackground, screenSize.width()/4, screenSize.height()/4, screenSize.width()/2, screenSize.height()/2 );
-	window.setMinimumSize(600, 300);
+	MainWindow window( windowBackground, screenSize.width()*0.175, screenSize.height()*0.175, screenSize.width()*0.65, screenSize.height()*0.65);
+	window.setMinimumSize(600, 350);
 
 	QObject::connect(&trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), &window, SLOT(showViaSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
 #endif

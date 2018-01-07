@@ -59,7 +59,15 @@ HEADERS += libresapilocalclient.h \
     Bridge/Models/roomparticipantsmodel.h \
     Bridge/Models/roomparticipantssortmodel.h \
     Bridge/Models/roominvitationmodel.h \
-    Bridge/Models/roominvitationsortmodel.h
+    Bridge/Models/roominvitationsortmodel.h \
+    Bridge/Models/transferfilesmodel.h \
+    Bridge/Models/transferfilessortmodel.h \
+    Bridge/Models/sharedfilesmodel.h \
+    Bridge/Models/searchfilemodel.h \
+    Bridge/Models/searchfilesortmodel.h \
+    Bridge/Models/cardsmodel.h \
+    Bridge/Models/messagesmodel.h \
+    Util/gxsavatars.h
 
 SOURCES += main.cpp \
     libresapilocalclient.cpp \
@@ -74,10 +82,19 @@ SOURCES += main.cpp \
     Bridge/Models/roomparticipantsmodel.cpp \
     Bridge/Models/roomparticipantssortmodel.cpp \
     Bridge/Models/roominvitationmodel.cpp \
-    Bridge/Models/roominvitationsortmodel.cpp
+    Bridge/Models/roominvitationsortmodel.cpp \
+    Bridge/Models/transferfilesmodel.cpp \
+    Bridge/Models/transferfilessortmodel.cpp \
+    Bridge/Models/sharedfilesmodel.cpp \
+    Bridge/Models/searchfilemodel.cpp \
+    Bridge/Models/searchfilesortmodel.cpp \
+    Bridge/Models/cardsmodel.cpp \
+    Bridge/Models/messagesmodel.cpp \
+    Util/gxsavatars.cpp
 
 RESOURCES += \
     GUI/MainWindow/mainwindow.qrc \
     GUI/LoginWindow/login.qrc \
     Images/images.qrc \
-    Fonts/fonts.qrc
+    Fonts/fonts.qrc \
+    GUI/Emojione/emojione.qrc

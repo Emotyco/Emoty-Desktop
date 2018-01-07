@@ -34,6 +34,7 @@ Component {
 		property bool entered: false
 		property string msg: ""
 
+		property string gxsId: model.gxs_id
 		property bool isEmpty: model.gxs_id == ""
 		property string state_string: model.state_string
 		property color statuscolor: state_string === "online"   ? "#4caf50" :   // green
@@ -41,104 +42,19 @@ Component {
 									state_string === "away"		? "#FFEB3B" :   // yellow
 																  "#9E9E9E"		// grey
 
-		property string avatar: model.avatar == ""
-								? "avatar.png"
-								: "data:image/png;base64," + model.avatar
+		property string avatar: (gxs_avatars.getAvatar(model.gxs_id) == "none"
+								 || gxs_avatars.getAvatar(model.gxs_id) == "")
+								? "none"
+								: gxs_avatars.getAvatar(model.gxs_id)
 
 		onAvatarChanged: canvas.loadImage(avatar)
+		onGxsIdChanged: {
+			canvas.clear_canvas()
+			avatar = gxs_avatars.getAvatar(model.gxs_id)
+		}
 
 		width: parent.width
 		height: dp(50)
-
-		clip: true
-
-		transitions: [
-			Transition {
-				from: "hidden"; to: "entered"
-
-				SequentialAnimation {
-					NumberAnimation {
-						duration: 100
-					}
-
-					ParallelAnimation {
-						NumberAnimation {
-							target: icons
-							property: "y"
-							from: dp(40)
-							to: 0
-							easing.type: Easing.InOutQuad;
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-						NumberAnimation {
-							target: icons
-							property: "opacity"
-							from: 0
-							to: 1
-							easing.type: Easing.InOutQuad;
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-
-						NumberAnimation {
-							target: text
-							property: "y"
-							from: 0
-							to: -dp(40)
-							easing.type: Easing.InOutQuad;
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-						NumberAnimation {
-							target: text
-							property: "opacity"
-							from: 1
-							to: 0
-							easing.type: Easing.InOutQuad;
-							duration: MaterialAnimation.pageTransitionDuration
-						}
-					}
-				}
-			},
-			Transition {
-				from: "entered"; to: "hidden"
-
-
-				ParallelAnimation {
-					NumberAnimation {
-						target: text
-						property: "y"
-						from: -dp(40)
-						to: 0
-						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-					NumberAnimation {
-						target: text
-						property: "opacity"
-						from: 0
-						to: 1
-						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-
-					NumberAnimation {
-						target: icons
-						property: "y"
-						from: 0
-						to: dp(40)
-						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-					NumberAnimation {
-						target: icons
-						property: "opacity"
-						from: 1
-						to: 0
-						easing.type: Easing.InOutQuad;
-						duration: MaterialAnimation.pageTransitionDuration
-					}
-				}
-			}
-		]
 
 		states: [
 			State {
@@ -147,12 +63,12 @@ Component {
 			},
 			State {
 				name: "entered"; when: entered === true
-				PropertyChanges { target: friendroot; color: Qt.rgba(0,0,0,0.03) }
+				PropertyChanges { target: friendroot; color: Qt.rgba(0,0,0,0.04) }
 			}
 		]
 
 		Component.onCompleted: {
-			if(model.avatar == "")
+			if(gxs_avatars.getAvatar(model.gxs_id) == "")
 				getIdentityAvatar()
 		}
 
@@ -163,11 +79,14 @@ Component {
 
 			function callbackFn(par) {
 				var json = JSON.parse(par.response)
-				if(json.data.avatar.length > 0)
-					gxsModel.loadJSONAvatar(model.gxs_id, par.response)
-
-				if(json.returncode == "fail")
+				if(json.returncode == "fail") {
 					getIdentityAvatar()
+					return
+				}
+
+				gxs_avatars.storeAvatar(model.gxs_id, json.data.avatar)
+				if(gxs_avatars.getAvatar(model.gxs_id) != "none")
+					friendroot.avatar = gxs_avatars.getAvatar(model.gxs_id)
 			}
 
 			rsApi.request("/identity/get_avatar", JSON.stringify(jsonData), callbackFn)
@@ -176,20 +95,25 @@ Component {
 		MouseArea {
 			anchors.fill: parent
 
-			acceptedButtons: Qt.RightButton
+			acceptedButtons: Qt.RightButton | Qt.LeftButton
 			hoverEnabled: !isEmpty
+			enabled: !isEmpty
 
 			onEntered: {
-				if(!isEmpty)
-					friendroot.entered = true
+				friendroot.entered = true
 			}
 			onExited: {
-				if(!isEmpty)
-					friendroot.entered = false
+				friendroot.entered = false
 			}
 			onClicked: {
-				if(!isEmpty)
+				if(mouse.button == Qt.RightButton)
 					overflowMenu.open(friendroot, mouse.x, mouse.y)
+				else if(mouse.button == Qt.LeftButton) {
+					if(typeof model.chat_list[0] !== 'undefined')
+						mainGUIObject.createChatGxsCard(model.chat_list[0], model.name, model.gxs_id, "ChatGxsCard.qml")
+					else
+						mainGUIObject.createChatGxsCard("", model.name, model.gxs_id, "ChatGxsCard.qml")
+				}
 			}
 
 			states: [
@@ -216,7 +140,7 @@ Component {
 				objectName: "overflowMenu"
 				overlayLayer: "dialogOverlayLayer"
 				width: dp(200)
-				height: isEmpty ? 0 : main.advmode ? dp(3*30) : dp(2*30)
+				height: isEmpty ? 0 : mainGUIObject.advmode ? dp(3*30) : dp(2*30)
 				enabled: true
 				anchor: Item.TopLeft
 				durationSlow: 300
@@ -254,14 +178,18 @@ Component {
 
 						onClicked: {
 							overflowMenu.close()
-							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
+
+							if(typeof model.chat_list[0] !== 'undefined')
+								mainGUIObject.createChatGxsCard(model.chat_list[0], model.name, model.gxs_id, "ChatGxsCard.qml")
+							else
+								mainGUIObject.createChatGxsCard("", model.name, model.gxs_id, "ChatGxsCard.qml")
 						}
 					}
 
 					ListItem.Standard {
 						height: dp(30)
-						enabled: main.advmode && !isEmpty
-						visible: main.advmode && !isEmpty
+						enabled: mainGUIObject.advmode && !isEmpty
+						visible: mainGUIObject.advmode && !isEmpty
 
 						text: "Details"
 						itemLabel.style: "menu"
@@ -282,7 +210,7 @@ Component {
 						onClicked: {
 							overflowMenu.close()
 
-							if(!main.advmode && model.is_only && model.pgp_linked) {
+							if(!mainGUIObject.advmode && model.is_only && model.pgp_linked) {
 								confirmationDialog.show("Do you want to remove contact?
 (It will remove all connections.)", function() {
 	                                var jsonData = {
@@ -316,7 +244,9 @@ Component {
 				width: dp(32)
 				height: dp(32)
 
-				Component.onCompleted: loadImage(friendroot.avatar)
+				enabled: friendroot.avatar != "none"
+				visible: friendroot.avatar != "none"
+
 				onPaint: {
 					var ctx = getContext("2d");
 					if (canvas.isImageLoaded(friendroot.avatar)) {
@@ -340,13 +270,32 @@ Component {
 				}
 				onImageLoaded:requestPaint()
 
-				/*MouseArea {
-					anchors.fill: parent
-					onClicked: {
-						pageStack.push({item: Qt.resolvedUrl("Content.qml"), immediate: true, replace: true})
-						main.content.activated = true;
+				function clear_canvas() {
+					if(canvas.available) {
+						var ctx = canvas.getContext("2d");
+						ctx.reset();
+						canvas.requestPaint();
 					}
-				}*/
+				}
+			}
+
+			Icon {
+				id: icon
+
+				anchors.verticalCenter: parent.verticalCenter
+
+				enabled: friendroot.avatar == "none" || friendroot.avatar == ""
+				visible: friendroot.avatar == "none" || friendroot.avatar == ""
+
+				x: dp(14)
+				width: dp(32)
+				height: dp(32)
+
+				size: dp(32)
+
+				name: "awesome/user_o"
+				color: entered == false ? Theme.light.iconColor
+										: Theme.primaryColor
 			}
 
 			Item {
@@ -386,92 +335,6 @@ Component {
 				}
 			}
 
-			Item {
-				id: icons
-
-				height: parent.height
-				x: dp(60)
-				y: dp(50)
-
-				Icon {
-					id: circle1
-
-					anchors.verticalCenter: parent.verticalCenter
-
-					height: parent.height
-
-					name: "awesome/comment"
-					visible: true
-					color: Theme.light.iconColor
-
-					size: dp(31)
-
-					MouseArea {
-						anchors.fill: parent
-
-						onClicked: {
-							main.createChatGxsCard(model.name, model.gxs_id, "ChatGxsCard.qml")
-						}
-					}
-
-					View {
-						anchors {
-							top: circle1.top
-							right: circle1.right
-							topMargin: dp(10)
-						}
-
-						width: dp(14)
-						height: dp(14)
-						radius: width/2
-
-						elevation: 1
-						backgroundColor: statuscolor
-
-						visible: model.unread_count > 0 ? true : false
-
-						Text {
-							anchors.fill: parent
-							text: model.unread_count
-							color: "white"
-							font.family: "Roboto"
-							verticalAlignment: Text.AlignVCenter
-							horizontalAlignment: Text.AlignHCenter
-						}
-					}
-				}
-
-				Icon {
-					id: circle2
-
-					anchors.verticalCenter: parent.verticalCenter
-
-					x: dp(40)
-					height: parent.height
-
-					name: "awesome/phone"
-					visible: true
-					color: Theme.light.hintColor
-
-					size: dp(31)
-				}
-
-				Icon {
-					id: circle3
-
-					anchors.verticalCenter: parent.verticalCenter
-
-					x: dp(80)
-					height: parent.height
-
-					name: "awesome/video_camera"
-					visible: true
-					color: Theme.light.hintColor
-
-					size: dp(31)
-				}
-			}
-
 			View {
 				anchors {
 					verticalCenter: parent.verticalCenter
@@ -496,6 +359,7 @@ Component {
 					color: "white"
 
 					font.family: "Roboto"
+					font.pixelSize: dp(12)
 					visible: model.unread_count > 0 ? true : false
 
 					verticalAlignment: Text.AlignVCenter
