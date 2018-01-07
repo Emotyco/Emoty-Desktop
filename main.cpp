@@ -83,13 +83,13 @@ int main(int argc, char *argv[])
 
 #ifndef QT_DEBUG
 	QProcess process;
-	QString file = QCoreApplication::applicationDirPath() + "/RS-Core";
+	QString file = QStringLiteral("\"") + QCoreApplication::applicationDirPath() + "/RS-Core";
 
     #ifdef WINDOWS_SYS
 	    file += ".exe";
     #endif
 
-	process.start(file);
+	process.start(file + QString("\""));
 	QObject::connect(qApp, SIGNAL(aboutToQuit()), &process, SLOT(kill()));
 #endif
 
